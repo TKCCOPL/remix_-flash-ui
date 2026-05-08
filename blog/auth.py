@@ -14,7 +14,7 @@ def get_current_user(request: Request) -> bool:
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html", context={"request": request})
 
 @router.post("/login")
 def login(username: str = Form(...), password: str = Form(...)):

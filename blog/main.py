@@ -90,14 +90,14 @@ def upload_image(file: UploadFile = File(...)):
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request, conn=Depends(get_db)):
     posts = crud.get_posts(conn, skip=0, limit=20)
-    return templates.TemplateResponse("index.html", {"request": request, "posts": posts})
+    return templates.TemplateResponse(request=request, name="index.html", context={"request": request, "posts": posts})
 
 @app.get("/post/{post_id}", response_class=HTMLResponse)
 def read_post(request: Request, post_id: int, conn=Depends(get_db)):
     post = crud.get_post(conn, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="文章不存在")
-    return templates.TemplateResponse("detail.html", {"request": request, "post": post})
+    return templates.TemplateResponse(request=request, name="detail.html", context={"request": request, "post": post})
 
 # 权限控制页面
 @app.get("/admin", response_class=HTMLResponse)
@@ -105,7 +105,7 @@ def admin_page(request: Request, conn=Depends(get_db)):
     if not auth.get_current_user(request):
          return RedirectResponse(url="/login", status_code=302)
     posts = crud.get_posts(conn, skip=0, limit=100)
-    return templates.TemplateResponse("admin_list.html", {"request": request, "posts": posts})
+    return templates.TemplateResponse(request=request, name="admin_list.html", context={"request": request, "posts": posts})
 
 @app.get("/admin/edit", response_class=HTMLResponse)
 def admin_edit_page(request: Request, id: Optional[int] = None, conn=Depends(get_db)):
@@ -114,4 +114,4 @@ def admin_edit_page(request: Request, id: Optional[int] = None, conn=Depends(get
     post = None
     if id:
         post = crud.get_post(conn, id)
-    return templates.TemplateResponse("admin_form.html", {"request": request, "post": post})
+    return templates.TemplateResponse(request=request, name="admin_form.html", context={"request": request, "post": post})
