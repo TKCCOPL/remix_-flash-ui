@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if post %}编辑文章{% else %}撰写新文章{% endif %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- 引入 Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>{% if post %}编辑文章{% else %}撰写新文章{% endif %}</h1>
+        <nav><a href="/admin">取消并返回列表</a></nav>
+    </header>
+    <main>
+        <form id="post-form">
+            <input type="hidden" id="post-id" value="{{ post.id if post else '' }}">
+            
+            <div class="form-group">
+                <label>文章标题</label>
+                <input type="text" id="title" required value="{{ post.title if post else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>文章分类</label>
+                <input type="text" id="category" value="{{ post.category if post else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>正文内容</label>
+                <div id="editor-container" style="height: 400px; background: #fff;">
+                    {{ post.content | safe if post else '' }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">保存发布</button>
+        </form>
+    </main>
+
+    <!-- 引入 Quill JS 和自定义 JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="/static/editor.js"></script>
+</body>
+</html>

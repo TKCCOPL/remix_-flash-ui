@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 文章列表</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>管理后台控制台</h1>
+        <nav><a href="/">返回首页</a> | <a href="/admin/edit">撰写新文章</a> | <a href="/logout">退出登录</a></nav>
+    </header>
+    <main>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>标题</th>
+                    <th>分类</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>{{ post.id }}</td>
+                    <td><a href="/post/{{ post.id }}">{{ post.title }}</a></td>
+                    <td>{{ post.category }}</td>
+                    <td>{{ post.created_at }}</td>
+                    <td>
+                        <a href="/admin/edit?id={{ post.id }}">编辑</a> |
+                        <a href="#" class="del-btn" onclick="deletePost({{ post.id }})">删除</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+    <script>
+        async function deletePost(id) {
+            if (confirm("确定要删除这篇文章吗？操作不可恢复。")) {
+                const response = await fetch(`/posts/${id}`, { method: 'DELETE' });
+                if(response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("删除失败");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
