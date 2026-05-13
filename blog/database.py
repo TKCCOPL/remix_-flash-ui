@@ -21,9 +21,14 @@ def init_db():
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         category TEXT,
+        image_url TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+    cursor.execute("PRAGMA table_info(posts)")
+    column_names = {row[1] for row in cursor.fetchall()}
+    if "image_url" not in column_names:
+        cursor.execute("ALTER TABLE posts ADD COLUMN image_url TEXT")
     conn.commit()
     conn.close()
