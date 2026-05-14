@@ -31,3 +31,83 @@
 textarea {
   @apply font-mono text-base leading-relaxed resize-y;
 }
+
+/* ── Hero Canvas ── */
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.hero-canvas-container {
+  position: relative;
+  width: calc(100% + 3rem);
+  min-height: calc(100vh - 3rem);
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+  margin-top: -3rem;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark .hero-canvas-container {
+  background: #09090b;
+}
+
+.hero-canvas-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.hero-canvas-fluid {
+  filter: url(#fluid-mask);
+  mix-blend-mode: difference;
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.hero-canvas-text {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  pointer-events: none;
+  padding-bottom: 5rem;
+}
+
+.hero-canvas-title {
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 200ms;
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+  color: #0f172a;
+}
+
+.dark .hero-canvas-title {
+  color: #f1f5f9;
+}
+
+.hero-canvas-subtitle {
+  opacity: 0;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 300ms;
+  max-width: 42rem;
+  font-size: clamp(1.125rem, 2vw, 1.25rem);
+  color: #475569;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.dark .hero-canvas-subtitle {
+  color: #94a3b8;
+}

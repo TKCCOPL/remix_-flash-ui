@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format, type Locale } from 'date-fns';
-import { ChevronRight, ArrowRight, Sparkles, Tag, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ArrowRight, Tag, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { dateFormats, locales, pageIndicator } from '../i18n';
 import { ApiPost, postsApi } from '../api/posts';
+import HeroCanvas from '../components/HeroCanvas';
 
 const container = {
   hidden: { opacity: 0 },
@@ -85,24 +86,7 @@ export default function Home() {
 
   return (
     <div className="w-full space-y-24">
-      <section className="relative">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="max-w-2xl"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 dark:bg-zinc-900/70 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-medium mb-6">
-            <Sparkles className="w-3 h-3 text-amber-500" />
-            <span>{t.home.heroBadge}</span>
-          </div>
-          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-6 leading-[1.1]">
-            {t.home.heroTitle}
-          </h1>
-          <p className="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed">
-            {t.home.heroSubtitle}
-          </p>
-        </motion.div>
-      </section>
+      <HeroCanvas title={t.home.heroTitle} subtitle={t.home.heroSubtitle} titleLine2={t.home.heroTitleLine2} />
 
       {featuredPost && (
         <section>

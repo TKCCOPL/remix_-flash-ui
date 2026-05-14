@@ -6,10 +6,12 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import AdminEdit from './pages/AdminEdit';
 import Login from './pages/Login';
+import AIAssistant from './components/AIAssistant';
 
 function App() {
   return (
     <BrowserRouter>
+      <AIAssistant />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />

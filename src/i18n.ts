@@ -50,8 +50,9 @@ export const translations = {
     },
     home: {
       heroBadge: '数字花园与思考',
-      heroTitle: '书写代码、设计与生活。',
+      heroTitle: '你好，我是 Alex',
       heroSubtitle: '我是一名软件工程师和设计师，这里记录我对软件与界面的探索。',
+      heroTitleLine2: '欢迎来到我的博客',
       featured: '精选文章',
       readFull: '阅读全文',
       categories: '分类',
@@ -171,8 +172,9 @@ export const translations = {
     },
     home: {
       heroBadge: 'Digital Garden & Thoughts',
-      heroTitle: 'Writing about code, design, and life.',
+      heroTitle: 'Hi, I am Alex',
       heroSubtitle: "I'm a software engineer and designer. This is where I share my explorations in building thoughtful software and interfaces.",
+      heroTitleLine2: 'welcome to my blog',
       featured: 'Featured Post',
       readFull: 'Read full story',
       categories: 'Categories',

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem *)",
+      "Bash(npm run *)",
+      "Bash(cmd *)",
+      "Bash(npx vitest *)",
+      "Bash(where node *)",
+      "Bash(PATH=\"/c/Program Files/nodejs:$PATH\" npx vitest *)",
+      "Bash(PATH=\"/c/Program Files/nodejs:$PATH\" npm run *)",
+      "Bash(PATH='/c/Program Files/nodejs:__TRACKED_VAR__' npx vitest run)",
+      "Bash(PATH='/c/Program Files/nodejs:__TRACKED_VAR__' npm run build)",
+      "Bash(git add *)",
+      "Skill(firecrawl-scrape)",
+      "Bash(start /B uvicorn main:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl -s http://127.0.0.1:8000/api/posts)",
+      "Bash(PATH='/c/Program Files/nodejs:__TRACKED_VAR__' where python)",
+      "Read(//c/Users/Administrator/AppData/Local/Microsoft/WindowsApps/**)",
+      "Bash(curl -s http://127.0.0.1:8000/api/posts?limit=15)",
+      "Bash(/d/1/remix_-flash-ui/.venv/Scripts/python -c \"import sys,json; posts=json.load\\(sys.stdin\\); [print\\(f'{p[\\\\\"id\\\\\"]}. [{p[\\\\\"category\\\\\"]}] {p[\\\\\"title\\\\\"]}'\\) for p in posts[-10:]]\")",
+      "Bash(curl -s http://127.0.0.1:8000/api/posts?limit=20)",
+      "Bash(/d/1/remix_-flash-ui/.venv/Scripts/python -c ' *)"
+    ]
+  }
+}
