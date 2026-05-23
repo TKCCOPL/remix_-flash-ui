@@ -27,8 +27,8 @@ function App() {
           <Route path="archive" element={<ArchivePage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="categories/:slug" element={<CategoryPage />} />
-          <Route path="login" element={<Login />} />
         </Route>
+        <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Admin />} />
           <Route path="edit" element={<AdminEdit />} />

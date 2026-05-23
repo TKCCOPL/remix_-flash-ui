@@ -64,8 +64,8 @@ export default function AdminLayout() {
 
   if (authenticated === null) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-stone-400">...</div>
+      <div className="w-full min-h-screen flex items-center justify-center">
+        <div className="text-stone-400 animate-pulse">Loading...</div>
       </div>
     );
   }

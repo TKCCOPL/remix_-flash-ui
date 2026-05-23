@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
@@ -12,6 +11,18 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const t = useI18n();
+
+  useEffect(() => {
+    let cancelled = false;
+    authApi.me()
+      .then(() => {
+        if (!cancelled) navigate('/admin');
+      })
+      .catch(() => {
+        // 未登录则留在当前页
+      });
+    return () => { cancelled = true; };
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,13 +50,8 @@ export default function Login() {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center -mt-20">
-      <motion.div
-        initial={{ opacity: 1, y: 0 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-white dark:bg-stone-950 p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 dark:border-stone-800"
-      >
+    <div className="min-h-screen w-full flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white dark:bg-stone-950 p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 dark:border-stone-800 animate-fade-in-up">
         <h1 className="text-2xl font-bold text-center text-stone-900 dark:text-stone-100 mb-8">{t.login.title}</h1>
 
         {error && (
@@ -85,7 +91,7 @@ export default function Login() {
             {submitting ? `${t.login.submit}...` : t.login.submit}
           </button>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }
