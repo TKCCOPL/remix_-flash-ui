@@ -96,7 +96,7 @@ export default function CategoryPage() {
   return (
     <article className="w-full max-w-3xl mx-auto">
       <motion.header
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 1, y: 0 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="mb-8"
@@ -134,7 +134,7 @@ export default function CategoryPage() {
           {posts.map((post, index) => (
             <motion.div
               key={post.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
               className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 hover:shadow-md transition-shadow"

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { dateFormats, locales } from '../i18n';
@@ -100,7 +101,12 @@ export default function PostDetail() {
 
   return (
     <article className="w-full max-w-3xl mx-auto">
-      <header className="mb-14">
+      <motion.header
+        initial={{ opacity: 1, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-14"
+      >
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-8 transition-colors"
@@ -124,13 +130,18 @@ export default function PostDetail() {
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-4 leading-tight">
           {post.title}
         </h1>
-      </header>
+      </motion.header>
 
-      <div className="prose prose-stone w-full max-w-none">
+      <motion.div
+        initial={{ opacity: 1, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="prose prose-stone w-full max-w-none"
+      >
         <Markdown remarkPlugins={[remarkGfm]}>
           {post.content}
         </Markdown>
-      </div>
+      </motion.div>
     </article>
   );
 }

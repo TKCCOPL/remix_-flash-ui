@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { categoriesApi } from '../api/categories';
 import type { Category } from '../api/categories';
 import TagCloud from '../components/categories/TagCloud';
@@ -62,12 +63,17 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="w-full">
+    <motion.div
+      initial={{ opacity: 1, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full"
+    >
       <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8">{t.categories.title}</h1>
       <p className="text-stone-600 dark:text-stone-400 mb-8">
         {t.categories.description.replace('{count}', String(categories.length))}
       </p>
       <TagCloud categories={categories} />
-    </div>
+    </motion.div>
   );
 }

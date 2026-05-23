@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { postsApi } from '../api/posts';
 import type { ArchiveData } from '../api/posts';
 import YearSection from '../components/archive/YearSection';
@@ -70,8 +71,15 @@ export default function ArchivePage() {
         <p className="text-stone-400">{t.archive.empty}</p>
       ) : (
         <div className="max-w-3xl mx-auto">
-          {years.map((year) => (
-            <YearSection key={year} year={Number(year)} months={archiveData[year]} />
+          {years.map((year, index) => (
+            <motion.div
+              key={year}
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              <YearSection year={Number(year)} months={archiveData[year]} />
+            </motion.div>
           ))}
         </div>
       )}
