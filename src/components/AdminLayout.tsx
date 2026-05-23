@@ -131,9 +131,9 @@ export default function AdminLayout() {
 
   return (
     <div className="w-full flex min-h-[calc(100vh-3rem)] -my-12">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — sticky below header */}
       <aside
-        className="hidden md:block shrink-0 bg-white dark:bg-stone-900 border-r border-stone-200/60 dark:border-stone-800/60 transition-all duration-300"
+        className="hidden md:block shrink-0 sticky top-16 self-start h-[calc(100vh-4rem)] bg-white dark:bg-stone-900 border-r border-stone-200/60 dark:border-stone-800/60 transition-all duration-300 overflow-y-auto"
         style={{ width: sidebarWidth }}
       >
         {sidebarContent}

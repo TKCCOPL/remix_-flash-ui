@@ -32,7 +32,7 @@
 .prose strong { @apply text-stone-900 dark:text-stone-100 font-semibold; }
 
 textarea {
-  @apply font-mono text-base leading-relaxed resize-y;
+  @apply font-mono text-base leading-relaxed;
 }
 
 /* ── Hero Canvas ── */
