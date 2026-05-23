@@ -41,10 +41,5 @@ backend/data/*.sqlite3
 backend/uploads/*
 !backend/uploads/.gitkeep
 
-# Claude Code
-.claude/*
-!.claude/agents/
-!.claude/doc/
-
 # Generated docs
 docs/superpowers/
