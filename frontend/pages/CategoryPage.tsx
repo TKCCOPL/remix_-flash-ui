@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { categoriesApi, Category, Post } from '../api/categories'
 import { ApiError } from '../api/client'
+import { getCached, setCache } from '../api/cache'
 import { useI18n } from '../context/Preferences'
 
 export default function CategoryPage() {
   const t = useI18n()
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const [category, setCategory] = useState<Category | null>(null)
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
+  const [category, setCategory] = useState<Category | null>(() => getCached<Category>(`category_${slug}`))
+  const [posts, setPosts] = useState<Post[]>(() => getCached<Post[]>(`category_posts_${slug}`) || [])
+  const [loading, setLoading] = useState(() => !getCached(`category_${slug}`))
   const [error, setError] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
 
@@ -24,6 +24,8 @@ export default function CategoryPage() {
         const data = await categoriesApi.getPosts(slug)
         setCategory(data.category)
         setPosts(data.posts)
+        setCache(`category_${slug}`, data.category)
+        setCache(`category_posts_${slug}`, data.posts)
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
           setNotFound(true)
@@ -36,7 +38,7 @@ export default function CategoryPage() {
     }
 
     fetchCategoryPosts()
-  }, [slug, t])
+  }, [slug])
 
   if (notFound) {
     return (
@@ -66,19 +68,6 @@ export default function CategoryPage() {
     )
   }
 
-  if (loading) {
-    return (
-      <div className="animate-pulse">
-        <div className="h-8 bg-stone-200 dark:bg-stone-700 rounded w-1/4 mb-6"></div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-stone-200 dark:bg-stone-700 rounded"></div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <div className="text-center py-16">
@@ -95,12 +84,7 @@ export default function CategoryPage() {
 
   return (
     <article className="w-full max-w-3xl mx-auto">
-      <motion.header
-        initial={{ opacity: 1, y: 0 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
+      <header className="mb-8">
         <Link
           to="/categories"
           className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6 transition-colors"
@@ -108,18 +92,40 @@ export default function CategoryPage() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t.categoryPage.backToCategories}
         </Link>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">
-          {category?.name}
-        </h1>
-        {category?.description && (
-          <p className="text-stone-600 dark:text-stone-400 mb-4">{category.description}</p>
-        )}
-        <p className="text-sm text-stone-500 dark:text-stone-400">
-          {t.categoryPage.postCount(posts.length)}
-        </p>
-      </motion.header>
 
-      {posts.length === 0 ? (
+        {/* 标题骨架屏：loading 时显示占位，有数据时显示真实内容 */}
+        {loading ? (
+          <div className="animate-pulse">
+            <div className="h-10 bg-stone-200 dark:bg-stone-700 rounded w-1/3 mb-3" />
+            <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-1/5" />
+          </div>
+        ) : (
+          <div className="animate-fade-in-up">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">
+              {category?.name}
+            </h1>
+            {category?.description && (
+              <p className="text-stone-600 dark:text-stone-400 mb-4">{category.description}</p>
+            )}
+            <p className="text-sm text-stone-500 dark:text-stone-400">
+              {t.categoryPage.postCount(posts.length)}
+            </p>
+          </div>
+        )}
+      </header>
+
+      {/* 文章列表：loading 时显示骨架，有数据时显示内容 */}
+      {loading ? (
+        <div className="space-y-4 animate-pulse">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border border-stone-200 dark:border-stone-700 rounded-lg p-4">
+              <div className="h-6 bg-stone-200 dark:bg-stone-700 rounded w-3/4 mb-2" />
+              <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-full mb-1" />
+              <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-2/3" />
+            </div>
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-stone-400 dark:text-stone-500 mb-4">{t.categoryPage.noPosts}</div>
           <Link
@@ -132,12 +138,10 @@ export default function CategoryPage() {
       ) : (
         <div className="space-y-4">
           {posts.map((post, index) => (
-            <motion.div
+            <div
               key={post.id}
-              initial={{ opacity: 1, y: 0 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 stagger-item"
+              style={{ '--stagger-index': index } as React.CSSProperties}
             >
               <Link to={`/post/${post.id}`} className="block">
                 <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100 hover:text-indigo-600 dark:hover:text-indigo-400 mb-2">
@@ -150,7 +154,7 @@ export default function CategoryPage() {
               <div className="text-xs text-stone-400 dark:text-stone-500">
                 {new Date(post.created_at).toLocaleDateString('zh-CN')}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

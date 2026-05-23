@@ -6,22 +6,8 @@ import { motion } from 'framer-motion';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { dateFormats, locales, pageIndicator } from '../i18n';
 import { ApiPost, postsApi } from '../api/posts';
+import { getCached, setCache } from '../api/cache';
 import HeroCanvas from '../components/HeroCanvas';
-
-const container = {
-  hidden: { opacity: 1 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const item = {
-  hidden: { opacity: 1, y: 0 },
-  show: { opacity: 1, y: 0 },
-};
 
 function normalizeDate(value: string): string {
   if (value.includes('T')) {
@@ -40,8 +26,8 @@ function formatPostDate(value: string, pattern: string, locale: Locale): string 
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [posts, setPosts] = useState<ApiPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<ApiPost[]>(() => getCached<ApiPost[]>('home_posts') || []);
+  const [loading, setLoading] = useState(() => !getCached('home_posts'));
   const [error, setError] = useState('');
   const { language } = usePreferences();
   const t = useI18n();
@@ -58,6 +44,7 @@ export default function Home() {
         const response = await postsApi.list(0, 100);
         if (!cancelled) {
           setPosts(response);
+          setCache('home_posts', response);
           setError('');
         }
       } catch (requestError) {
@@ -76,7 +63,9 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [t.home.empty]);
+    // 数据与语言无关，不把 t 放入依赖，避免切换语言时重新 fetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const featuredPost = posts[0];
   const featuredImageUrl = featuredPost?.image_url?.trim() || '';
@@ -94,7 +83,7 @@ export default function Home() {
       <HeroCanvas title={t.home.heroTitle} subtitle={t.home.heroSubtitle} titleLine2={t.home.heroTitleLine2} />
 
       {featuredPost && (
-        <section>
+        <section className="animate-fade-in-up">
           <div className="flex items-center gap-2 mb-8">
             <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">{t.home.featured}</h2>
             <div className="h-px flex-1 bg-stone-100 dark:bg-stone-800" />
@@ -174,17 +163,12 @@ export default function Home() {
             <div className="h-px flex-1 bg-stone-100 dark:bg-stone-800" />
           </div>
 
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="space-y-16"
-          >
-            {listPosts.map((post) => (
-              <motion.article
+          <div className="space-y-16">
+            {listPosts.map((post, index) => (
+              <article
                 key={post.id}
-                variants={item}
-                className="group relative flex flex-col items-start"
+                className="group relative flex flex-col items-start stagger-item"
+                style={{ '--stagger-index': index } as React.CSSProperties}
               >
                 <div className="flex items-center gap-3 text-xs mb-3">
                   <time dateTime={post.created_at} className="text-stone-400">
@@ -208,7 +192,7 @@ export default function Home() {
                     {t.home.readArticle} <ChevronRight className="ml-0.5 w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
                   </Link>
                 </div>
-              </motion.article>
+              </article>
             ))}
 
             {totalPages > 1 && (
@@ -240,7 +224,7 @@ export default function Home() {
                 <p className="text-stone-400">{error || t.home.empty}</p>
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

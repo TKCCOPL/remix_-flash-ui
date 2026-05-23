@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 const patternSvg = encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="240" height="100">
@@ -57,13 +57,7 @@ type Props = { title: string; subtitle: string; titleLine2?: string };
 export default function HeroCanvas({ title, subtitle, titleLine2 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768;
-    }
-    return false;
-  });
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const isMobileRef = useRef(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -78,14 +72,13 @@ export default function HeroCanvas({ title, subtitle, titleLine2 }: Props) {
     let height = container.offsetHeight;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setReducedMotion(prefersReducedMotion);
 
     const resize = () => {
       width = container.offsetWidth;
       height = container.offsetHeight;
       canvas.width = width;
       canvas.height = height;
-      setIsMobile(width < 768);
+      isMobileRef.current = width < 768;
     };
     window.addEventListener('resize', resize);
     resize();

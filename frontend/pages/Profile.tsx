@@ -1,37 +1,31 @@
 import { Mail, Globe, ExternalLink, Link2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useI18n } from '../context/Preferences';
 
+// Profile 页面无异步数据，直接渲染，移除所有无效的 framer-motion 动画
+// (initial === animate 意味着没有任何视觉变化，只增加渲染开销)
 export default function Profile() {
   const t = useI18n();
 
   return (
     <div className="w-full max-w-3xl mx-auto py-8">
-      <motion.div
-        initial={{ opacity: 1, y: 0 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col md:flex-row items-center md:items-start gap-10"
-      >
-        <motion.div
-          initial={{ opacity: 1, scale: 1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="w-40 h-40 shrink-0 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden shadow-inner border-4 border-white dark:border-stone-900 mb-4 md:mb-0"
-        >
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+        {/* 头像 */}
+        <div className="w-40 h-40 shrink-0 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden shadow-inner border-4 border-white dark:border-stone-900 mb-4 md:mb-0 animate-fade-in-scale">
           <img
             src="/avatar.png"
             alt="Profile"
             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
           />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 1, x: 0 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <h1 className="text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">{t.profile.title}</h1>
-          <p className="text-xl text-stone-500 dark:text-stone-400 mb-6 font-mono text-sm leading-relaxed">{t.profile.subtitle}</p>
+        </div>
+
+        {/* 信息 */}
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">
+            {t.profile.title}
+          </h1>
+          <p className="text-xl text-stone-500 dark:text-stone-400 mb-6 font-mono text-sm leading-relaxed">
+            {t.profile.subtitle}
+          </p>
 
           <div className="prose prose-stone mb-8">
             <p>{t.profile.intro1}</p>
@@ -42,18 +36,18 @@ export default function Profile() {
           </div>
 
           <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">{t.profile.interests}</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              {t.profile.interests}
+            </h3>
             <div className="flex flex-wrap gap-2">
               {t.profile.tags.map((tag, index) => (
-                 <motion.span
-                   key={tag}
-                   initial={{ opacity: 1, scale: 1 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
-                   className="px-3 py-1 bg-stone-100 dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-sm rounded-lg hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-default"
-                 >
-                   {tag}
-                 </motion.span>
+                <span
+                  key={tag}
+                  className="px-3 py-1 bg-stone-100 dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-sm rounded-lg hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-default stagger-item"
+                  style={{ '--stagger-index': index } as React.CSSProperties}
+                >
+                  {tag}
+                </span>
               ))}
             </div>
           </div>
@@ -72,8 +66,8 @@ export default function Profile() {
               <Mail className="w-5 h-5" />
             </a>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { memo } from 'react';
 import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
@@ -12,10 +13,12 @@ import AdminEdit from './pages/AdminEdit';
 import Login from './pages/Login';
 import AIAssistant from './components/AIAssistant';
 
+const MemoizedAIAssistant = memo(AIAssistant);
+
 function App() {
   return (
     <BrowserRouter>
-      <AIAssistant />
+      <MemoizedAIAssistant />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />

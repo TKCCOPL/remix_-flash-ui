@@ -5,14 +5,19 @@ interface TimelineCardProps {
   post: ArchivePost;
 }
 
+// 用 CSS animate-slide-in-left 替代 framer-motion 的 initial/animate
+// 更轻量，且自动遵循 prefers-reduced-motion
 export default function TimelineCard({ post }: TimelineCardProps) {
   const date = new Date(post.created_at);
   const monthDay = `${date.getMonth() + 1}月${date.getDate()}日`;
 
   return (
-    <div className="relative mb-6 group" data-testid="timeline-card">
+    <div
+      className="relative mb-6 group animate-slide-in-left"
+      data-testid="timeline-card"
+    >
       <div className="absolute -left-6 top-2 w-3 h-3 bg-indigo-500 rounded-full border-2 border-white dark:border-stone-950"></div>
-      <div className="border border-stone-200 dark:border-stone-800 rounded-xl p-4 hover:shadow-md transition-shadow bg-stone-50/50 dark:bg-stone-900/60">
+      <div className="border border-stone-200 dark:border-stone-800 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 bg-stone-50/50 dark:bg-stone-900/60">
         <div className="text-sm text-stone-400 mb-1">{monthDay}</div>
         <Link to={`/post/${post.id}`} className="block">
           <h3 className="font-semibold text-stone-900 dark:text-stone-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
