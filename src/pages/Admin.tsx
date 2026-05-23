@@ -9,10 +9,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Search,
-  Filter,
-  BarChart3,
   FileText,
-  CheckCircle2,
   LayoutGrid,
 } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
@@ -21,15 +18,12 @@ import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { ApiPost, postsApi } from '../api/posts';
 
-type PostStatus = 'published' | 'draft';
-
 type AdminPost = {
   id: string;
   title: string;
   content: string;
   imageUrl: string;
   category: string;
-  status: PostStatus;
   createdAt: string;
   updatedAt: string;
 };
@@ -41,7 +35,6 @@ function mapApiPost(post: ApiPost): AdminPost {
     content: post.content,
     imageUrl: post.image_url ?? '',
     category: post.category ?? '',
-    status: 'published',
     createdAt: post.created_at,
     updatedAt: post.updated_at,
   };
@@ -57,7 +50,6 @@ function normalizeDate(value: string): string {
 export default function Admin() {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<PostStatus | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState('');
   const postsPerPage = 10;
@@ -103,19 +95,15 @@ export default function Admin() {
   const stats = useMemo(() => {
     return {
       total: posts.length,
-      published: posts.filter((post) => post.status === 'published').length,
-      drafts: posts.filter((post) => post.status === 'draft').length,
       categories: new Set(posts.map((post) => post.category)).size,
     };
   }, [posts]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
-      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      return post.title.toLowerCase().includes(searchQuery.toLowerCase());
     });
-  }, [posts, searchQuery, statusFilter]);
+  }, [posts, searchQuery]);
 
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const paginatedPosts = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
@@ -192,23 +180,9 @@ export default function Admin() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      <div className="grid grid-cols-2 gap-4 mb-12">
         {[
           { label: t.admin.stats.total, value: stats.total, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-          {
-            label: t.admin.stats.published,
-            value: stats.published,
-            icon: CheckCircle2,
-            color: 'text-emerald-600',
-            bg: 'bg-emerald-50',
-          },
-          {
-            label: t.admin.stats.drafts,
-            value: stats.drafts,
-            icon: BarChart3,
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
-          },
           {
             label: t.admin.stats.categories,
             value: stats.categories,
@@ -239,18 +213,6 @@ export default function Admin() {
               className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:ring-2 focus:ring-zinc-900/5 dark:focus:ring-white/10 focus:border-zinc-900 transition-all text-sm text-zinc-900 dark:text-zinc-100"
             />
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-zinc-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as PostStatus | 'all')}
-              className="flex-1 sm:flex-none bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-zinc-900 transition-all text-zinc-900 dark:text-zinc-100"
-            >
-              <option value="all">{t.admin.allStatus}</option>
-              <option value="published">{t.admin.statusPublished}</option>
-              <option value="draft">{t.admin.statusDraft}</option>
-            </select>
-          </div>
         </div>
 
         <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-zinc-100 dark:border-zinc-800 overflow-hidden shadow-sm">
@@ -259,7 +221,6 @@ export default function Admin() {
               <tr className="bg-zinc-50/50 dark:bg-zinc-900/60 border-b border-zinc-100 dark:border-zinc-800">
                 <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t.admin.table.title}</th>
                 <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t.admin.table.image}</th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t.admin.table.status}</th>
                 <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t.admin.table.category}</th>
                 <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t.admin.table.date}</th>
                 <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">{t.admin.table.actions}</th>
@@ -268,7 +229,7 @@ export default function Admin() {
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {paginatedPosts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
                     {t.admin.table.empty}
                   </td>
                 </tr>
@@ -282,17 +243,6 @@ export default function Admin() {
                     ) : (
                       <span className="text-xs text-zinc-400">-</span>
                     )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        post.status === 'published'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                          : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
-                      }`}
-                    >
-                      {post.status === 'published' ? t.admin.statusPublished : t.admin.statusDraft}
-                    </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">{post.category || t.post.general}</td>
                   <td className="px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">{formatPostDate(post.createdAt)}</td>
