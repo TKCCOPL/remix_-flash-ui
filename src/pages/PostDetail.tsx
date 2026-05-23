@@ -21,6 +21,7 @@ export default function PostDetail() {
   const [post, setPost] = useState<ApiPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState('');
   const { language } = usePreferences();
   const t = useI18n();
   const locale = locales[language];
@@ -47,7 +48,7 @@ export default function PostDetail() {
           if (requestError instanceof ApiError && requestError.status === 404) {
             setNotFound(true);
           } else {
-            setNotFound(true);
+            setError(requestError instanceof Error ? requestError.message : '加载失败');
           }
         }
       } finally {
@@ -68,6 +69,17 @@ export default function PostDetail() {
     return (
       <div className="text-center py-24 text-zinc-500 dark:text-zinc-400">
         ...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-24">
+        <h2 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">{error}</h2>
+        <Link to="/" className="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 underline">
+          {t.post.returnHome}
+        </Link>
       </div>
     );
   }
