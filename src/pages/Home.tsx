@@ -48,6 +48,7 @@ export default function Home() {
   const locale = locales[language];
   const formats = dateFormats[language];
   const postsPerPage = 10;
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +80,11 @@ export default function Home() {
 
   const featuredPost = posts[0];
   const featuredImageUrl = featuredPost?.image_url?.trim() || '';
-  const allListPosts = useMemo(() => posts.slice(1), [posts]);
+  const allListPosts = useMemo(() => {
+    const list = posts.slice(1);
+    if (!selectedCategory || selectedCategory === t.home.all) return list;
+    return list.filter((post) => (post.category || t.post.general) === selectedCategory);
+  }, [posts, selectedCategory, t.home.all, t.post.general]);
   const totalPages = Math.ceil(allListPosts.length / postsPerPage);
   const listPosts = allListPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
   const categories = Array.from(new Set(posts.map((post) => post.category || t.post.general))).slice(0, 5);
@@ -146,7 +151,15 @@ export default function Home() {
               {[t.home.all, ...categories].map((cat) => (
                 <button
                   key={cat}
-                  className="px-4 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all text-left"
+                  onClick={() => {
+                    setSelectedCategory(cat === t.home.all ? null : cat);
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 text-sm rounded-xl transition-all text-left ${
+                    (cat === t.home.all && !selectedCategory) || selectedCategory === cat
+                      ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-900 font-medium'
+                      : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                  }`}
                 >
                   {cat}
                 </button>
