@@ -45,6 +45,15 @@ export default function AdminLayout() {
     localStorage.setItem('admin_sidebar_collapsed', String(collapsed));
   }, [collapsed]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileOpen]);
+
   const handleLogout = async () => {
     try {
       await authApi.logout();

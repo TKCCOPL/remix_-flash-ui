@@ -215,12 +215,33 @@ export default function Admin() {
     }
 
     try {
-      for (const id of ids) {
-        await postsApi.remove(id);
+      const results = await Promise.allSettled(
+        ids.map((id) => postsApi.remove(id))
+      );
+      const failures = results.filter((r) => r.status === 'rejected');
+      if (failures.length > 0) {
+        const firstFailure = failures[0] as PromiseRejectedResult;
+        const err = firstFailure.reason;
+        if (err instanceof ApiError && err.status === 401) {
+          navigate('/login');
+          return;
+        }
+        setError(
+          err instanceof Error
+            ? err.message
+            : t.login.error
+        );
       }
-      setPosts((prev) => prev.filter((post) => !selectedIds.has(post.id)));
-      setSelectedIds(new Set());
-      setError('');
+      const succeededIds = new Set(
+        ids.filter((_, i) => results[i].status === 'fulfilled')
+      );
+      setPosts((prev) => prev.filter((post) => !succeededIds.has(post.id)));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        succeededIds.forEach((id) => next.delete(id));
+        return next;
+      });
+      if (failures.length === 0) setError('');
     } catch (requestError) {
       if (requestError instanceof ApiError && requestError.status === 401) {
         navigate('/login');
@@ -361,6 +382,7 @@ export default function Admin() {
                       if (el) el.indeterminate = !allOnPageSelected && someOnPageSelected;
                     }}
                     onChange={toggleSelectAll}
+                    aria-label="Select all posts"
                     className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
                   />
                 </th>
@@ -401,6 +423,7 @@ export default function Admin() {
                       type="checkbox"
                       checked={selectedIds.has(post.id)}
                       onChange={() => toggleSelect(post.id)}
+                      aria-label={`Select post: ${post.title}`}
                       className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
                     />
                   </td>

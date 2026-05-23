@@ -4,11 +4,10 @@ import { ArrowLeft, Save, Eye, PenLine } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { format } from 'date-fns';
-import { useI18n } from '../context/Preferences';
+import { useI18n, usePreferences } from '../context/Preferences';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { postsApi, type ApiPost } from '../api/posts';
-import { usePreferences } from '../context/Preferences';
 import { locales, dateFormats } from '../i18n';
 
 function getWordCount(text: string): number {
