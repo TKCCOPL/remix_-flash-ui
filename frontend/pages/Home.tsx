@@ -9,7 +9,7 @@ import { ApiPost, postsApi } from '../api/posts';
 import HeroCanvas from '../components/HeroCanvas';
 
 const container = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 },
   show: {
     opacity: 1,
     transition: {
@@ -19,7 +19,7 @@ const container = {
 };
 
 const item = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 1, y: 0 },
   show: { opacity: 1, y: 0 },
 };
 
