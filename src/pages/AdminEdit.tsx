@@ -62,7 +62,12 @@ export default function AdminEdit() {
 
     try {
       if (id) {
-        await postsApi.update(id, { title, category, content, image_url: normalizedImageUrl });
+        await postsApi.update(id, {
+          title,
+          category: category || undefined,
+          content,
+          image_url: normalizedImageUrl || undefined,
+        });
       } else {
         await postsApi.create({ title, category, content, image_url: normalizedImageUrl || undefined });
       }
