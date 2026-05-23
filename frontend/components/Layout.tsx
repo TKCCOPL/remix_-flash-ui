@@ -1,16 +1,74 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Command, Sun, Moon, Languages, Menu, X } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
+
+interface SearchResult {
+  id: number;
+  title: string;
+  summary: string;
+  category: string | null;
+}
 
 export default function Layout() {
   const location = useLocation();
   const { language, theme, toggleLanguage, toggleTheme } = usePreferences();
   const t = useI18n();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const showLanguageLabel = language === 'zh' ? t.actions.languageEn : t.actions.languageZh;
   const themeLabel = theme === 'dark' ? t.actions.themeLight : t.actions.themeDark;
+
+  // 搜索函数
+  const handleSearch = async (query: string) => {
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResults(data.results.slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 防抖搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        handleSearch(searchQuery);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 点击外部关闭搜索结果
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -43,18 +101,66 @@ export default function Layout() {
               {navLink('/', t.nav.home)}
               {navLink('/archive', t.nav.archive)}
               {navLink('/categories', t.nav.categories)}
-              {navLink('/search', t.nav.search)}
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-stone-100/50 dark:bg-stone-900/60 border border-stone-200/50 dark:border-stone-800/70 rounded-lg text-stone-400 text-xs cursor-text hover:bg-stone-100 dark:hover:bg-stone-900/80 transition-colors">
-              <Search className="w-3.5 h-3.5" />
-              <span>{t.search.placeholder}</span>
-              <kbd className="flex items-center gap-1 font-sans text-[10px] font-medium border border-stone-200 dark:border-stone-700 px-1.5 py-0.5 rounded bg-white dark:bg-stone-950 text-stone-300 dark:text-stone-400 ml-2">
-                <Command className="w-2.5 h-2.5" />
-                K
-              </kbd>
+            <div ref={searchRef} className="relative hidden sm:block">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-stone-100/50 dark:bg-stone-900/60 border border-stone-200/50 dark:border-stone-800/70 rounded-lg text-stone-400 text-xs cursor-text hover:bg-stone-100 dark:hover:bg-stone-900/80 transition-colors">
+                <Search className="w-3.5 h-3.5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchResults(true);
+                  }}
+                  onFocus={() => setShowSearchResults(true)}
+                  placeholder={t.search.placeholder}
+                  className="bg-transparent border-none outline-none w-32 lg:w-48 text-stone-700 dark:text-stone-300 placeholder-stone-400 text-xs"
+                />
+                {isSearching && (
+                  <div className="w-3 h-3 border-2 border-stone-400 border-t-transparent rounded-full animate-spin"></div>
+                )}
+                <kbd className="flex items-center gap-1 font-sans text-[10px] font-medium border border-stone-200 dark:border-stone-700 px-1.5 py-0.5 rounded bg-white dark:bg-stone-950 text-stone-300 dark:text-stone-400 ml-2">
+                  <Command className="w-2.5 h-2.5" />
+                  K
+                </kbd>
+              </div>
+
+              {/* 搜索结果下拉 */}
+              {showSearchResults && searchQuery && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-sm text-stone-500 dark:text-stone-400">
+                      搜索中...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <>
+                      {searchResults.map((post) => (
+                        <Link
+                          key={post.id}
+                          to={`/post/${post.id}`}
+                          className="block px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                          onClick={() => {
+                            setShowSearchResults(false);
+                            setSearchQuery('');
+                          }}
+                        >
+                          <h4 className="font-medium text-stone-900 dark:text-stone-100 text-sm">{post.title}</h4>
+                          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-1">
+                            {post.summary}
+                          </p>
+                        </Link>
+                      ))}
+                    </>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-stone-500 dark:text-stone-400">
+                      未找到相关文章
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1">
@@ -105,7 +211,6 @@ export default function Layout() {
                 {navLink('/', t.nav.home)}
                 {navLink('/archive', t.nav.archive)}
                 {navLink('/categories', t.nav.categories)}
-                {navLink('/search', t.nav.search)}
               </nav>
             </motion.div>
           )}
