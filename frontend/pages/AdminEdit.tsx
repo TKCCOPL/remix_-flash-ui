@@ -124,7 +124,6 @@ export default function AdminEdit() {
   };
 
   const wordCount = getWordCount(content);
-  const readingTime = Math.max(1, Math.ceil(wordCount / 250));
   const locale = locales[language];
   const dateFormat = dateFormats[language].medium;
 
@@ -136,8 +135,8 @@ export default function AdminEdit() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto pb-32">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="w-full max-w-3xl mx-auto flex flex-col min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-6rem)]">
+      <header className="mb-6 flex items-center justify-between shrink-0">
         <Link
           to="/admin"
           className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
@@ -156,10 +155,15 @@ export default function AdminEdit() {
         </div>
       )}
 
-      <div>
+      <div className="flex-1 flex flex-col">
         {/* Main Content Area */}
         {viewMode === 'edit' ? (
-          <div className="space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="space-y-6 flex-1 flex flex-col"
+          >
             <input
               type="text"
               value={title}
@@ -175,10 +179,10 @@ export default function AdminEdit() {
               onChange={(e) => setContent(e.target.value)}
               rows={1}
               placeholder={t.editor.placeholderContent}
-              className="w-full bg-transparent border-none outline-none text-xl leading-loose text-stone-800 dark:text-stone-200 resize-none overflow-hidden placeholder:text-stone-300 dark:placeholder:text-stone-700 min-h-[500px] transition-colors font-serif"
+              className="w-full bg-transparent border-none outline-none text-xl leading-loose text-stone-800 dark:text-stone-200 resize-none overflow-hidden placeholder:text-stone-300 dark:placeholder:text-stone-700 min-h-[300px] flex-1 transition-colors font-serif"
               required
             />
-          </div>
+          </motion.div>
         ) : (
           <div className="prose prose-lg dark:prose-invert max-w-none">
             {title && <h1 className="text-4xl md:text-5xl font-black mb-8 leading-tight">{title}</h1>}
@@ -264,39 +268,40 @@ export default function AdminEdit() {
           )}
         </AnimatePresence>
 
-        {/* Floating Action Bar */}
-        <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-full shadow-xl w-[calc(100%-2rem)] md:w-[720px] transition-all duration-300">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+        {/* Sticky Action Bar */}
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", damping: 20, stiffness: 100, delay: 0.1 }}
+          className="sticky bottom-6 md:bottom-8 mt-12 z-50 flex items-center justify-between gap-4 md:gap-6 px-4 md:px-6 py-3 md:py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl md:rounded-full shadow-2xl w-full"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
             {/* Stats */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
-              <span>
-                {t.editor.wordCount}: <span className="font-medium text-stone-700 dark:text-stone-300">{wordCount}</span>
-              </span>
-              <span className="hidden sm:inline text-stone-300 dark:text-stone-700">|</span>
-              <span>
-                {t.editor.readingTime.replace('{min}', String(readingTime))}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold tracking-wider uppercase text-stone-400 dark:text-stone-500 justify-center lg:justify-start">
+              <span className="flex items-center gap-1">
+                {t.editor.wordCount} <span className="text-stone-700 dark:text-stone-300 ml-0.5">{wordCount}</span>
               </span>
               {id && createdAt && (
                 <>
-                  <span className="hidden sm:inline text-stone-300 dark:text-stone-700">|</span>
+                  <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
                   <span>
-                    {t.editor.created}: {formatDate(createdAt)}
+                    {t.editor.created} {formatDate(createdAt)}
                   </span>
                 </>
               )}
               {id && updatedAt && (
                 <>
-                  <span className="hidden sm:inline text-stone-300 dark:text-stone-700">|</span>
+                  <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
                   <span>
-                    {t.editor.updated}: {formatDate(updatedAt)}
+                    {t.editor.updated} {formatDate(updatedAt)}
                   </span>
                 </>
               )}
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 mr-2">
+            <div className="flex items-center justify-center lg:justify-end gap-2 md:gap-3 shrink-0">
+              <div className="flex items-center gap-1.5 mr-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setViewMode(prev => prev === 'edit' ? 'preview' : 'edit')}
@@ -324,7 +329,7 @@ export default function AdminEdit() {
               </div>
               <Link
                 to="/admin"
-                className="hidden sm:inline-flex px-5 py-2.5 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors text-sm"
+                className="hidden sm:inline-flex items-center justify-center whitespace-nowrap shrink-0 px-5 py-2.5 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors text-sm"
               >
                 {t.editor.cancel}
               </Link>
@@ -332,7 +337,7 @@ export default function AdminEdit() {
                 type="button"
                 onClick={() => void handleAction('draft')}
                 disabled={saving}
-                className="px-5 py-2.5 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-5 py-2.5 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-sm"
               >
                 存草稿
               </button>
@@ -340,7 +345,7 @@ export default function AdminEdit() {
                 type="button"
                 onClick={() => void handleAction('published')}
                 disabled={saving}
-                className="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm"
+                className="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm"
               >
                 <Save className="w-4 h-4 mr-2" /> 
                 {saving 
@@ -350,7 +355,7 @@ export default function AdminEdit() {
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

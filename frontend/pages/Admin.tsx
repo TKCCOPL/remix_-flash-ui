@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   TrendingUp,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { dateFormats, locales } from '../i18n';
 import { authApi } from '../api/auth';
@@ -294,25 +295,39 @@ export default function Admin() {
       >
         <button
           onClick={() => { setCategoryFilter('all'); setCurrentPage(1); }}
-          className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+          className={`relative shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
             categoryFilter === 'all' 
-              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-md' 
-              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+              ? 'text-white dark:text-stone-900' 
+              : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
           }`}
         >
-          {t.admin.filter.allCategories}
+          {categoryFilter === 'all' && (
+            <motion.div
+              layoutId="activeCategory"
+              className="absolute inset-0 bg-stone-900 dark:bg-white rounded-full shadow-sm"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+          <span className="relative z-10">{t.admin.filter.allCategories}</span>
         </button>
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => { setCategoryFilter(cat); setCurrentPage(1); }}
-            className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+            className={`relative shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               categoryFilter === cat 
-                ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-md' 
-                : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/50 dark:border-stone-800/50'
+                ? 'text-white dark:text-stone-900' 
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
             }`}
           >
-            {cat}
+            {categoryFilter === cat && (
+              <motion.div
+                layoutId="activeCategory"
+                className="absolute inset-0 bg-stone-900 dark:bg-white rounded-full shadow-sm"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <span className="relative z-10">{cat}</span>
           </button>
         ))}
       </div>
@@ -388,72 +403,83 @@ export default function Admin() {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100/50 dark:divide-stone-800/50">
-              {paginatedPosts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-stone-500 dark:text-stone-400">
-                    {t.admin.table.empty}
-                  </td>
-                </tr>
-              )}
-              {paginatedPosts.map((post) => (
-                <tr
-                  key={post.id}
-                  className={`group hover:bg-stone-50/50 dark:hover:bg-stone-900/30 transition-colors ${
-                    selectedIds.has(post.id) ? 'bg-indigo-50/30 dark:bg-indigo-950/20' : ''
-                  }`}
-                >
-                  <td className="px-2 py-3 w-10">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(post.id)}
-                      onChange={() => toggleSelect(post.id)}
-                      aria-label={`Select post: ${post.title}`}
-                      className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
-                    />
-                  </td>
-                  <td className="px-4 py-3 font-medium text-sm text-stone-900 dark:text-stone-100 flex items-center">
-                    {post.title}
-                    {post.status === 'draft' && (
-                      <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 rounded">
-                        草稿
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {post.imageUrl ? (
-                      <img
-                        src={post.imageUrl}
-                        alt={post.title}
-                        className="h-8 w-12 object-cover rounded border border-stone-200 dark:border-stone-800"
+              <AnimatePresence mode="popLayout">
+                {paginatedPosts.length === 0 && (
+                  <motion.tr
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <td colSpan={6} className="px-4 py-12 text-center text-stone-500 dark:text-stone-400">
+                      {t.admin.table.empty}
+                    </td>
+                  </motion.tr>
+                )}
+                {paginatedPosts.map((post, i) => (
+                  <motion.tr
+                    layout
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                    transition={{ type: "spring", bounce: 0, duration: 0.4, delay: i * 0.03 }}
+                    key={post.id}
+                    className={`group hover:bg-stone-50/50 dark:hover:bg-stone-900/30 transition-colors ${
+                      selectedIds.has(post.id) ? 'bg-indigo-50/30 dark:bg-indigo-950/20' : ''
+                    }`}
+                  >
+                    <td className="px-2 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(post.id)}
+                        onChange={() => toggleSelect(post.id)}
+                        aria-label={`Select post: ${post.title}`}
+                        className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
                       />
-                    ) : (
-                      <span className="text-xs text-stone-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">
-                    {post.category || t.post.general}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">
-                    {formatPostDate(post.createdAt)}
-                  </td>
-                  <td className="px-4 py-3 text-right space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Link
-                      to={`/admin/edit/${post.id}`}
-                      className="inline-flex p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded transition-all"
-                      aria-label="Edit post"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => void handleDelete(post.id)}
-                      className="inline-flex p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
-                      aria-label="Delete post"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-sm text-stone-900 dark:text-stone-100 flex items-center">
+                      {post.title}
+                      {post.status === 'draft' && (
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 rounded">
+                          草稿
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {post.imageUrl ? (
+                        <img
+                          src={post.imageUrl}
+                          alt={post.title}
+                          className="h-8 w-12 object-cover rounded border border-stone-200 dark:border-stone-800"
+                        />
+                      ) : (
+                        <span className="text-xs text-stone-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">
+                      {post.category || t.post.general}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">
+                      {formatPostDate(post.createdAt)}
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Link
+                        to={`/admin/edit/${post.id}`}
+                        className="inline-flex p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded transition-all"
+                        aria-label="Edit post"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => void handleDelete(post.id)}
+                        className="inline-flex p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
+                        aria-label="Delete post"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
