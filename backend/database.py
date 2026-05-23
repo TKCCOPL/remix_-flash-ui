@@ -26,6 +26,26 @@ def init_db():
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        slug TEXT NOT NULL UNIQUE,
+        description TEXT,
+        post_count INTEGER DEFAULT 0
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS search_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        query TEXT NOT NULL,
+        user_ip TEXT,
+        searched_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     cursor.execute("PRAGMA table_info(posts)")
     column_names = {row[1] for row in cursor.fetchall()}
     if "image_url" not in column_names:
