@@ -6,7 +6,10 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   Menu,
+  Home,
 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
@@ -80,16 +83,24 @@ export default function AdminLayout() {
     <div className="flex flex-col h-full min-h-0">
       <div className={`p-4 border-b border-stone-200/60 dark:border-stone-800/60 ${collapsed ? 'px-3' : ''}`}>
         {!collapsed && (
-          <Link to="/" className="text-lg font-bold text-stone-900 dark:text-stone-100 block truncate">
-            {t.brand.name}<span className="text-indigo-500">{t.brand.suffix}</span>
+          <Link 
+            to="/" 
+            className="group flex flex-col items-center justify-center text-lg font-bold text-stone-900 dark:text-stone-100 truncate hover:scale-105 transition-transform duration-300 mb-2"
+          >
+            <div className="flex items-center gap-1">
+              {t.brand.name}<span className="text-indigo-500">{t.brand.suffix}</span>
+            </div>
+            <div className="text-[10px] uppercase tracking-widest text-stone-400 group-hover:text-indigo-500 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <Home className="w-3 h-3" /> 返回首页
+            </div>
           </Link>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex mt-3 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full justify-center"
+          className="hidden md:flex p-2 rounded-xl text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full justify-center"
           aria-label="Toggle sidebar"
         >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
         </button>
       </div>
 
