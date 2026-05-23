@@ -32,6 +32,7 @@ export default function AdminEdit() {
   const [updatedAt, setUpdatedAt] = useState('');
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function AdminEdit() {
             setCategory(post.category ?? '');
             setImageUrl(post.image_url ?? '');
             setContent(post.content);
+            setPostStatus(post.status ?? 'published');
             setCreatedAt(post.created_at);
             setUpdatedAt(post.updated_at);
           }
@@ -80,8 +82,11 @@ export default function AdminEdit() {
     };
   }, [id, navigate, t.login.error]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAction = async (targetStatus: 'published' | 'draft') => {
+    if (!title || !content) {
+      setError(t.editor.placeholderTitle + ' & ' + t.editor.placeholderContent + ' required');
+      return;
+    }
     setSaving(true);
     setError('');
     const normalizedImageUrl = imageUrl.trim();
@@ -93,9 +98,10 @@ export default function AdminEdit() {
           category: category || undefined,
           content,
           image_url: normalizedImageUrl || undefined,
+          status: targetStatus,
         });
       } else {
-        await postsApi.create({ title, category, content, image_url: normalizedImageUrl || undefined });
+        await postsApi.create({ title, category, content, image_url: normalizedImageUrl || undefined, status: targetStatus });
       }
       navigate('/admin');
     } catch (requestError) {
@@ -146,7 +152,7 @@ export default function AdminEdit() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <div>
         {/* Main Content Area */}
         {viewMode === 'edit' ? (
           <div className="space-y-6">
@@ -182,24 +188,16 @@ export default function AdminEdit() {
           </div>
         )}
 
-        {/* Settings Drawer */}
+        {/* Settings Sidebar */}
         <AnimatePresence>
           {isSettingsOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm"
-                onClick={() => setIsSettingsOpen(false)}
-              />
-              <motion.aside
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 right-0 z-[70] w-full max-w-[360px] bg-white dark:bg-stone-900 shadow-2xl flex flex-col border-l border-stone-200/50 dark:border-stone-800/50"
-              >
+            <motion.aside
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-6 right-6 bottom-[100px] z-[70] w-full max-w-[320px] bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-2xl flex flex-col border border-stone-200/50 dark:border-stone-800/50 rounded-3xl overflow-hidden"
+            >
                 <div className="flex items-center justify-between p-6 border-b border-stone-100 dark:border-stone-800">
                   <h2 className="font-semibold text-lg text-stone-900 dark:text-stone-100">文章设置</h2>
                   <button type="button" onClick={() => setIsSettingsOpen(false)} className="p-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors">
@@ -259,7 +257,6 @@ export default function AdminEdit() {
                   )}
                 </div>
               </motion.aside>
-            </>
           )}
         </AnimatePresence>
 
@@ -319,21 +316,34 @@ export default function AdminEdit() {
               </div>
               <Link
                 to="/admin"
-                className="px-5 py-2.5 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors text-sm"
+                className="hidden sm:inline-flex px-5 py-2.5 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors text-sm"
               >
                 {t.editor.cancel}
               </Link>
               <button
-                type="submit"
+                type="button"
+                onClick={() => void handleAction('draft')}
+                disabled={saving}
+                className="px-5 py-2.5 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-sm"
+              >
+                存草稿
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleAction('published')}
                 disabled={saving}
                 className="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm"
               >
-                <Save className="w-4 h-4 mr-2" /> {saving ? `${t.editor.save}...` : t.editor.save}
+                <Save className="w-4 h-4 mr-2" /> 
+                {saving 
+                  ? `${t.editor.save}...` 
+                  : (postStatus === 'draft' ? '发布' : (id ? '更新' : '发布'))
+                }
               </button>
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
