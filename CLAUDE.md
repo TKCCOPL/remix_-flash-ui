@@ -56,3 +56,18 @@ FastAPI with layered architecture:
 ## TypeScript Conventions
 
 - API types co-located with API modules (`frontend/api/posts.ts` defines `ApiPost`)
+
+## Git Workflow
+
+- **必须在功能分支上开发**：开始任何开发任务之前，先创建分支
+  - 新功能：`git checkout -b feature/xxx`
+  - Bug 修复：`git checkout -b bugfix/xxx`
+  - 重构：`git checkout -b refactor/xxx`
+- **提交信息规范**：
+  - `feat:` 新功能
+  - `fix:` Bug 修复
+  - `refactor:` 重构
+  - `docs:` 文档更新
+  - `test:` 测试相关
+  - `chore:` 构建/工具相关
+- **保持 main 分支稳定**：所有开发工作在功能分支上进行，完成后合并到 main

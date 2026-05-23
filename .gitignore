@@ -47,3 +47,11 @@ docs/superpowers/
 # Playwright
 test-results/
 playwright-report/
+
+# Venv
+backend/venv/
+
+# Antigravity Brain
+.superpowers/
+flash_root_cause_analysis.md
+
