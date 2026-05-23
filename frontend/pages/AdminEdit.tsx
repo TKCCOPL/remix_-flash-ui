@@ -43,6 +43,10 @@ export default function AdminEdit() {
   }, [content]);
 
   useEffect(() => {
+    if (error) setError('');
+  }, [title, content]);
+
+  useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
@@ -84,7 +88,7 @@ export default function AdminEdit() {
 
   const handleAction = async (targetStatus: 'published' | 'draft') => {
     if (!title || !content) {
-      setError(t.editor.placeholderTitle + ' & ' + t.editor.placeholderContent + ' required');
+      setError(t.editor.emptyFields);
       return;
     }
     setSaving(true);

@@ -172,6 +172,7 @@ export const translations = {
       readingTime: '预计阅读 {min} 分钟',
       created: '创建时间',
       updated: '更新时间',
+      emptyFields: '标题和正文不能为空',
     },
     login: {
       title: '管理员登录',
@@ -341,6 +342,7 @@ export const translations = {
       readingTime: '{min} min read',
       created: 'Created',
       updated: 'Updated',
+      emptyFields: 'Title and content are required',
     },
     login: {
       title: 'Admin Login',
