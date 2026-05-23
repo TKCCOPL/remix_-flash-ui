@@ -28,7 +28,7 @@
 │   ├── components/     # 可复用组件
 │   ├── context/        # 主题/语言上下文
 │   └── pages/          # 页面组件
-├── blog/               # FastAPI 后端
+├── backend/            # FastAPI 后端
 │   ├── routers/        # API 路由
 │   ├── services/       # 业务逻辑
 │   ├── repositories/   # 数据库访问

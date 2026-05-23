@@ -28,7 +28,7 @@ A full-stack personal blog system built with **React 19**, **FastAPI**, and **SQ
 │   ├── components/     # Reusable components
 │   ├── context/        # Theme & language context
 │   └── pages/          # Page components
-├── blog/               # FastAPI backend
+├── backend/            # FastAPI backend
 │   ├── routers/        # API routes
 │   ├── services/       # Business logic
 │   ├── repositories/   # Database access
