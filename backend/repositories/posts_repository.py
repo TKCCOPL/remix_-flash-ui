@@ -62,3 +62,45 @@ def delete_post(conn, post_id: int):
     cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
     conn.commit()
     return cursor.rowcount > 0
+
+
+def get_posts_for_archive(conn):
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, title, content, created_at
+        FROM posts
+        ORDER BY created_at DESC
+    ''')
+    posts = cursor.fetchall()
+
+    archive = {}
+    for post in posts:
+        created_at = post['created_at']
+        year = created_at[:4]
+        month = created_at[5:7]
+
+        if year not in archive:
+            archive[year] = {}
+        if month not in archive[year]:
+            archive[year][month] = []
+
+        content = post['content']
+        summary = content[:100] + '...' if len(content) > 100 else content
+
+        archive[year][month].append({
+            'id': post['id'],
+            'title': post['title'],
+            'created_at': created_at,
+            'summary': summary
+        })
+
+    result = {}
+    for year, months in archive.items():
+        result[year] = []
+        for month, posts in months.items():
+            result[year].append({
+                'month': month,
+                'posts': posts
+            })
+
+    return result

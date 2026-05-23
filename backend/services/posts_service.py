@@ -3,6 +3,7 @@ from repositories.posts_repository import (
     delete_post as delete_post_repository,
     get_post as get_post_repository,
     get_posts as get_posts_repository,
+    get_posts_for_archive as get_posts_for_archive_repository,
     update_post as update_post_repository,
 )
 from schemas import PostCreate, PostUpdate
@@ -30,3 +31,7 @@ def update_post(conn, post_id: int, post: PostUpdate):
 
 def delete_post(conn, post_id: int):
     return delete_post_repository(conn, post_id)
+
+
+def get_archive_data(conn):
+    return get_posts_for_archive_repository(conn)

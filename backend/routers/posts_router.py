@@ -6,6 +6,7 @@ from services.auth_service import is_logged_in
 from services.posts_service import (
     create_post,
     delete_post,
+    get_archive_data,
     get_post,
     list_posts,
     update_post,
@@ -28,6 +29,11 @@ def create_post_route(post: PostCreate, request: Request, conn=Depends(get_db)):
 @router.get("", response_model=list[PostOut])
 def list_posts_route(skip: int = 0, limit: int = 10, conn=Depends(get_db)):
     return list_posts(conn, skip=skip, limit=limit)
+
+
+@router.get("/archive")
+def get_archive_route(conn=Depends(get_db)):
+    return get_archive_data(conn)
 
 
 @router.get("/{post_id}", response_model=PostOut)

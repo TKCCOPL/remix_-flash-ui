@@ -41,3 +41,19 @@ class PostOut(BaseModel):
     image_url: Optional[str] = None
     created_at: str
     updated_at: str
+
+
+class ArchivePost(BaseModel):
+    id: int
+    title: str
+    created_at: str
+    summary: Optional[str] = None
+
+
+class ArchiveMonth(BaseModel):
+    month: str
+    posts: list[ArchivePost]
+
+
+class ArchiveResponse(BaseModel):
+    data: dict[str, list[ArchiveMonth]]
