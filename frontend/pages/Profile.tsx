@@ -9,7 +9,7 @@ export default function Profile() {
       <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
         <div className="w-40 h-40 shrink-0 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden shadow-inner border-4 border-white dark:border-stone-900 mb-4 md:mb-0">
           <img 
-            src="/src/public/avatar.png" 
+            src="/avatar.png" 
             alt="Profile" 
             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
           />

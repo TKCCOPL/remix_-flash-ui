@@ -36,10 +36,10 @@ __pycache__/
 *.sln
 *.sw?
 
-# Blog
-blog/data/*.sqlite3
-blog/uploads/*
-!blog/uploads/.gitkeep
+# Backend
+backend/data/*.sqlite3
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Claude Code
 .claude/*

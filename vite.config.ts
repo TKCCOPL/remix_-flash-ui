@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    publicDir: path.resolve(__dirname, 'frontend/public'),
     plugins: [
       react(),
       tailwindcss(),
