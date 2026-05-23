@@ -57,7 +57,12 @@ type Props = { title: string; subtitle: string; titleLine2?: string };
 export default function HeroCanvas({ title, subtitle, titleLine2 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -98,7 +103,7 @@ export default function HeroCanvas({ title, subtitle, titleLine2 }: Props) {
 
     container.addEventListener('pointermove', handlePointerMove);
 
-    const blobs = isMobile
+    const blobs = width < 768
       ? [
           new Blob(pointerX, pointerY, 160, 0.2),
           new Blob(pointerX, pointerY, 240, 0.1, 40, 0.04),
@@ -134,7 +139,7 @@ export default function HeroCanvas({ title, subtitle, titleLine2 }: Props) {
       container.removeEventListener('pointermove', handlePointerMove);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isMobile]);
+  }, []);
 
   return (
     <div
