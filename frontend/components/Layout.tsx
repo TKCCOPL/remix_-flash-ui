@@ -129,8 +129,15 @@ export default function Layout() {
               </div>
 
               {/* 搜索结果下拉 */}
-              {showSearchResults && searchQuery && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+              <AnimatePresence>
+                {showSearchResults && searchQuery && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+                  >
                   {isSearching ? (
                     <div className="p-4 text-center text-sm text-stone-500 dark:text-stone-400">
                       搜索中...
@@ -159,8 +166,9 @@ export default function Layout() {
                       未找到相关文章
                     </div>
                   )}
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="flex items-center gap-1">
@@ -218,18 +226,7 @@ export default function Layout() {
       </header>
 
       <main className="flex-1 flex flex-col w-full max-w-6xl mx-auto px-6 py-12">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col w-full"
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <Outlet />
       </main>
 
       <footer className="mt-auto border-t border-stone-200/60 dark:border-stone-800/60 bg-stone-100/30 dark:bg-stone-950/50">

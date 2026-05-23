@@ -7,10 +7,10 @@ cursor = conn.cursor()
 
 cursor.executescript('''
     INSERT OR IGNORE INTO categories (name, slug, description, post_count)
-    VALUES ('React', 'react', 'React 相关文章', 2);
+    VALUES ('React', 'react', 'React 相关文章', 0);
 
     INSERT OR IGNORE INTO categories (name, slug, description, post_count)
-    VALUES ('Python', 'python', 'Python 相关文章', 1);
+    VALUES ('Python', 'python', 'Python 相关文章', 0);
 ''')
 
 posts = [
