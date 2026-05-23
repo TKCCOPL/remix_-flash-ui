@@ -4,6 +4,8 @@ from repositories.posts_repository import (
     get_post as get_post_repository,
     get_posts as get_posts_repository,
     get_posts_for_archive as get_posts_for_archive_repository,
+    log_search as log_search_repository,
+    search_posts as search_posts_repository,
     update_post as update_post_repository,
 )
 from schemas import PostCreate, PostUpdate
@@ -35,3 +37,9 @@ def delete_post(conn, post_id: int):
 
 def get_archive_data(conn):
     return get_posts_for_archive_repository(conn)
+
+
+def search_posts_by_query(conn, query: str, user_ip: str = None):
+    results = search_posts_repository(conn, query)
+    log_search_repository(conn, query, user_ip)
+    return results

@@ -9,6 +9,7 @@ from services.posts_service import (
     get_archive_data,
     get_post,
     list_posts,
+    search_posts_by_query,
     update_post,
 )
 
@@ -34,6 +35,13 @@ def list_posts_route(skip: int = 0, limit: int = 10, conn=Depends(get_db)):
 @router.get("/archive")
 def get_archive_route(conn=Depends(get_db)):
     return get_archive_data(conn)
+
+
+@router.get("/search")
+def search_posts_route(q: str, request: Request, conn=Depends(get_db)):
+    user_ip = request.client.host if request.client else None
+    results = search_posts_by_query(conn, q, user_ip)
+    return {"results": results, "total": len(results)}
 
 
 @router.get("/{post_id}", response_model=PostOut)

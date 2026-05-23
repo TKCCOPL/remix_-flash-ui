@@ -104,3 +104,37 @@ def get_posts_for_archive(conn):
             })
 
     return result
+
+
+def search_posts(conn, query: str):
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, title, content, category, created_at
+        FROM posts
+        WHERE title LIKE ? OR content LIKE ? OR category LIKE ?
+        ORDER BY created_at DESC
+    ''', (f'%{query}%', f'%{query}%', f'%{query}%'))
+    posts = cursor.fetchall()
+
+    results = []
+    for post in posts:
+        content = post['content']
+        summary = content[:100] + '...' if len(content) > 100 else content
+        results.append({
+            'id': post['id'],
+            'title': post['title'],
+            'summary': summary,
+            'category': post['category'],
+            'created_at': post['created_at']
+        })
+
+    return results
+
+
+def log_search(conn, query: str, user_ip: str = None):
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO search_logs (query, user_ip)
+        VALUES (?, ?)
+    ''', (query, user_ip))
+    conn.commit()
