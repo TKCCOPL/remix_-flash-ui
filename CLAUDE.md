@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 语言偏好
+
+- 始终使用中文进行对话和交流
+- 代码注释和文档使用英文
+
 ## Project Overview
 
 XiaoC Blog - A full-stack personal blog system built with React 19, FastAPI, and SQLite.
