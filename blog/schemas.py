@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class PostCreate(BaseModel):
@@ -15,6 +15,22 @@ class PostUpdate(BaseModel):
     content: Optional[str] = None
     category: Optional[str] = None
     image_url: Optional[str] = None
+
+    @field_validator('title', 'content')
+    @classmethod
+    def non_empty_string(cls, v):
+        if v is not None and v.strip() == '':
+            return None
+        return v
+
+    @model_validator(mode='after')
+    def at_least_one_field(self):
+        if all(
+            getattr(self, f) is None
+            for f in ('title', 'content', 'category', 'image_url')
+        ):
+            raise ValueError('At least one field must be provided')
+        return self
 
 
 class PostOut(BaseModel):
