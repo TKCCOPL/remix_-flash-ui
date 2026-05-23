@@ -42,7 +42,9 @@ blog/uploads/*
 !blog/uploads/.gitkeep
 
 # Claude Code
-.claude/
+.claude/*
+!.claude/agents/
+!.claude/doc/
 
 # Generated docs
 docs/superpowers/
