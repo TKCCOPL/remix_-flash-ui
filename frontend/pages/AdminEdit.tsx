@@ -261,7 +261,7 @@ export default function AdminEdit() {
         </AnimatePresence>
 
         {/* Floating Action Bar */}
-        <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-full shadow-xl w-[calc(100%-2rem)] md:w-auto min-w-[320px]">
+        <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-full shadow-xl w-[calc(100%-2rem)] md:w-[720px] transition-all duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
             {/* Stats */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
@@ -307,8 +307,12 @@ export default function AdminEdit() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="p-2.5 bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-all"
+                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  className={`p-2.5 rounded-xl transition-all ${
+                    isSettingsOpen
+                      ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner'
+                      : 'bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                  }`}
                   title="文章设置"
                 >
                   <Settings className="w-4 h-4" />
