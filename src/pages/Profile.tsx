@@ -18,7 +18,7 @@ export default function Profile() {
           <h1 className="text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">{t.profile.title}</h1>
           <p className="text-xl text-stone-500 dark:text-stone-400 mb-6 font-mono text-sm leading-relaxed">{t.profile.subtitle}</p>
           
-          <div className="prose prose-zinc mb-8">
+          <div className="prose prose-stone mb-8">
             <p>{t.profile.intro1}</p>
             <p>{t.profile.intro2}</p>
             <p>{t.profile.intro3}</p>

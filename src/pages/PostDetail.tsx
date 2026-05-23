@@ -122,7 +122,7 @@ export default function PostDetail() {
         </h1>
       </header>
 
-      <div className="prose prose-zinc w-full max-w-none">
+      <div className="prose prose-stone w-full max-w-none">
         <Markdown remarkPlugins={[remarkGfm]}>
           {post.content}
         </Markdown>
