@@ -22,7 +22,7 @@
 .prose ul { @apply list-disc list-outside mb-6 pl-5 space-y-2 text-stone-600 dark:text-stone-300 text-lg; }
 .prose ol { @apply list-decimal list-outside mb-6 pl-5 space-y-2 text-stone-600 dark:text-stone-300 text-lg; }
 .prose li { @apply text-stone-600 dark:text-stone-300; }
-.prose img { @apply rounded-xl max-w-full h-auto my-10 border border-stone-200/50 dark:border-stone-800 shadow-sm; }
+.prose img { @apply rounded-xl max-w-full h-auto my-10 border border-stone-200/50 dark:border-stone-800 shadow-sm mix-blend-multiply; }
 .prose blockquote { @apply border-l-4 border-indigo-300 dark:border-indigo-700 pl-6 italic text-stone-500 dark:text-stone-400 my-8 bg-indigo-50/50 dark:bg-indigo-950/30 py-4 pr-4 rounded-r-xl; }
 .prose pre { @apply bg-stone-900 text-stone-100 p-6 rounded-xl overflow-x-auto my-8 font-mono text-sm leading-relaxed; }
 .prose code { @apply bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 px-1.5 py-0.5 rounded-md font-mono text-sm; }
