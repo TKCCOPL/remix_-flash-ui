@@ -55,7 +55,7 @@ export default function Home() {
 
     const loadPosts = async () => {
       try {
-        const response = await postsApi.list(0, 500);
+        const response = await postsApi.list(0, 100);
         if (!cancelled) {
           setPosts(response);
           setError('');
