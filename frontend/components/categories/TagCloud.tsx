@@ -1,5 +1,6 @@
 import CategoryTag from './CategoryTag';
 import type { Category } from '../../api/categories';
+import { useI18n } from '../../context/Preferences';
 
 interface TagCloudProps {
   categories: Category[];
@@ -14,8 +15,10 @@ function getSize(count: number, maxCount: number): 'sm' | 'md' | 'lg' | 'xl' {
 }
 
 export default function TagCloud({ categories }: TagCloudProps) {
+  const t = useI18n();
+
   if (categories.length === 0) {
-    return <p className="text-stone-400 dark:text-stone-500">暂无分类</p>;
+    return <p className="text-stone-400 dark:text-stone-500">{t.categories.empty}</p>;
   }
 
   const maxCount = Math.max(...categories.map((c) => c.post_count));

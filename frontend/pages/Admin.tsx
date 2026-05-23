@@ -301,7 +301,7 @@ export default function Admin() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-100 dark:border-red-900/50">
           {error}
         </div>
       )}
@@ -371,7 +371,8 @@ export default function Admin() {
       {/* Table */}
       <div className="space-y-4">
         <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse" aria-label="Posts management table">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[640px]" aria-label="Posts management table">
             <thead>
               <tr className="bg-stone-50/50 dark:bg-stone-900/60 border-b border-stone-100 dark:border-stone-800">
                 <th className="px-4 py-4 w-10">
@@ -465,6 +466,7 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

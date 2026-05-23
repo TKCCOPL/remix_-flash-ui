@@ -65,6 +65,10 @@ textarea {
   opacity: 0.8;
 }
 
+.dark .hero-canvas-pattern {
+  opacity: 0.3;
+}
+
 .hero-canvas-fluid {
   filter: url(#fluid-mask);
   mix-blend-mode: difference;

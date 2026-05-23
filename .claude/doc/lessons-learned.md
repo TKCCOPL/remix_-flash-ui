@@ -7,7 +7,7 @@
 <!-- 在此添加 API 相关经验 -->
 
 ## 类别：测试
-<!-- 在此添加测试相关经验 -->
+- 使用 useI18n() 的组件在测试中必须包裹 PreferencesProvider，否则会抛出 "usePreferences must be used within PreferencesProvider" 错误
 
 ## 类别：前端
 <!-- 在此添加前端相关经验 -->

@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import CategoriesPage from '../CategoriesPage';
+import { PreferencesProvider } from '../../context/Preferences';
 
 vi.mock('../../api/categories', () => ({
   categoriesApi: {
@@ -26,7 +27,9 @@ describe('CategoriesPage', () => {
 
     render(
       <BrowserRouter>
-        <CategoriesPage />
+        <PreferencesProvider>
+          <CategoriesPage />
+        </PreferencesProvider>
       </BrowserRouter>
     );
 
@@ -43,7 +46,9 @@ describe('CategoriesPage', () => {
 
     render(
       <BrowserRouter>
-        <CategoriesPage />
+        <PreferencesProvider>
+          <CategoriesPage />
+        </PreferencesProvider>
       </BrowserRouter>
     );
 

@@ -30,7 +30,7 @@ export default function SearchResults({ results, total, query }: SearchResultsPr
         {results.map((result) => (
           <div
             key={result.id}
-            className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+            className="border border-stone-200 dark:border-stone-700 rounded-xl p-4 hover:shadow-md transition-shadow"
           >
             <Link to={`/post/${result.id}`} className="block">
               <h3 className="font-semibold text-stone-900 dark:text-stone-100 hover:text-stone-600 dark:hover:text-stone-300 mb-2">

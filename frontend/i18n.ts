@@ -46,6 +46,16 @@ export const translations = {
       error: '搜索失败，请稍后重试',
       submit: '搜索',
     },
+    archive: {
+      title: '文章归档',
+      empty: '暂无文章',
+      postCount: '({count} 篇文章)',
+    },
+    categories: {
+      title: '文章分类',
+      description: '共 {count} 个分类，点击分类查看相关文章',
+      empty: '暂无分类',
+    },
     actions: {
       switchLanguage: '切换语言',
       switchTheme: '切换明暗',
@@ -195,8 +205,8 @@ export const translations = {
       search: 'Search',
     },
     search: {
-      title: '搜索文章',
-      placeholder: '输入关键词搜索...',
+      title: 'Search',
+      placeholder: 'Type to search...',
       mobileAria: 'Search',
       history: 'Search History',
       hotSearches: 'Popular Searches',
@@ -205,6 +215,16 @@ export const translations = {
       loading: 'Searching...',
       error: 'Search failed, please try again later',
       submit: 'Search',
+    },
+    archive: {
+      title: 'Archive',
+      empty: 'No posts yet',
+      postCount: '({count} posts)',
+    },
+    categories: {
+      title: 'Categories',
+      description: '{count} categories total. Click to view related posts.',
+      empty: 'No categories yet',
     },
     actions: {
       switchLanguage: 'Switch language',

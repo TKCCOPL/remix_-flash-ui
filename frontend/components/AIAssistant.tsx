@@ -72,41 +72,41 @@ function AIAssistant() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 p-4 bg-black text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+        className={`fixed bottom-6 right-6 z-50 p-4 bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
       >
         <Sparkles size={20} className="text-white" />
         <span className="font-semibold pr-1">Ask AI</span>
       </button>
 
       <div
-        className={`fixed bottom-6 right-6 z-50 w-[350px] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}
+        className={`fixed bottom-6 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[350px] bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}
       >
-        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
+        <div className="bg-stone-50 dark:bg-stone-950 px-4 py-3 border-b border-stone-200 dark:border-stone-800 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center">
               <Sparkles size={16} className="text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-900">Alex's AI Clone</h3>
-              <p className="text-xs text-slate-500">Powered by Gemini</p>
+              <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">AI Assistant</h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400">Powered by Gemini</p>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
+          <button onClick={() => setIsOpen(false)} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-300 transition-colors">
             <X size={20} />
           </button>
         </div>
 
-        <div className="flex-1 p-4 h-[400px] overflow-y-auto flex flex-col gap-3 bg-white">
+        <div className="flex-1 p-4 h-[400px] overflow-y-auto flex flex-col gap-3 bg-white dark:bg-stone-900">
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-black text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
+              <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-bl-sm'}`}>
                 {msg.text}
               </div>
             </div>
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="max-w-[80%] p-3 bg-slate-100 text-slate-800 rounded-2xl rounded-bl-sm flex items-center gap-2">
+              <div className="max-w-[80%] p-3 bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-2xl rounded-bl-sm flex items-center gap-2">
                 <Loader2 size={16} className="animate-spin" />
                 <span className="text-sm">Thinking...</span>
               </div>
@@ -115,23 +115,23 @@ function AIAssistant() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-3 bg-white border-t border-slate-200">
+        <div className="p-3 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800">
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full pl-4 pr-1 py-1"
+            className="flex items-center gap-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-full pl-4 pr-1 py-1"
           >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about my projects..."
-              className="flex-1 bg-transparent text-sm focus:outline-none text-slate-800"
+              className="flex-1 bg-transparent text-sm focus:outline-none text-stone-800 dark:text-stone-200"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="p-2 bg-black text-white rounded-full disabled:opacity-50 transition-opacity hover:opacity-80"
+              className="p-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-full disabled:opacity-50 transition-opacity hover:opacity-80"
             >
               <Send size={16} />
             </button>
