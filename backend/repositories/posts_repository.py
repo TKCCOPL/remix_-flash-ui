@@ -2,7 +2,7 @@ def get_posts(conn, skip: int = 0, limit: int = 10):
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, title, content, category, image_url, created_at, updated_at
+        SELECT id, title, content, category, image_url, status, created_at, updated_at
         FROM posts
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
@@ -16,7 +16,7 @@ def get_post(conn, post_id: int):
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, title, content, category, image_url, created_at, updated_at
+        SELECT id, title, content, category, image_url, status, created_at, updated_at
         FROM posts
         WHERE id = ?
         """,
@@ -26,20 +26,20 @@ def get_post(conn, post_id: int):
     return dict(row) if row else None
 
 
-def create_post(conn, title: str, content: str, category: str | None, image_url: str | None):
+def create_post(conn, title: str, content: str, category: str | None, image_url: str | None, status: str = 'published'):
     cursor = conn.cursor()
     cursor.execute(
         """
-        INSERT INTO posts (title, content, category, image_url, created_at, updated_at)
-        VALUES (?, ?, ?, ?, datetime('now', 'localtime'), datetime('now', 'localtime'))
+        INSERT INTO posts (title, content, category, image_url, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'), datetime('now', 'localtime'))
         """,
-        (title, content, category, image_url),
+        (title, content, category, image_url, status),
     )
     conn.commit()
     return cursor.lastrowid
 
 
-def update_post(conn, post_id: int, title: str | None, content: str | None, category: str | None, image_url: str | None):
+def update_post(conn, post_id: int, title: str | None, content: str | None, category: str | None, image_url: str | None, status: str | None):
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -48,10 +48,11 @@ def update_post(conn, post_id: int, title: str | None, content: str | None, cate
             content = COALESCE(?, content),
             category = COALESCE(?, category),
             image_url = COALESCE(?, image_url),
+            status = COALESCE(?, status),
             updated_at = datetime('now', 'localtime')
         WHERE id = ?
         """,
-        (title, content, category, image_url, post_id),
+        (title, content, category, image_url, status, post_id),
     )
     conn.commit()
     return cursor.rowcount > 0

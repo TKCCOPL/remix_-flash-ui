@@ -50,5 +50,7 @@ def init_db():
     column_names = {row[1] for row in cursor.fetchall()}
     if "image_url" not in column_names:
         cursor.execute("ALTER TABLE posts ADD COLUMN image_url TEXT")
+    if "status" not in column_names:
+        cursor.execute("ALTER TABLE posts ADD COLUMN status TEXT DEFAULT 'published'")
     conn.commit()
     conn.close()

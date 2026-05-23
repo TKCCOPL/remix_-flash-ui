@@ -12,7 +12,7 @@ from schemas import PostCreate, PostUpdate
 
 
 def create_post(conn, post: PostCreate):
-    post_id = create_post_repository(conn, post.title, post.content, post.category, post.image_url)
+    post_id = create_post_repository(conn, post.title, post.content, post.category, post.image_url, post.status)
     return get_post_repository(conn, post_id)
 
 
@@ -25,7 +25,7 @@ def get_post(conn, post_id: int):
 
 
 def update_post(conn, post_id: int, post: PostUpdate):
-    updated = update_post_repository(conn, post_id, post.title, post.content, post.category, post.image_url)
+    updated = update_post_repository(conn, post_id, post.title, post.content, post.category, post.image_url, post.status)
     if not updated:
         return None
     return get_post_repository(conn, post_id)

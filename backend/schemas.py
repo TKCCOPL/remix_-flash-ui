@@ -8,6 +8,7 @@ class PostCreate(BaseModel):
     content: str
     category: Optional[str] = None
     image_url: Optional[str] = None
+    status: Optional[str] = 'published'
 
 
 class PostUpdate(BaseModel):
@@ -15,6 +16,7 @@ class PostUpdate(BaseModel):
     content: Optional[str] = None
     category: Optional[str] = None
     image_url: Optional[str] = None
+    status: Optional[str] = None
 
     @field_validator('title', 'content')
     @classmethod
@@ -27,7 +29,7 @@ class PostUpdate(BaseModel):
     def at_least_one_field(self):
         if all(
             getattr(self, f) is None
-            for f in ('title', 'content', 'category', 'image_url')
+            for f in ('title', 'content', 'category', 'image_url', 'status')
         ):
             raise ValueError('At least one field must be provided')
         return self
@@ -39,6 +41,7 @@ class PostOut(BaseModel):
     content: str
     category: Optional[str]
     image_url: Optional[str] = None
+    status: str
     created_at: str
     updated_at: str
 
