@@ -39,8 +39,8 @@ export default function Login() {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center -mt-20">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-950 p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800">
-        <h1 className="text-2xl font-bold text-center text-zinc-900 dark:text-zinc-100 mb-8">{t.login.title}</h1>
+      <div className="w-full max-w-md bg-white dark:bg-stone-950 p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 dark:border-stone-800">
+        <h1 className="text-2xl font-bold text-center text-stone-900 dark:text-stone-100 mb-8">{t.login.title}</h1>
         
         {error && (
           <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
@@ -50,23 +50,23 @@ export default function Login() {
         
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">{t.login.username}</label>
+            <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">{t.login.username}</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white/10 focus:border-zinc-900 transition-all outline-none text-zinc-900 dark:text-zinc-100"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
               required
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">{t.login.password}</label>
+            <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">{t.login.password}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white/10 focus:border-zinc-900 transition-all outline-none text-zinc-900 dark:text-zinc-100"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
               required
             />
           </div>
@@ -74,7 +74,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full mt-4 bg-zinc-900 text-white font-medium py-3 rounded-xl hover:bg-zinc-800 focus:ring-4 focus:ring-zinc-900/20 transition-all"
+            className="w-full mt-4 bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/20 transition-all"
           >
             {submitting ? `${t.login.submit}...` : t.login.submit}
           </button>

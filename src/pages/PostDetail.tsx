@@ -67,7 +67,7 @@ export default function PostDetail() {
 
   if (loading) {
     return (
-      <div className="text-center py-24 text-zinc-500 dark:text-zinc-400">
+      <div className="text-center py-24 text-stone-500 dark:text-stone-400">
         ...
       </div>
     );
@@ -76,8 +76,8 @@ export default function PostDetail() {
   if (error) {
     return (
       <div className="text-center py-24">
-        <h2 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">{error}</h2>
-        <Link to="/" className="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 underline">
+        <h2 className="text-2xl font-bold mb-4 text-stone-900 dark:text-stone-100">{error}</h2>
+        <Link to="/" className="text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 underline">
           {t.post.returnHome}
         </Link>
       </div>
@@ -87,8 +87,8 @@ export default function PostDetail() {
   if (notFound || !post) {
     return (
       <div className="text-center py-24">
-        <h2 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">{t.post.notFound}</h2>
-        <Link to="/" className="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 underline">
+        <h2 className="text-2xl font-bold mb-4 text-stone-900 dark:text-stone-100">{t.post.notFound}</h2>
+        <Link to="/" className="text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 underline">
           {t.post.returnHome}
         </Link>
       </div>
@@ -100,24 +100,24 @@ export default function PostDetail() {
   return (
     <article className="w-full max-w-3xl mx-auto">
       <header className="mb-14">
-        <Link to="/" className="inline-flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 mb-8 transition-colors">
+        <Link to="/" className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t.post.backToPosts}
         </Link>
         {post.image_url && (
-          <div className="mb-8 overflow-hidden rounded-2xl border border-zinc-100 dark:border-zinc-800">
+          <div className="mb-8 overflow-hidden rounded-2xl border border-stone-100 dark:border-stone-800">
             <img src={post.image_url} alt={post.title} className="w-full max-h-[440px] object-cover" />
           </div>
         )}
         <div className="flex items-center gap-x-4 text-sm mb-6">
-          <time dateTime={post.created_at} className="text-zinc-500 dark:text-zinc-400">
+          <time dateTime={post.created_at} className="text-stone-500 dark:text-stone-400">
             {Number.isNaN(createdAt.getTime()) ? post.created_at : format(createdAt, formats.long, { locale })}
           </time>
-          <span className="rounded-full bg-zinc-100 dark:bg-zinc-900 px-3 py-1 font-medium text-zinc-600 dark:text-zinc-300">
+          <span className="rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-3 py-1 font-medium text-indigo-600 dark:text-indigo-400">
             {post.category || t.post.general}
           </span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4 leading-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-4 leading-tight">
           {post.title}
         </h1>
       </header>
