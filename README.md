@@ -1,55 +1,60 @@
-# Minimalist Digital Garden
+# XiaoC Blog
 
-A polished, production-ready personal blog system built with **React 19**, **Vite**, and **Tailwind CSS**. This project prioritizes typography, whitespace, and a seamless writing experience.
+A full-stack personal blog system built with **React 19**, **FastAPI**, and **SQLite**. Prioritizes typography, whitespace, and a seamless writing experience.
 
-## ✨ Features
+## Features
 
-- **Modern UI/UX**: Minimalist aesthetic focusing on content readability with a custom-crafted design system.
-- **Markdown Support**: Write your posts in standard Markdown with full support for code highlighting, tables, and blockquotes.
-- **Responsive Design**: Fully fluid layout that looks beautiful on everything from ultra-wide monitors to mobile devices.
-- **Admin Dashboard**: Secure management interface for creating, editing, and deleting blog posts.
-- **Animated Transitions**: Smooth route transitions and micro-interactions powered by `framer-motion`.
-- **Local Persistence**: Uses browser local storage for data, making it a perfect tool for local-first journaling or a lightweight portfolio.
+- **Minimalist Design**: Content-focused with a custom design system
+- **Markdown Support**: Code highlighting, tables, blockquotes
+- **Responsive Layout**: Fluid design from ultra-wide to mobile
+- **Admin Dashboard**: Secure post management (CRUD)
+- **i18n**: Chinese/English with dark/light theme
+- **Animations**: Smooth transitions via Framer Motion
 
-## 🚀 Tech Stack
+## Tech Stack
 
-- **Framework**: React 19 (Functional Components & Hooks)
-- **Styling**: Tailwind CSS 4.0
-- **Routing**: React Router 6
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Date Handling**: date-fns
-- **Markdown Rendering**: react-markdown + remark-gfm
+| Frontend | Backend |
+|----------|---------|
+| React 19 | FastAPI |
+| Vite | SQLite |
+| Tailwind CSS 4.0 | Pydantic |
+| React Router 7 | |
 
-## 🛠️ Getting Started
+## Project Structure
 
-### Installation
-```bash
-npm install
+```
+├── src/                # React frontend
+│   ├── api/            # API client (auth, posts)
+│   ├── components/     # Reusable components
+│   ├── context/        # Theme & language context
+│   └── pages/          # Page components
+├── blog/               # FastAPI backend
+│   ├── routers/        # API routes
+│   ├── services/       # Business logic
+│   ├── repositories/   # Database access
+│   └── data/           # SQLite database
+└── index.html          # Vite entry
 ```
 
-### Development
-```bash
-npm run dev
-```
+## API Endpoints
 
-### Production Build
-```bash
-npm run build
-```
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Current user |
+| GET | `/api/posts/` | List posts |
+| GET | `/api/posts/:id` | Get post |
+| POST | `/api/posts/` | Create post |
+| PUT | `/api/posts/:id` | Update post |
+| DELETE | `/api/posts/:id` | Delete post |
 
-## 🔐 Admin Access
-To manage your posts, navigate to the `/login` route.
+## Admin
+
+- **URL**: `/login`
 - **Username**: `admin`
 - **Password**: `123456`
 
-## 📁 Project Structure
-
-- `src/pages/`: Page components (Home, PostDetail, Admin, etc.)
-- `src/components/`: Reusable UI components and layout wrappers.
-- `src/store.ts`: Lightweight data persistence layer using LocalStorage.
-- `src/index.css`: Global design tokens and Tailwind configuration.
-
 ---
 
-Built with focus on craftsmanship and simplicity.
+See [README.zh.md](README.zh.md) for Chinese version.

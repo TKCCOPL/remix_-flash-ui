@@ -1,3 +1,11 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
 # Logs
 logs
 *.log
@@ -7,10 +15,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -23,13 +36,13 @@ dist-ssr
 *.sln
 *.sw?
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-
-# Blog data
+# Blog
 blog/data/*.sqlite3
+blog/uploads/*
+!blog/uploads/.gitkeep
 
-# Superpowers docs (generated)
+# Claude Code
+.claude/
+
+# Generated docs
 docs/superpowers/
