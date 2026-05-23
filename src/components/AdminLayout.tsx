@@ -3,13 +3,10 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
-  FileText,
-  Tag,
   LogOut,
   ChevronLeft,
   ChevronRight,
   Menu,
-  X,
 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
@@ -69,8 +66,6 @@ export default function AdminLayout() {
 
   const sidebarItems = [
     { icon: LayoutDashboard, path: '/admin', label: t.admin.sidebar.overview },
-    { icon: FileText, path: '/admin', label: t.admin.sidebar.posts },
-    { icon: Tag, path: '/admin', label: t.admin.sidebar.categories },
   ];
 
   const sidebarContent = (
