@@ -23,8 +23,8 @@ export const dateFormats = {
 export const translations = {
   zh: {
     brand: {
-      name: '博客',
-      suffix: '.',
+      name: "XiaoC'",
+      suffix: 'blog',
     },
     nav: {
       home: '首页',
@@ -50,7 +50,7 @@ export const translations = {
     },
     home: {
       heroBadge: '数字花园与思考',
-      heroTitle: '你好，我是 Alex',
+      heroTitle: '你好，我是 XiaoC',
       heroSubtitle: '我是一名软件工程师和设计师，这里记录我对软件与界面的探索。',
       heroTitleLine2: '欢迎来到我的博客',
       featured: '精选文章',
@@ -77,9 +77,9 @@ export const translations = {
       general: '通用',
     },
     profile: {
-      title: 'Alex Dev',
+      title: 'XiaoC Dev',
       subtitle: '软件工程师 / UI 设计师',
-      intro1: '你好，我是 Alex。我专注于简洁、高性能且美观的 Web 应用。',
+      intro1: '你好，我是 XiaoC。我专注于简洁、高性能且美观的 Web 应用。',
       intro2: '目前在探索设计工程与人工智能的交汇点。',
       intro3: '我相信优秀的软件应当让人感受不到存在。当我不写代码时，会摄影、读科幻或亲近自然。',
       projectIntro1: '项目结构分为前端与后端：前端位于根目录，后端在 blog/ 目录，数据存储使用 SQLite。',
@@ -97,6 +97,7 @@ export const translations = {
         published: '已发布',
         drafts: '草稿',
         categories: '分类数量',
+        monthly: '本月新增',
       },
       searchPlaceholder: '搜索文章...',
       allStatus: '全部状态',
@@ -110,8 +111,28 @@ export const translations = {
         date: '日期',
         actions: '操作',
         empty: '暂无文章，去创建第一篇吧！',
+        wordCount: '字数',
+      },
+      filter: {
+        allCategories: '全部分类',
+      },
+      sort: {
+        newest: '最新优先',
+        oldest: '最早优先',
+        titleAsc: '标题 A-Z',
+        titleDesc: '标题 Z-A',
+      },
+      batch: {
+        selected: '已选 {count} 篇',
+        delete: '批量删除',
+        confirm: '确定删除选中的 {count} 篇文章吗？',
       },
       confirmDelete: '确定删除这篇文章吗？',
+      sidebar: {
+        overview: '概览',
+        posts: '文章管理',
+        categories: '分类管理',
+      },
     },
     editor: {
       back: '返回后台',
@@ -134,6 +155,12 @@ export const translations = {
       placeholderContent: '在这里开始你的故事...',
       cancel: '取消',
       save: '保存文章',
+      preview: '预览',
+      edit: '编辑',
+      wordCount: '字数',
+      readingTime: '预计阅读 {min} 分钟',
+      created: '创建时间',
+      updated: '更新时间',
     },
     login: {
       title: '管理员登录',
@@ -145,8 +172,8 @@ export const translations = {
   },
   en: {
     brand: {
-      name: 'Blog',
-      suffix: '.',
+      name: "XiaoC'",
+      suffix: 'blog',
     },
     nav: {
       home: 'Home',
@@ -172,7 +199,7 @@ export const translations = {
     },
     home: {
       heroBadge: 'Digital Garden & Thoughts',
-      heroTitle: 'Hi, I am Alex',
+      heroTitle: 'Hi, I am XiaoC',
       heroSubtitle: "I'm a software engineer and designer. This is where I share my explorations in building thoughtful software and interfaces.",
       heroTitleLine2: 'welcome to my blog',
       featured: 'Featured Post',
@@ -199,9 +226,9 @@ export const translations = {
       general: 'General',
     },
     profile: {
-      title: 'Alex Dev',
+      title: 'XiaoC Dev',
       subtitle: 'Software Engineer & UI Designer',
-      intro1: 'Hi, I am Alex. I build modern web applications with a focus on simplicity, performance, and beautiful user interfaces.',
+      intro1: 'Hi, I am XiaoC. I build modern web applications with a focus on simplicity, performance, and beautiful user interfaces.',
       intro2: 'Currently exploring the intersection of design engineering and artificial intelligence.',
       intro3: 'I believe that great software feels invisible. When I am not coding, you can find me taking photos, reading sci-fi, or exploring the outdoors.',
       projectIntro1: 'The project is split into a frontend at the repository root and a backend in blog/, with SQLite for data storage.',
@@ -219,6 +246,7 @@ export const translations = {
         published: 'Published',
         drafts: 'Drafts',
         categories: 'Categories',
+        monthly: 'This Month',
       },
       searchPlaceholder: 'Search posts...',
       allStatus: 'All Status',
@@ -232,8 +260,28 @@ export const translations = {
         date: 'Date',
         actions: 'Actions',
         empty: 'No posts yet. Create your first one!',
+        wordCount: 'Words',
+      },
+      filter: {
+        allCategories: 'All Categories',
+      },
+      sort: {
+        newest: 'Newest First',
+        oldest: 'Oldest First',
+        titleAsc: 'Title A-Z',
+        titleDesc: 'Title Z-A',
+      },
+      batch: {
+        selected: '{count} selected',
+        delete: 'Batch Delete',
+        confirm: 'Delete {count} selected posts?',
       },
       confirmDelete: 'Are you sure you want to delete this post?',
+      sidebar: {
+        overview: 'Overview',
+        posts: 'Posts',
+        categories: 'Categories',
+      },
     },
     editor: {
       back: 'Back to dashboard',
@@ -256,6 +304,12 @@ export const translations = {
       placeholderContent: 'Write your story here...',
       cancel: 'Cancel',
       save: 'Save Post',
+      preview: 'Preview',
+      edit: 'Edit',
+      wordCount: 'Words',
+      readingTime: '{min} min read',
+      created: 'Created',
+      updated: 'Updated',
     },
     login: {
       title: 'Admin Login',
