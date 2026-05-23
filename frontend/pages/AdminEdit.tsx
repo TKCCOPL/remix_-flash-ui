@@ -124,7 +124,7 @@ export default function AdminEdit() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto pb-32">
       <header className="mb-6">
         <Link
           to="/admin"
@@ -186,7 +186,7 @@ export default function AdminEdit() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t.editor.placeholderTitle}
-                className="w-full px-4 py-3 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-stone-900 dark:text-stone-100"
+                className="w-full bg-transparent border-none outline-none text-3xl font-bold text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors"
                 required
               />
             </div>
@@ -200,7 +200,7 @@ export default function AdminEdit() {
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder={t.editor.placeholderCategory}
-                className="w-full px-4 py-3 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-stone-900 dark:text-stone-100"
+                className="w-full bg-transparent border-none outline-none text-stone-600 dark:text-stone-400 font-medium placeholder:text-stone-400 transition-colors"
               />
             </div>
 
@@ -214,12 +214,12 @@ export default function AdminEdit() {
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder={t.editor.placeholderImage}
-                  className="w-full px-4 py-3 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-stone-900 dark:text-stone-100"
+                  className="w-full bg-transparent border-none outline-none text-stone-600 dark:text-stone-400 placeholder:text-stone-400 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setImageUrl('')}
-                  className="px-4 py-3 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 text-xs bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors whitespace-nowrap"
                 >
                   {t.editor.clearImage}
                 </button>
@@ -251,7 +251,7 @@ export default function AdminEdit() {
                 onChange={(e) => setContent(e.target.value)}
                 rows={1}
                 placeholder={t.editor.placeholderContent}
-                className="w-full px-4 py-4 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none min-h-[500px] text-stone-900 dark:text-stone-100 resize-none overflow-hidden"
+                className="w-full bg-transparent border-none outline-none text-lg leading-relaxed text-stone-800 dark:text-stone-200 resize-none overflow-hidden placeholder:text-stone-300 dark:placeholder:text-stone-700 min-h-[500px] transition-colors"
                 required
               />
             </div>
@@ -283,9 +283,9 @@ export default function AdminEdit() {
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-6 pt-5 border-t border-stone-100 dark:border-stone-800">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Floating Action Bar */}
+        <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-full shadow-xl w-[calc(100%-2rem)] md:w-auto min-w-[320px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
             {/* Stats */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
               <span>

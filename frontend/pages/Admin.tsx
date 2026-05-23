@@ -287,7 +287,10 @@ export default function Admin() {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-in-up stagger-item"
+        style={{ '--stagger-index': 0 } as React.CSSProperties}
+      >
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">{t.admin.title}</h1>
           <p className="text-stone-500 dark:text-stone-400 mt-1">{t.admin.subtitle}</p>
@@ -308,10 +311,11 @@ export default function Admin() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {statCards.map((stat) => (
+        {statCards.map((stat, i) => (
           <div
             key={stat.label}
-            className="bg-white dark:bg-stone-900 p-6 rounded-2xl border border-stone-100 dark:border-stone-800 shadow-sm"
+            className="bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl p-8 rounded-3xl border border-stone-200/50 dark:border-stone-800/50 shadow-sm animate-fade-in-up stagger-item"
+            style={{ '--stagger-index': i + 1 } as React.CSSProperties}
           >
             <div
               className={`p-2 w-10 h-10 rounded-xl ${stat.bg} ${stat.darkBg} ${stat.color} ${stat.darkColor} flex items-center justify-center mb-4`}
@@ -319,13 +323,16 @@ export default function Admin() {
               <stat.icon className="w-5 h-5" />
             </div>
             <p className="text-sm font-medium text-stone-500 dark:text-stone-400">{stat.label}</p>
-            <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stat.value}</p>
+            <p className="text-3xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-4">
+      <div
+        className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-4 animate-fade-in-up stagger-item"
+        style={{ '--stagger-index': statCards.length + 1 } as React.CSSProperties}
+      >
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
           <input
@@ -336,7 +343,7 @@ export default function Admin() {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-stone-900 dark:text-stone-100"
+            className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-stone-900 dark:text-stone-100"
           />
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
@@ -346,7 +353,7 @@ export default function Admin() {
               setCategoryFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl text-sm text-stone-700 dark:text-stone-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+            className="px-3 py-2.5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl text-sm text-stone-700 dark:text-stone-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none pr-8"
           >
             <option value="all">{t.admin.filter.allCategories}</option>
             {categories.map((cat) => (
@@ -358,7 +365,7 @@ export default function Admin() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl text-sm text-stone-700 dark:text-stone-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+            className="px-3 py-2.5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl text-sm text-stone-700 dark:text-stone-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none pr-8"
           >
             <option value="newest">{t.admin.sort.newest}</option>
             <option value="oldest">{t.admin.sort.oldest}</option>
@@ -369,8 +376,11 @@ export default function Admin() {
       </div>
 
       {/* Table */}
-      <div className="space-y-4">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 overflow-hidden shadow-sm">
+      <div
+        className="space-y-4 animate-fade-in-up stagger-item"
+        style={{ '--stagger-index': statCards.length + 2 } as React.CSSProperties}
+      >
+        <div className="bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl rounded-3xl border border-stone-200/50 dark:border-stone-800/50 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[640px]" aria-label="Posts management table">
             <thead>

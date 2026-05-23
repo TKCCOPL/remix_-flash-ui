@@ -130,9 +130,9 @@ export default function AdminLayout() {
 
   return (
     <div className="w-full min-h-screen flex">
-      {/* Desktop sidebar — sticky below header */}
+      {/* Desktop sidebar — floating card */}
       <aside
-        className="hidden md:block shrink-0 sticky top-0 h-screen self-start bg-white dark:bg-stone-900 border-r border-stone-200/60 dark:border-stone-800/60 transition-all duration-300 overflow-hidden"
+        className="hidden md:block shrink-0 sticky top-6 h-[calc(100vh-3rem)] ml-6 self-start bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-3xl transition-all duration-300 overflow-hidden shadow-sm"
         style={{ width: sidebarWidth }}
       >
         <div className="h-full flex flex-col overflow-y-auto">
@@ -179,8 +179,18 @@ export default function AdminLayout() {
             <Menu className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex-1 p-6 md:p-8">
-          <Outlet />
+        <div className="flex-1 p-6 md:p-8 min-w-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.99 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
