@@ -257,49 +257,25 @@ export default function Admin() {
     }
   };
 
-  const statCards = [
-    {
-      label: t.admin.stats.total,
-      value: stats.total,
-      icon: FileText,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
-      darkBg: 'dark:bg-indigo-950/40',
-      darkColor: 'dark:text-indigo-400',
-    },
-    {
-      label: t.admin.stats.categories,
-      value: stats.categories,
-      icon: LayoutGrid,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-      darkBg: 'dark:bg-purple-950/40',
-      darkColor: 'dark:text-purple-400',
-    },
-    {
-      label: t.admin.stats.monthly,
-      value: stats.monthly,
-      icon: TrendingUp,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-      darkBg: 'dark:bg-emerald-950/40',
-      darkColor: 'dark:text-emerald-400',
-    },
-  ];
-
   return (
-    <div className="w-full">
+    <div className="w-full max-w-[1200px] mx-auto">
       <div
         className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-in-up stagger-item"
         style={{ '--stagger-index': 0 } as React.CSSProperties}
       >
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">{t.admin.title}</h1>
-          <p className="text-stone-500 dark:text-stone-400 mt-1">{t.admin.subtitle}</p>
+          <div className="text-sm font-medium text-stone-500 dark:text-stone-400 mt-2 flex items-center gap-2.5">
+            <span>{stats.total} 篇文章</span>
+            <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+            <span>{stats.categories} 个分类</span>
+            <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+            <span>本月新增 {stats.monthly} 篇</span>
+          </div>
         </div>
         <Link
           to="/admin/edit"
-          className="inline-flex items-center px-4 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm active:scale-[0.98]"
+          className="inline-flex items-center px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-sm font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-100 transition-all shadow-sm active:scale-[0.98]"
         >
           <Plus className="w-4 h-4 mr-2" /> {t.admin.newPost}
         </Link>
@@ -311,32 +287,43 @@ export default function Admin() {
         </div>
       )}
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {statCards.map((stat, i) => (
-          <div
-            key={stat.label}
-            className="bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl p-8 rounded-3xl border border-stone-200/50 dark:border-stone-800/50 shadow-sm animate-fade-in-up stagger-item"
-            style={{ '--stagger-index': i + 1 } as React.CSSProperties}
+      {/* Categories Pill Tabs */}
+      <div 
+        className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2 animate-fade-in-up stagger-item"
+        style={{ '--stagger-index': 1 } as React.CSSProperties}
+      >
+        <button
+          onClick={() => { setCategoryFilter('all'); setCurrentPage(1); }}
+          className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+            categoryFilter === 'all' 
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-md' 
+              : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+          }`}
+        >
+          {t.admin.filter.allCategories}
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => { setCategoryFilter(cat); setCurrentPage(1); }}
+            className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              categoryFilter === cat 
+                ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-md' 
+                : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/50 dark:border-stone-800/50'
+            }`}
           >
-            <div
-              className={`p-2 w-10 h-10 rounded-xl ${stat.bg} ${stat.darkBg} ${stat.color} ${stat.darkColor} flex items-center justify-center mb-4`}
-            >
-              <stat.icon className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-medium text-stone-500 dark:text-stone-400">{stat.label}</p>
-            <p className="text-3xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stat.value}</p>
-          </div>
+            {cat}
+          </button>
         ))}
       </div>
 
-      {/* Filter bar */}
+      {/* Filter bar (Search & Sort) */}
       <div
-        className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-4 animate-fade-in-up stagger-item"
-        style={{ '--stagger-index': statCards.length + 1 } as React.CSSProperties}
+        className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6 animate-fade-in-up stagger-item"
+        style={{ '--stagger-index': 2 } as React.CSSProperties}
       >
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
           <input
             type="text"
             placeholder={t.admin.searchPlaceholder}
@@ -345,49 +332,33 @@ export default function Admin() {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-stone-900 dark:text-stone-100"
+            className="w-full pl-6 pr-4 py-2 bg-transparent border-b border-stone-200/50 dark:border-stone-800/50 outline-none focus:border-stone-900 dark:focus:border-stone-100 transition-colors text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
           />
         </div>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <select
-            value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="px-3 py-2.5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl text-sm text-stone-700 dark:text-stone-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none pr-8"
-          >
-            <option value="all">{t.admin.filter.allCategories}</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+        <div className="flex w-full sm:w-auto">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2.5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl text-sm text-stone-700 dark:text-stone-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none pr-8"
+            className="px-3 py-2 bg-transparent text-sm font-medium text-stone-500 dark:text-stone-400 outline-none hover:text-stone-900 dark:hover:text-stone-100 transition-colors appearance-none cursor-pointer"
           >
-            <option value="newest">{t.admin.sort.newest}</option>
-            <option value="oldest">{t.admin.sort.oldest}</option>
-            <option value="titleAsc">{t.admin.sort.titleAsc}</option>
-            <option value="titleDesc">{t.admin.sort.titleDesc}</option>
+            <option value="newest" className="dark:bg-stone-900">{t.admin.sort.newest}</option>
+            <option value="oldest" className="dark:bg-stone-900">{t.admin.sort.oldest}</option>
+            <option value="titleAsc" className="dark:bg-stone-900">{t.admin.sort.titleAsc}</option>
+            <option value="titleDesc" className="dark:bg-stone-900">{t.admin.sort.titleDesc}</option>
           </select>
         </div>
       </div>
 
       {/* Table */}
       <div
-        className="space-y-4 animate-fade-in-up stagger-item"
-        style={{ '--stagger-index': statCards.length + 2 } as React.CSSProperties}
+        className="animate-fade-in-up stagger-item pb-20"
+        style={{ '--stagger-index': 3 } as React.CSSProperties}
       >
-        <div className="bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl rounded-3xl border border-stone-200/50 dark:border-stone-800/50 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[640px]" aria-label="Posts management table">
             <thead>
-              <tr className="bg-stone-50/50 dark:bg-stone-900/60 border-b border-stone-100 dark:border-stone-800">
-                <th className="px-4 py-4 w-10">
+              <tr className="border-b border-stone-200 dark:border-stone-800">
+                <th className="px-2 py-3 w-10">
                   <input
                     type="checkbox"
                     checked={allOnPageSelected}
@@ -399,27 +370,27 @@ export default function Admin() {
                     className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
                   />
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-400">
                   {t.admin.table.title}
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-400">
                   {t.admin.table.image}
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-400">
                   {t.admin.table.category}
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-400">
                   {t.admin.table.date}
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 text-right">
+                <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-400 text-right">
                   {t.admin.table.actions}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+            <tbody className="divide-y divide-stone-100/50 dark:divide-stone-800/50">
               {paginatedPosts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-stone-500 dark:text-stone-400">
+                  <td colSpan={6} className="px-4 py-12 text-center text-stone-500 dark:text-stone-400">
                     {t.admin.table.empty}
                   </td>
                 </tr>
@@ -427,11 +398,11 @@ export default function Admin() {
               {paginatedPosts.map((post) => (
                 <tr
                   key={post.id}
-                  className={`hover:bg-stone-50/30 dark:hover:bg-stone-900/60 transition-colors ${
+                  className={`group hover:bg-stone-50/50 dark:hover:bg-stone-900/30 transition-colors ${
                     selectedIds.has(post.id) ? 'bg-indigo-50/30 dark:bg-indigo-950/20' : ''
                   }`}
                 >
-                  <td className="px-4 py-4 w-10">
+                  <td className="px-2 py-3 w-10">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(post.id)}
@@ -440,42 +411,42 @@ export default function Admin() {
                       className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
                     />
                   </td>
-                  <td className="px-6 py-4 font-medium text-stone-900 dark:text-stone-100 flex items-center">
+                  <td className="px-4 py-3 font-medium text-sm text-stone-900 dark:text-stone-100 flex items-center">
                     {post.title}
                     {post.status === 'draft' && (
-                      <span className="ml-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-md">
+                      <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 rounded">
                         草稿
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     {post.imageUrl ? (
                       <img
                         src={post.imageUrl}
                         alt={post.title}
-                        className="h-10 w-16 object-cover rounded-md border border-stone-200 dark:border-stone-700"
+                        className="h-8 w-12 object-cover rounded border border-stone-200 dark:border-stone-800"
                       />
                     ) : (
                       <span className="text-xs text-stone-400">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-stone-500 dark:text-stone-400">
+                  <td className="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">
                     {post.category || t.post.general}
                   </td>
-                  <td className="px-6 py-4 text-sm text-stone-500 dark:text-stone-400">
+                  <td className="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">
                     {formatPostDate(post.createdAt)}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2">
+                  <td className="px-4 py-3 text-right space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Link
                       to={`/admin/edit/${post.id}`}
-                      className="inline-flex p-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-white dark:hover:bg-stone-900 rounded-lg transition-all border border-transparent hover:border-stone-100 dark:hover:border-stone-700"
+                      className="inline-flex p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded transition-all"
                       aria-label="Edit post"
                     >
                       <Edit2 className="w-4 h-4" />
                     </Link>
                     <button
                       onClick={() => void handleDelete(post.id)}
-                      className="inline-flex p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all border border-transparent hover:border-red-100 dark:hover:border-red-900/40"
+                      className="inline-flex p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
                       aria-label="Delete post"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -485,7 +456,6 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
-          </div>
         </div>
       </div>
 
