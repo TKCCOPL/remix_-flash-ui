@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
-import { ApiError } from '../api/client';
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED = 64;
@@ -78,7 +77,7 @@ export default function AdminLayout() {
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       <div className={`p-4 border-b border-stone-200/60 dark:border-stone-800/60 ${collapsed ? 'px-3' : ''}`}>
         {!collapsed && (
           <Link to="/" className="text-lg font-bold text-stone-900 dark:text-stone-100 block truncate">
@@ -94,7 +93,7 @@ export default function AdminLayout() {
         </button>
       </div>
 
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
         {sidebarItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -130,13 +129,15 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="w-full flex min-h-[calc(100vh-3rem)] -my-12">
+    <div className="w-full min-h-screen flex">
       {/* Desktop sidebar — sticky below header */}
       <aside
-        className="hidden md:block shrink-0 sticky top-16 self-start h-[calc(100vh-4rem)] bg-white dark:bg-stone-900 border-r border-stone-200/60 dark:border-stone-800/60 transition-all duration-300 overflow-y-auto"
+        className="hidden md:block shrink-0 sticky top-0 h-screen self-start bg-white dark:bg-stone-900 border-r border-stone-200/60 dark:border-stone-800/60 transition-all duration-300 overflow-hidden"
         style={{ width: sidebarWidth }}
       >
-        {sidebarContent}
+        <div className="h-full flex flex-col overflow-y-auto">
+          {sidebarContent}
+        </div>
       </aside>
 
       {/* Mobile sidebar overlay */}

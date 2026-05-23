@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Eye, PenLine } from 'lucide-react';
 import Markdown from 'react-markdown';
@@ -30,14 +30,14 @@ export default function AdminEdit() {
   const [createdAt, setCreatedAt] = useState('');
   const [updatedAt, setUpdatedAt] = useState('');
   const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const autoResize = useCallback(() => {
+  useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
-  }, []);
+    el.style.height = `${el.scrollHeight}px`;
+  }, [content]);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +54,6 @@ export default function AdminEdit() {
             setContent(post.content);
             setCreatedAt(post.created_at);
             setUpdatedAt(post.updated_at);
-            setTimeout(autoResize, 0);
           }
         }
       } catch (requestError) {
@@ -175,9 +174,9 @@ export default function AdminEdit() {
 
       <form onSubmit={handleSubmit}>
         {/* Split pane layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 items-start">
           {/* Left pane: Editor */}
-          <div className={`space-y-5 ${mobileTab === 'preview' ? 'hidden md:block' : ''}`}>
+          <div className={`space-y-5 min-w-0 ${mobileTab === 'preview' ? 'hidden md:block' : ''}`}>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {t.editor.fieldTitle}
@@ -249,36 +248,37 @@ export default function AdminEdit() {
               <textarea
                 ref={textareaRef}
                 value={content}
-                onChange={(e) => {
-                  setContent(e.target.value);
-                  autoResize();
-                }}
-                rows={20}
+                onChange={(e) => setContent(e.target.value)}
+                rows={1}
                 placeholder={t.editor.placeholderContent}
-                className="w-full px-4 py-4 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none min-h-[200px] text-stone-900 dark:text-stone-100 resize-none overflow-hidden"
+                className="w-full px-4 py-4 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none min-h-[500px] text-stone-900 dark:text-stone-100 resize-none overflow-hidden"
                 required
               />
             </div>
           </div>
 
           {/* Right pane: Preview */}
-          <div className={`${mobileTab === 'edit' ? 'hidden md:block' : ''}`}>
-            <div className="flex items-center gap-2 mb-3">
-              <Eye className="w-4 h-4 text-stone-400 dark:text-stone-500" />
-              <span className="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                {t.editor.preview}
-              </span>
-            </div>
-            <div className="border border-stone-200 dark:border-stone-800 rounded-xl bg-white dark:bg-stone-950 p-6">
-              {content ? (
-                <div className="prose">
-                  <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+          <div className={`min-w-0 ${mobileTab === 'edit' ? 'hidden md:block' : ''}`}>
+            <div className="md:sticky md:top-6 self-start">
+              <div className="flex items-center gap-2 mb-3">
+                <Eye className="w-4 h-4 text-stone-400 dark:text-stone-500" />
+                <span className="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  {t.editor.preview}
+                </span>
+              </div>
+              <div className="border border-stone-200 dark:border-stone-800 rounded-xl bg-white dark:bg-stone-950">
+                <div className="max-h-[calc(100vh-12rem)] overflow-y-auto p-6">
+                  {content ? (
+                    <div className="prose max-w-none">
+                      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+                    </div>
+                  ) : (
+                    <p className="text-stone-400 dark:text-stone-600 italic">
+                      {t.editor.placeholderContent}
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-stone-400 dark:text-stone-600 italic">
-                  {t.editor.placeholderContent}
-                </p>
-              )}
+              </div>
             </div>
           </div>
         </div>
