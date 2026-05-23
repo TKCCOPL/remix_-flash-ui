@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -18,6 +18,7 @@ function normalizeDate(value: string): string {
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<ApiPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -100,10 +101,13 @@ export default function PostDetail() {
   return (
     <article className="w-full max-w-3xl mx-auto">
       <header className="mb-14">
-        <Link to="/" className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-8 transition-colors">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-8 transition-colors"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t.post.backToPosts}
-        </Link>
+        </button>
         {post.image_url && (
           <div className="mb-8 overflow-hidden rounded-2xl border border-stone-100 dark:border-stone-800">
             <img src={post.image_url} alt={post.title} className="w-full max-h-[440px] object-cover" />
