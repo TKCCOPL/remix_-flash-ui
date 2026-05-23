@@ -4,6 +4,8 @@ import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
+import ArchivePage from './pages/ArchivePage';
+import CategoriesPage from './pages/CategoriesPage';
 import Admin from './pages/Admin';
 import AdminEdit from './pages/AdminEdit';
 import Login from './pages/Login';
@@ -18,6 +20,8 @@ function App() {
           <Route index element={<Home />} />
           <Route path="post/:id" element={<PostDetail />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="archive" element={<ArchivePage />} />
+          <Route path="categories" element={<CategoriesPage />} />
           <Route path="login" element={<Login />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
