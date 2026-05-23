@@ -89,9 +89,7 @@ textarea {
 }
 
 .hero-canvas-title {
-  opacity: 0;
-  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 200ms;
+  opacity: 1;
   font-size: clamp(3rem, 7vw, 6rem);
   font-weight: 900;
   letter-spacing: -0.04em;
@@ -105,9 +103,7 @@ textarea {
 }
 
 .hero-canvas-subtitle {
-  opacity: 0;
-  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 300ms;
+  opacity: 1;
   max-width: 42rem;
   font-size: clamp(1.125rem, 2vw, 1.25rem);
   color: #78716c;
