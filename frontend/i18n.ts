@@ -30,6 +30,9 @@ export const translations = {
       home: '首页',
       profile: '简介',
       admin: '管理',
+      archive: '归档',
+      categories: '分类',
+      search: '搜索',
     },
     search: {
       placeholder: '输入关键词搜索...',
@@ -186,6 +189,9 @@ export const translations = {
       home: 'Home',
       profile: 'Profile',
       admin: 'Admin',
+      archive: 'Archive',
+      categories: 'Categories',
+      search: 'Search',
     },
     search: {
       placeholder: '输入关键词搜索...',

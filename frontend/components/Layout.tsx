@@ -41,8 +41,9 @@ export default function Layout() {
             </Link>
             <nav className="hidden md:flex space-x-1">
               {navLink('/', t.nav.home)}
-              {navLink('/profile', t.nav.profile)}
-              {navLink('/admin', t.nav.admin)}
+              {navLink('/archive', t.nav.archive)}
+              {navLink('/categories', t.nav.categories)}
+              {navLink('/search', t.nav.search)}
             </nav>
           </div>
 
@@ -77,6 +78,10 @@ export default function Layout() {
               </button>
             </div>
 
+            <Link to="/profile" className="w-8 h-8 rounded-full overflow-hidden border-2 border-stone-200 dark:border-stone-700 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors">
+              <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover" />
+            </Link>
+
             <button
               onClick={() => setMobileNavOpen(!mobileNavOpen)}
               className="md:hidden p-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-900/70 rounded-lg transition-colors"
@@ -98,8 +103,9 @@ export default function Layout() {
             >
               <nav className="px-6 py-3 space-y-1 bg-stone-50 dark:bg-stone-950">
                 {navLink('/', t.nav.home)}
-                {navLink('/profile', t.nav.profile)}
-                {navLink('/admin', t.nav.admin)}
+                {navLink('/archive', t.nav.archive)}
+                {navLink('/categories', t.nav.categories)}
+                {navLink('/search', t.nav.search)}
               </nav>
             </motion.div>
           )}
