@@ -29,17 +29,17 @@ pytest tests/test_admin_api_workflow.py  # Run specific test
 
 ## Architecture
 
-### Frontend (`src/`)
+### Frontend (`frontend/`)
 
 React 19 + Vite + Tailwind CSS 4.0 application.
 
 - **Routing**: React Router 7. Routes: `/`, `/post/:id`, `/profile`, `/admin`, `/admin/edit[:id]`, `/login`
-- **API layer** (`src/api/client.ts`): `apiFetch<T>()` wraps fetch with credentials, JSON handling, and `ApiError` for non-2xx responses. Vite proxies `/api` to `http://127.0.0.1:8000`.
+- **API layer** (`frontend/api/client.ts`): `apiFetch<T>()` wraps fetch with credentials, JSON handling, and `ApiError` for non-2xx responses. Vite proxies `/api` to `http://127.0.0.1:8000`.
 - **Auth**: Cookie-based sessions. Credentials: `admin` / `123456`. Endpoints in `backend/routers/auth_router.py`.
-- **State**: `src/context/Preferences.tsx` provides theme/language context. `src/store.ts` is legacy localStorage logic.
-- **i18n**: `src/i18n.ts` contains UI strings in `zh`/`en`. Use `useI18n()` from Preferences context.
+- **State**: `frontend/context/Preferences.tsx` provides theme/language context. `frontend/store.ts` is legacy localStorage logic.
+- **i18n**: `frontend/i18n.ts` contains UI strings in `zh`/`en`. Use `useI18n()` from Preferences context.
 - **Styling**: Tailwind CSS 4 with Inter + JetBrains Mono fonts. Dark mode via `.dark` class selector.
-- **Path alias**: `@/` maps to `src/` (configured in `tsconfig.json` and `vite.config.ts`).
+- **Path alias**: `@/` maps to `frontend/` (configured in `tsconfig.json` and `vite.config.ts`).
 
 ### Backend (`backend/`)
 
@@ -55,4 +55,4 @@ FastAPI with layered architecture:
 
 ## TypeScript Conventions
 
-- API types co-located with API modules (`src/api/posts.ts` defines `ApiPost`)
+- API types co-located with API modules (`frontend/api/posts.ts` defines `ApiPost`)

@@ -23,7 +23,7 @@
 ## 项目结构
 
 ```
-├── src/                # React 前端
+├── frontend/           # React 前端
 │   ├── api/            # API 客户端 (认证、文章)
 │   ├── components/     # 可复用组件
 │   ├── context/        # 主题/语言上下文

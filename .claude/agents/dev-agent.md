@@ -19,8 +19,8 @@ memory: project
 ### 前端（React 19 + Vite + Tailwind CSS 4）
 - 使用函数组件和 hooks
 - 所有组件使用 TypeScript
-- 遵循 src/components/ 中的现有组件模式
-- 使用 @/ 路径别名导入（映射到 src/）
+- 遵循 frontend/components/ 中的现有组件模式
+- 使用 @/ 路径别名导入（映射到 frontend/）
 - 使用 useI18n() 从 Preferences context 获取国际化
 - 暗色模式通过 .dark 类选择器实现
 - 使用 Framer Motion 实现动画

@@ -23,7 +23,7 @@ A full-stack personal blog system built with **React 19**, **FastAPI**, and **SQ
 ## Project Structure
 
 ```
-├── src/                # React frontend
+├── frontend/           # React frontend
 │   ├── api/            # API client (auth, posts)
 │   ├── components/     # Reusable components
 │   ├── context/        # Theme & language context
