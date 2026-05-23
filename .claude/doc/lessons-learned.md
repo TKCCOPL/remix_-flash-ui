@@ -1,16 +1,16 @@
-# Lessons Learned
+# 经验教训库
 
-## Category: Layout
-<!-- Add layout-related lessons here -->
+## 类别：布局
+<!-- 在此添加布局相关经验 -->
 
-## Category: API
-<!-- Add API-related lessons here -->
+## 类别：API
+<!-- 在此添加 API 相关经验 -->
 
-## Category: Testing
-<!-- Add testing-related lessons here -->
+## 类别：测试
+<!-- 在此添加测试相关经验 -->
 
-## Category: Frontend
-<!-- Add frontend-related lessons here -->
+## 类别：前端
+<!-- 在此添加前端相关经验 -->
 
-## Category: Backend
-<!-- Add backend-related lessons here -->
+## 类别：后端
+<!-- 在此添加后端相关经验 -->

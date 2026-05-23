@@ -1,13 +1,13 @@
-# Development Plan
+# 开发计划
 
-## Project Overview
-XiaoC Blog - Full-stack personal blog system with React 19, FastAPI, and SQLite.
+## 项目概述
+XiaoC Blog - 基于 React 19、FastAPI 和 SQLite 的全栈个人博客系统。
 
-## Task List
-| # | Task | Status | Dev ID | Test ID | Notes |
-|---|------|--------|--------|---------|-------|
-| 0 | Setup framework and common code | ✅ Done | - | - | Initial setup |
+## 任务列表
+| # | 任务 | 状态 | 开发ID | 测试ID | 备注 |
+|---|------|------|--------|--------|------|
+| 0 | 搭建框架和公共代码 | ✅ 已完成 | - | - | 初始搭建 |
 
-## Current Progress
-- Executing: None
-- Completed: 1/1
+## 当前进度
+- 正在执行：无
+- 已完成：1/1
