@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Eye, PenLine } from 'lucide-react';
+import { ArrowLeft, Save, Eye, PenLine, Settings, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { format } from 'date-fns';
@@ -29,7 +30,8 @@ export default function AdminEdit() {
   const [saving, setSaving] = useState(false);
   const [createdAt, setCreatedAt] = useState('');
   const [updatedAt, setUpdatedAt] = useState('');
-  const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit');
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -124,18 +126,18 @@ export default function AdminEdit() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto pb-32">
-      <header className="mb-6">
+    <div className="w-full max-w-3xl mx-auto pb-32">
+      <header className="mb-6 flex items-center justify-between">
         <Link
           to="/admin"
-          className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 mb-4 transition-colors"
+          className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t.editor.back}
         </Link>
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-          {id ? t.editor.editTitle : t.editor.newTitle}
-        </h1>
+        <div className="text-sm font-medium text-stone-400 uppercase tracking-widest">
+          {viewMode === 'edit' ? t.editor.edit : t.editor.preview}
+        </div>
       </header>
 
       {error && (
@@ -144,144 +146,122 @@ export default function AdminEdit() {
         </div>
       )}
 
-      {/* Mobile tab switcher */}
-      <div className="md:hidden flex gap-1 mb-4 p-1 bg-stone-100 dark:bg-stone-900 rounded-xl">
-        <button
-          type="button"
-          onClick={() => setMobileTab('edit')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            mobileTab === 'edit'
-              ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-sm'
-              : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
-          }`}
-        >
-          <PenLine className="w-4 h-4" />
-          {t.editor.edit}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMobileTab('preview')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            mobileTab === 'preview'
-              ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-sm'
-              : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
-          }`}
-        >
-          <Eye className="w-4 h-4" />
-          {t.editor.preview}
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit}>
-        {/* Split pane layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-6 items-start">
-          {/* Left pane: Editor */}
-          <div className={`space-y-5 min-w-0 ${mobileTab === 'preview' ? 'hidden md:block' : ''}`}>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                {t.editor.fieldTitle}
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t.editor.placeholderTitle}
-                className="w-full bg-transparent border-none outline-none text-3xl font-bold text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                {t.editor.fieldCategory}
-              </label>
-              <input
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder={t.editor.placeholderCategory}
-                className="w-full bg-transparent border-none outline-none text-stone-600 dark:text-stone-400 font-medium placeholder:text-stone-400 transition-colors"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                {t.editor.fieldImage}
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder={t.editor.placeholderImage}
-                  className="w-full bg-transparent border-none outline-none text-stone-600 dark:text-stone-400 placeholder:text-stone-400 transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={() => setImageUrl('')}
-                  className="px-3 py-1.5 text-xs bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors whitespace-nowrap"
-                >
-                  {t.editor.clearImage}
-                </button>
-              </div>
-            </div>
-
-            {imageUrl.trim() && (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                  {t.editor.imagePreview}
-                </label>
-                <div className="rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden bg-stone-50 dark:bg-stone-900">
-                  <img
-                    src={imageUrl.trim()}
-                    alt={title || t.editor.imagePreview}
-                    className="w-full max-h-48 object-cover"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                {t.editor.content}
-              </label>
-              <textarea
-                ref={textareaRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={1}
-                placeholder={t.editor.placeholderContent}
-                className="w-full bg-transparent border-none outline-none text-lg leading-relaxed text-stone-800 dark:text-stone-200 resize-none overflow-hidden placeholder:text-stone-300 dark:placeholder:text-stone-700 min-h-[500px] transition-colors"
-                required
-              />
-            </div>
+        {/* Main Content Area */}
+        {viewMode === 'edit' ? (
+          <div className="space-y-6">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t.editor.placeholderTitle}
+              className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-black leading-tight text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors py-4"
+              required
+            />
+            
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={1}
+              placeholder={t.editor.placeholderContent}
+              className="w-full bg-transparent border-none outline-none text-xl leading-loose text-stone-800 dark:text-stone-200 resize-none overflow-hidden placeholder:text-stone-300 dark:placeholder:text-stone-700 min-h-[500px] transition-colors font-serif"
+              required
+            />
           </div>
+        ) : (
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            {title && <h1 className="text-4xl md:text-5xl font-black mb-8 leading-tight">{title}</h1>}
+            {content ? (
+              <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+            ) : (
+              <p className="text-stone-400 dark:text-stone-600 italic">
+                {t.editor.placeholderContent}
+              </p>
+            )}
+          </div>
+        )}
 
-          {/* Right pane: Preview */}
-          <div className={`min-w-0 ${mobileTab === 'edit' ? 'hidden md:block' : ''}`}>
-            <div className="md:sticky md:top-6 self-start">
-              <div className="flex items-center gap-2 mb-3">
-                <Eye className="w-4 h-4 text-stone-400 dark:text-stone-500" />
-                <span className="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-                  {t.editor.preview}
-                </span>
-              </div>
-              <div className="border border-stone-200 dark:border-stone-800 rounded-xl bg-white dark:bg-stone-950">
-                <div className="max-h-[calc(100vh-12rem)] overflow-y-auto p-6">
-                  {content ? (
-                    <div className="prose max-w-none">
-                      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+        {/* Settings Drawer */}
+        <AnimatePresence>
+          {isSettingsOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm"
+                onClick={() => setIsSettingsOpen(false)}
+              />
+              <motion.aside
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 right-0 z-[70] w-full max-w-[360px] bg-white dark:bg-stone-900 shadow-2xl flex flex-col border-l border-stone-200/50 dark:border-stone-800/50"
+              >
+                <div className="flex items-center justify-between p-6 border-b border-stone-100 dark:border-stone-800">
+                  <h2 className="font-semibold text-lg text-stone-900 dark:text-stone-100">文章设置</h2>
+                  <button type="button" onClick={() => setIsSettingsOpen(false)} className="p-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                      {t.editor.fieldCategory}
+                    </label>
+                    <input
+                      type="text"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      placeholder={t.editor.placeholderCategory}
+                      className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200/50 dark:border-stone-800/50 outline-none text-stone-900 dark:text-stone-100 font-medium placeholder:text-stone-400 transition-all rounded-xl px-4 py-3 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                      {t.editor.fieldImage}
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder={t.editor.placeholderImage}
+                        className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200/50 dark:border-stone-800/50 outline-none text-stone-900 dark:text-stone-100 placeholder:text-stone-400 transition-all rounded-xl px-4 py-3 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl('')}
+                        className="px-3 py-2 text-xs font-medium bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors whitespace-nowrap"
+                      >
+                        {t.editor.clearImage}
+                      </button>
                     </div>
-                  ) : (
-                    <p className="text-stone-400 dark:text-stone-600 italic">
-                      {t.editor.placeholderContent}
-                    </p>
+                  </div>
+
+                  {imageUrl.trim() && (
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                        {t.editor.imagePreview}
+                      </label>
+                      <div className="rounded-2xl border border-stone-200/50 dark:border-stone-800/50 overflow-hidden bg-stone-50 dark:bg-stone-950">
+                        <img
+                          src={imageUrl.trim()}
+                          alt={title || t.editor.imagePreview}
+                          className="w-full max-h-48 object-cover"
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Floating Action Bar */}
         <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-full shadow-xl w-[calc(100%-2rem)] md:w-auto min-w-[320px]">
@@ -315,6 +295,28 @@ export default function AdminEdit() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 mr-2">
+                <button
+                  type="button"
+                  onClick={() => setViewMode(prev => prev === 'edit' ? 'preview' : 'edit')}
+                  className={`p-2.5 rounded-xl transition-all ${
+                    viewMode === 'preview' 
+                      ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner' 
+                      : 'bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                  }`}
+                  title={viewMode === 'edit' ? '切换到预览' : '继续编辑'}
+                >
+                  {viewMode === 'preview' ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-2.5 bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-all"
+                  title="文章设置"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </div>
               <Link
                 to="/admin"
                 className="px-5 py-2.5 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors text-sm"
