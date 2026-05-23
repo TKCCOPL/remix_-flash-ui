@@ -6,6 +6,7 @@ import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
 import ArchivePage from './pages/ArchivePage';
 import CategoriesPage from './pages/CategoriesPage';
+import CategoryPage from './pages/CategoryPage';
 import Admin from './pages/Admin';
 import AdminEdit from './pages/AdminEdit';
 import Login from './pages/Login';
@@ -22,6 +23,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="archive" element={<ArchivePage />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="categories/:slug" element={<CategoryPage />} />
           <Route path="login" element={<Login />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
