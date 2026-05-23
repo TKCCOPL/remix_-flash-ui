@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
@@ -17,10 +18,12 @@ function App() {
           <Route index element={<Home />} />
           <Route path="post/:id" element={<PostDetail />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="admin" element={<Admin />} />
-          <Route path="admin/edit" element={<AdminEdit />} />
-          <Route path="admin/edit/:id" element={<AdminEdit />} />
           <Route path="login" element={<Login />} />
+        </Route>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Admin />} />
+          <Route path="edit" element={<AdminEdit />} />
+          <Route path="edit/:id" element={<AdminEdit />} />
         </Route>
       </Routes>
     </BrowserRouter>
