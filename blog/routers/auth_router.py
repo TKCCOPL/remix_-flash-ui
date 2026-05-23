@@ -9,7 +9,12 @@ router = APIRouter()
 def login(response: Response, username: str = Form(...), password: str = Form(...)):
     if not login_ok(username, password):
         raise HTTPException(status_code=401, detail="invalid credentials")
-    response.set_cookie("session", "admin_logged_in", httponly=True)
+    response.set_cookie(
+        "session",
+        "admin_logged_in",
+        httponly=True,
+        samesite="lax",
+    )
     return {"ok": True}
 
 
