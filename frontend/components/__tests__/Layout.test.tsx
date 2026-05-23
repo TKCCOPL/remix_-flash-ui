@@ -16,6 +16,6 @@ describe('Layout', () => {
 
     expect(screen.getByText('归档')).toBeInTheDocument();
     expect(screen.getByText('分类')).toBeInTheDocument();
-    expect(screen.getByText('搜索')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('输入关键词搜索...')).toBeInTheDocument();
   });
 });

@@ -180,6 +180,15 @@ export const translations = {
       password: '密码',
       submit: '登录',
     },
+    categoryPage: {
+      notFound: '分类不存在',
+      notFoundDesc: (slug: string) => `您访问的分类 "${slug}" 不存在或已被删除。`,
+      backToCategories: '返回分类列表',
+      loadError: '加载分类文章失败',
+      postCount: (count: number) => `共 ${count} 篇文章`,
+      noPosts: '该分类暂无文章',
+      browseOtherCategories: '浏览其他分类',
+    },
   },
   en: {
     brand: {
@@ -339,6 +348,15 @@ export const translations = {
       username: 'Username',
       password: 'Password',
       submit: 'Sign In',
+    },
+    categoryPage: {
+      notFound: 'Category not found',
+      notFoundDesc: (slug: string) => `The category "${slug}" you're looking for doesn't exist or has been removed.`,
+      backToCategories: 'Back to categories',
+      loadError: 'Failed to load category posts',
+      postCount: (count: number) => `${count} posts in this category`,
+      noPosts: 'No posts in this category',
+      browseOtherCategories: 'Browse other categories',
     },
   },
 } as const;

@@ -11,9 +11,9 @@ vi.mock('../../api/categories', () => ({
 }));
 
 const mockCategories = [
-  { name: 'Tech', slug: 'tech', post_count: 12 },
-  { name: 'Design', slug: 'design', post_count: 8 },
-  { name: 'Programming', slug: 'programming', post_count: 5 },
+  { id: 1, name: 'Tech', slug: 'tech', description: 'Technology related posts', post_count: 12 },
+  { id: 2, name: 'Design', slug: 'design', description: 'Design related posts', post_count: 8 },
+  { id: 3, name: 'Programming', slug: 'programming', description: 'Programming related posts', post_count: 5 },
 ];
 
 describe('CategoriesPage', () => {
