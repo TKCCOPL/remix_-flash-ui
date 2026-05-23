@@ -371,7 +371,7 @@ export default function Admin() {
       {/* Table */}
       <div className="space-y-4">
         <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse" aria-label="Posts management table">
             <thead>
               <tr className="bg-stone-50/50 dark:bg-stone-900/60 border-b border-stone-100 dark:border-stone-800">
                 <th className="px-4 py-4 w-10">
@@ -449,12 +449,14 @@ export default function Admin() {
                     <Link
                       to={`/admin/edit/${post.id}`}
                       className="inline-flex p-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-white dark:hover:bg-stone-900 rounded-lg transition-all border border-transparent hover:border-stone-100 dark:hover:border-stone-700"
+                      aria-label="Edit post"
                     >
                       <Edit2 className="w-4 h-4" />
                     </Link>
                     <button
                       onClick={() => void handleDelete(post.id)}
                       className="inline-flex p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all border border-transparent hover:border-red-100 dark:hover:border-red-900/40"
+                      aria-label="Delete post"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

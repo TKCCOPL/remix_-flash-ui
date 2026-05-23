@@ -156,6 +156,9 @@ export default function AdminLayout() {
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="md:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-white dark:bg-stone-900 shadow-xl"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation sidebar"
             >
               {sidebarContent}
             </motion.aside>
@@ -170,6 +173,7 @@ export default function AdminLayout() {
             onClick={() => setMobileOpen(true)}
             className="p-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 rounded-lg"
             aria-label="Open sidebar"
+            aria-expanded={mobileOpen}
           >
             <Menu className="w-5 h-5" />
           </button>
