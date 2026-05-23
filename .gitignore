@@ -43,3 +43,7 @@ backend/uploads/*
 
 # Generated docs
 docs/superpowers/
+
+# Playwright
+test-results/
+playwright-report/

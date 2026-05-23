@@ -22,7 +22,7 @@ export default function SearchResults({ results, total, query }: SearchResultsPr
   }
 
   return (
-    <div>
+    <div data-testid="search-results">
       <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
         {t.search.foundCount.replace('{count}', String(total))}
       </p>

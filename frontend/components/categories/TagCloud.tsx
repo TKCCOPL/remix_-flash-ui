@@ -21,7 +21,7 @@ export default function TagCloud({ categories }: TagCloudProps) {
   const maxCount = Math.max(...categories.map((c) => c.post_count));
 
   return (
-    <div className="flex flex-wrap gap-3 justify-center items-center py-8">
+    <div className="flex flex-wrap gap-3 justify-center items-center py-8" data-testid="tag-cloud">
       {categories.map((category) => (
         <CategoryTag
           key={category.slug}

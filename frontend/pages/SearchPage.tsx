@@ -54,7 +54,7 @@ export default function SearchPage() {
   return (
     <div className="w-full">
       <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8">
-        {t.search.placeholder.replace('...', '')}
+        {t.search.title}
       </h1>
 
       <div className="max-w-3xl mx-auto">

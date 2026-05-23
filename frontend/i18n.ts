@@ -35,6 +35,7 @@ export const translations = {
       search: '搜索',
     },
     search: {
+      title: '搜索文章',
       placeholder: '输入关键词搜索...',
       mobileAria: '搜索',
       history: '搜索历史',
@@ -194,6 +195,7 @@ export const translations = {
       search: 'Search',
     },
     search: {
+      title: '搜索文章',
       placeholder: '输入关键词搜索...',
       mobileAria: 'Search',
       history: 'Search History',
