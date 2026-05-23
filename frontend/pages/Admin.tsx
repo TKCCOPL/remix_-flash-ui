@@ -24,6 +24,7 @@ type AdminPost = {
   content: string;
   imageUrl: string;
   category: string;
+  status: 'published' | 'draft';
   createdAt: string;
   updatedAt: string;
 };
@@ -35,6 +36,7 @@ function mapApiPost(post: ApiPost): AdminPost {
     content: post.content,
     imageUrl: post.image_url ?? '',
     category: post.category ?? '',
+    status: post.status,
     createdAt: post.created_at,
     updatedAt: post.updated_at,
   };
@@ -438,7 +440,14 @@ export default function Admin() {
                       className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer"
                     />
                   </td>
-                  <td className="px-6 py-4 font-medium text-stone-900 dark:text-stone-100">{post.title}</td>
+                  <td className="px-6 py-4 font-medium text-stone-900 dark:text-stone-100 flex items-center">
+                    {post.title}
+                    {post.status === 'draft' && (
+                      <span className="ml-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-md">
+                        草稿
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     {post.imageUrl ? (
                       <img

@@ -6,6 +6,7 @@ export type ApiPost = {
   content: string;
   category?: string;
   image_url?: string;
+  status: 'published' | 'draft';
   created_at: string;
   updated_at: string;
 };
@@ -15,6 +16,7 @@ type PostCreatePayload = {
   content: string;
   category?: string;
   image_url?: string;
+  status?: 'published' | 'draft';
 };
 
 type PostUpdatePayload = {
@@ -22,6 +24,7 @@ type PostUpdatePayload = {
   content?: string;
   category?: string;
   image_url?: string;
+  status?: 'published' | 'draft';
 };
 
 export type ArchivePost = {
