@@ -23,7 +23,11 @@ function AIAssistant() {
     setIsLoading(true);
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY as string;
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        setMessages(prev => [...prev, { role: 'assistant', text: "AI assistant is not configured. Please set GEMINI_API_KEY." }]);
+        return;
+      }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
       const systemPrompt = "You are Alex's AI assistant on his personal blog. Alex is a software engineer and designer who builds thoughtful software and interfaces. Answer questions politely, concisely, and stay in character. If asked something unrelated, gently steer the conversation back to tech, design, or Alex's blog.";
