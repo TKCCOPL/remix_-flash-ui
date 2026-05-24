@@ -58,7 +58,6 @@ export default function Admin() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
-  const sortDropdownRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState('');
@@ -101,17 +100,6 @@ export default function Admin() {
       cancelled = true;
     };
   }, [navigate, t.login.error]);
-
-  useEffect(() => {
-    if (!isSortDropdownOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
-        setIsSortDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isSortDropdownOpen]);
 
   const categories = useMemo(() => {
     return [...new Set(posts.map((post) => post.category).filter(Boolean))].sort();
@@ -372,14 +360,18 @@ export default function Admin() {
             className="w-full pl-6 pr-4 py-2 bg-transparent border-b border-stone-200/50 dark:border-stone-800/50 outline-none focus:border-stone-900 dark:focus:border-stone-100 transition-colors text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
           />
         </div>
-        <div 
-          className="relative w-full sm:w-auto" 
-          ref={sortDropdownRef}
-        >
+        <div className="relative w-full sm:w-auto">
+          {/* Invisible backdrop to close dropdown on outside click */}
+          {isSortDropdownOpen && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setIsSortDropdownOpen(false)}
+            />
+          )}
           <button
             type="button"
             onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-            className="flex items-center justify-between w-full sm:w-auto px-4 py-2 bg-stone-100 dark:bg-stone-800/50 hover:bg-stone-200 dark:hover:bg-stone-800 text-sm font-medium text-stone-700 dark:text-stone-300 rounded-xl transition-colors outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="relative z-50 flex items-center justify-between w-full sm:w-auto px-4 py-2 bg-stone-100 dark:bg-stone-800/50 hover:bg-stone-200 dark:hover:bg-stone-800 text-sm font-medium text-stone-700 dark:text-stone-300 rounded-xl transition-colors outline-none focus:ring-2 focus:ring-indigo-500/30"
           >
             <span className="mr-3">{sortOptions.find(o => o.value === sortBy)?.label}</span>
             <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
@@ -392,18 +384,13 @@ export default function Admin() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute right-0 top-full mt-2 w-full sm:w-40 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right"
+                className="absolute right-0 top-full mt-2 w-full sm:w-44 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right"
               >
                 <div className="p-1.5 flex flex-col gap-0.5">
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
                       type="button"
-                      onMouseDown={(e) => {
-                        e.preventDefault(); // Prevent focus shifting
-                        setSortBy(option.value);
-                        setIsSortDropdownOpen(false);
-                      }}
                       onClick={() => {
                         setSortBy(option.value);
                         setIsSortDropdownOpen(false);
