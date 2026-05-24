@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Eye, PenLine, Settings, X } from 'lucide-react';
+import { ArrowLeft, Save, Eye, PenLine, Settings, X, UploadCloud, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -9,6 +9,8 @@ import { useI18n, usePreferences } from '../context/Preferences';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { postsApi, type ApiPost } from '../api/posts';
+import { uploadApi } from '../api/upload';
+import { categoriesApi, type Category } from '../api/categories';
 import { locales, dateFormats } from '../i18n';
 
 function getWordCount(text: string): number {
@@ -33,14 +35,9 @@ export default function AdminEdit() {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
+  const [isUploading, setIsUploading] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, [content]);
 
   const settingsSidebarRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -67,6 +64,12 @@ export default function AdminEdit() {
     const load = async () => {
       try {
         await authApi.me();
+        
+        // 预加载分类列表
+        categoriesApi.list().then(res => {
+          if (!cancelled) setAvailableCategories(res);
+        }).catch(() => {});
+
         if (id) {
           const post: ApiPost = await postsApi.get(id);
           if (!cancelled) {
@@ -114,13 +117,13 @@ export default function AdminEdit() {
       if (id) {
         await postsApi.update(id, {
           title,
-          category: category || undefined,
+          category: category || "",
           content,
-          image_url: normalizedImageUrl || undefined,
+          image_url: normalizedImageUrl || "",
           status: targetStatus,
         });
       } else {
-        await postsApi.create({ title, category, content, image_url: normalizedImageUrl || undefined, status: targetStatus });
+        await postsApi.create({ title, category: category || "", content, image_url: normalizedImageUrl || "", status: targetStatus });
       }
       navigate('/admin');
     } catch (requestError) {
@@ -150,7 +153,7 @@ export default function AdminEdit() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-6rem)]">
+    <div className="w-full max-w-3xl mx-auto flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-6rem)] relative">
       <header className="mb-6 flex items-center justify-between shrink-0">
         <Link
           to="/admin"
@@ -170,21 +173,21 @@ export default function AdminEdit() {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0 relative">
         {/* Main Content Area */}
         {viewMode === 'edit' ? (
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="space-y-6 flex-1 flex flex-col"
+            className="space-y-6 flex-1 flex flex-col min-h-0"
           >
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t.editor.placeholderTitle}
-              className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-black leading-tight text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors py-4"
+              className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-black leading-tight text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors py-4 shrink-0"
               required
             />
             
@@ -192,14 +195,13 @@ export default function AdminEdit() {
               ref={textareaRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={1}
               placeholder={t.editor.placeholderContent}
-              className="w-full bg-transparent border-none outline-none text-xl leading-loose text-stone-800 dark:text-stone-200 resize-none overflow-hidden placeholder:text-stone-300 dark:placeholder:text-stone-700 min-h-[300px] flex-1 transition-colors font-serif"
+              className="w-full bg-transparent border-none outline-none text-xl leading-loose text-stone-800 dark:text-stone-200 resize-none overflow-y-auto placeholder:text-stone-300 dark:placeholder:text-stone-700 flex-1 transition-colors font-serif pb-32 scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800"
               required
             />
           </motion.div>
         ) : (
-          <div className="prose prose-lg dark:prose-invert max-w-none flex-1">
+          <div className="prose prose-lg dark:prose-invert max-w-none flex-1 overflow-y-auto pb-32 scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
             {title && <h1 className="text-4xl md:text-5xl font-black mb-8 leading-tight">{title}</h1>}
             {content ? (
               <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
@@ -231,9 +233,12 @@ export default function AdminEdit() {
                 
                 <div className="p-6 space-y-6 flex-1 overflow-y-auto">
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                      {t.editor.fieldCategory}
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                        {t.editor.fieldCategory}
+                      </label>
+                      <span className="text-[10px] uppercase tracking-widest text-stone-400 font-medium">Quick Select</span>
+                    </div>
                     <input
                       type="text"
                       value={category}
@@ -241,6 +246,28 @@ export default function AdminEdit() {
                       placeholder={t.editor.placeholderCategory}
                       className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200/50 dark:border-stone-800/50 outline-none text-stone-900 dark:text-stone-100 font-medium placeholder:text-stone-400 transition-all rounded-xl px-4 py-3 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10"
                     />
+                    
+                    {availableCategories.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {availableCategories.map(cat => {
+                          const isSelected = category.trim().toLowerCase() === cat.name.toLowerCase();
+                          return (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => setCategory(cat.name)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border ${
+                                isSelected
+                                  ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:border-indigo-800/50'
+                                  : 'bg-stone-100/80 text-stone-600 border-transparent hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-400 dark:hover:bg-stone-700'
+                              }`}
+                            >
+                              {cat.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-3">
@@ -248,20 +275,45 @@ export default function AdminEdit() {
                       {t.editor.fieldImage}
                     </label>
                     <div className="flex gap-2">
-                      <input
-                        type="url"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder={t.editor.placeholderImage}
-                        className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200/50 dark:border-stone-800/50 outline-none text-stone-900 dark:text-stone-100 placeholder:text-stone-400 transition-all rounded-xl px-4 py-3 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setImageUrl('')}
-                        className="px-3 py-2 text-xs font-medium bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors whitespace-nowrap"
-                      >
-                        {t.editor.clearImage}
-                      </button>
+                      <label className="relative flex-1 flex items-center justify-center px-4 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200/50 dark:border-stone-800/50 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-all">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setIsUploading(true);
+                            try {
+                              const res = await uploadApi.uploadImage(file);
+                              setImageUrl(res.url);
+                            } catch (err) {
+                              setError((err as Error).message);
+                            } finally {
+                              setIsUploading(false);
+                            }
+                          }}
+                        />
+                        {isUploading ? (
+                          <span className="flex items-center text-indigo-600 font-medium">
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 上传中...
+                          </span>
+                        ) : (
+                          <span className="flex items-center text-stone-600 dark:text-stone-300 font-medium text-sm">
+                            <UploadCloud className="w-4 h-4 mr-2" /> 
+                            {imageUrl ? '更换图片' : '上传本地图片'}
+                          </span>
+                        )}
+                      </label>
+                      {imageUrl.trim() && (
+                        <button
+                          type="button"
+                          onClick={() => setImageUrl('')}
+                          className="px-3 py-2 text-xs font-medium bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors whitespace-nowrap border border-red-100 dark:border-red-900/50"
+                        >
+                          {t.editor.clearImage}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -270,7 +322,7 @@ export default function AdminEdit() {
                       <label className="text-sm font-semibold text-stone-900 dark:text-stone-100">
                         {t.editor.imagePreview}
                       </label>
-                      <div className="rounded-2xl border border-stone-200/50 dark:border-stone-800/50 overflow-hidden bg-stone-50 dark:bg-stone-950">
+                      <div className="rounded-2xl border border-stone-200/50 dark:border-stone-800/50 overflow-hidden bg-stone-50 dark:bg-stone-950 relative group">
                         <img
                           src={imageUrl.trim()}
                           alt={title || t.editor.imagePreview}
@@ -284,12 +336,12 @@ export default function AdminEdit() {
           )}
         </AnimatePresence>
 
-        {/* Sticky Action Bar */}
+        {/* Absolute Action Bar */}
         <motion.div 
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", damping: 20, stiffness: 100, delay: 0.1 }}
-          className="sticky bottom-6 md:bottom-8 mt-12 z-50 flex items-center justify-between gap-4 md:gap-6 px-4 md:px-6 py-3 md:py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl md:rounded-full shadow-2xl w-full"
+          className="absolute bottom-6 md:bottom-8 z-50 flex items-center justify-between gap-4 md:gap-6 px-4 md:px-6 py-3 md:py-3 bg-white/85 dark:bg-stone-900/85 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-2xl md:rounded-full shadow-2xl w-full"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
             {/* Stats */}

@@ -55,13 +55,13 @@ export type SearchResponse = {
 };
 
 export const postsApi = {
-  list: (skip = 0, limit = 100) => apiFetch<ApiPost[]>(`/api/posts?skip=${skip}&limit=${limit}`),
+  list: (skip = 0, limit = 100, includeDrafts = false) => apiFetch<ApiPost[]>(`/api/posts?skip=${skip}&limit=${limit}${includeDrafts ? '&include_drafts=true' : ''}`),
   get: (id: string | number) => apiFetch<ApiPost>(`/api/posts/${id}`),
-  getArchive: () => apiFetch<ArchiveData>('/api/posts/archive'),
+  getArchive: (includeDrafts = false) => apiFetch<ArchiveData>(`/api/posts/archive${includeDrafts ? '?include_drafts=true' : ''}`),
   create: (payload: PostCreatePayload) =>
     apiFetch<ApiPost>('/api/posts', { method: 'POST', body: JSON.stringify(payload) }),
   update: (id: string | number, payload: PostUpdatePayload) =>
     apiFetch<ApiPost>(`/api/posts/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   remove: (id: string | number) => apiFetch<{ detail: string }>(`/api/posts/${id}`, { method: 'DELETE' }),
-  search: (query: string) => apiFetch<SearchResponse>(`/api/posts/search?q=${encodeURIComponent(query)}`),
+  search: (query: string, includeDrafts = false) => apiFetch<SearchResponse>(`/api/posts/search?q=${encodeURIComponent(query)}${includeDrafts ? '&include_drafts=true' : ''}`),
 };

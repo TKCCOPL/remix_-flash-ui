@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 const patternSvg = encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="240" height="100">
-    <text x="10" y="60" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="42" font-weight="900" fill="rgba(0,0,0,0.03)" letter-spacing="4">MIMO</text>
+    <text x="10" y="60" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="42" font-weight="900" fill="rgba(0,0,0,0.03)" letter-spacing="4">XIAOC</text>
   </svg>
 `);
 
@@ -98,14 +98,14 @@ export default function HeroCanvas({ title, subtitle, titleLine2 }: Props) {
 
     const blobs = width < 768
       ? [
-          new Blob(pointerX, pointerY, 160, 0.2),
-          new Blob(pointerX, pointerY, 240, 0.1, 40, 0.04),
+          new Blob(pointerX, pointerY, 75, 0.2),
+          new Blob(pointerX, pointerY, 110, 0.1, 20, 0.04),
         ]
       : [
-          new Blob(pointerX, pointerY, 200, 0.35),
-          new Blob(pointerX, pointerY, 300, 0.18),
-          new Blob(pointerX, pointerY, 380, 0.08),
-          new Blob(pointerX, pointerY, 240, 0.12, 100, 0.03),
+          new Blob(pointerX, pointerY, 90, 0.35),
+          new Blob(pointerX, pointerY, 140, 0.18),
+          new Blob(pointerX, pointerY, 170, 0.08),
+          new Blob(pointerX, pointerY, 110, 0.12, 45, 0.03),
         ];
 
     const render = () => {

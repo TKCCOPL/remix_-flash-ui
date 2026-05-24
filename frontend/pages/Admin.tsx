@@ -74,7 +74,7 @@ export default function Admin() {
     const loadPosts = async () => {
       try {
         await authApi.me();
-        const result = await postsApi.list(0, 100);
+        const result = await postsApi.list(0, 100, true);
         if (!cancelled) {
           setPosts(result.map(mapApiPost));
           setError('');

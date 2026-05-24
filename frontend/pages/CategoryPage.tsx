@@ -84,7 +84,7 @@ export default function CategoryPage() {
 
   return (
     <article className="w-full max-w-3xl mx-auto">
-      <header className="mb-8">
+      <header className="mb-14">
         <Link
           to="/categories"
           className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6 transition-colors"
@@ -140,20 +140,21 @@ export default function CategoryPage() {
           {posts.map((post, index) => (
             <div
               key={post.id}
-              className="border border-stone-200 dark:border-stone-700 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 stagger-item"
+              className="group relative flex flex-col items-start stagger-item p-6 sm:p-8 -mx-6 sm:-mx-8 rounded-3xl transition-all duration-300 hover:bg-stone-50/80 dark:hover:bg-stone-900/40 hover:shadow-xl hover:shadow-stone-200/20 dark:hover:shadow-none border border-transparent hover:border-stone-100 dark:hover:border-stone-800"
               style={{ '--stagger-index': index } as React.CSSProperties}
             >
-              <Link to={`/post/${post.id}`} className="block">
-                <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100 hover:text-indigo-600 dark:hover:text-indigo-400 mb-2">
+              <Link to={`/post/${post.id}`} className="block w-full z-10 relative">
+                <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 group-hover:text-stone-500 dark:group-hover:text-stone-300 transition-colors mb-3">
                   {post.title}
                 </h2>
               </Link>
-              <p className="text-stone-600 dark:text-stone-300 text-sm mb-2 line-clamp-2">
-                {post.content.substring(0, 150)}...
+              <p className="text-stone-600 dark:text-stone-300 line-clamp-2 leading-relaxed mb-4 z-10 relative">
+                {post.content.substring(0, 150).replace(/[#*`>]/g, '')}...
               </p>
-              <div className="text-xs text-stone-400 dark:text-stone-500">
+              <div className="text-sm font-medium text-stone-400 dark:text-stone-500 mt-auto pt-2 z-10 relative">
                 {new Date(post.created_at).toLocaleDateString('zh-CN')}
               </div>
+              <Link to={`/post/${post.id}`} className="absolute inset-0 z-0" />
             </div>
           ))}
         </div>

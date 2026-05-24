@@ -28,26 +28,32 @@ def create_post_route(post: PostCreate, request: Request, conn=Depends(get_db)):
 
 
 @router.get("", response_model=list[PostOut])
-def list_posts_route(skip: int = 0, limit: int = 10, conn=Depends(get_db)):
-    return list_posts(conn, skip=skip, limit=limit)
+def list_posts_route(skip: int = 0, limit: int = 10, include_drafts: bool = False, request: Request = None, conn=Depends(get_db)):
+    # Only allow drafts if explicitly requested AND user is logged in
+    actual_include = include_drafts and (request and is_logged_in(request))
+    return list_posts(conn, skip=skip, limit=limit, include_drafts=actual_include)
 
 
 @router.get("/archive")
-def get_archive_route(conn=Depends(get_db)):
-    return get_archive_data(conn)
+def get_archive_route(include_drafts: bool = False, request: Request = None, conn=Depends(get_db)):
+    actual_include = include_drafts and (request and is_logged_in(request))
+    return get_archive_data(conn, include_drafts=actual_include)
 
 
 @router.get("/search")
-def search_posts_route(q: str, request: Request, conn=Depends(get_db)):
-    user_ip = request.client.host if request.client else None
-    results = search_posts_by_query(conn, q, user_ip)
+def search_posts_route(q: str, include_drafts: bool = False, request: Request = None, conn=Depends(get_db)):
+    user_ip = request.client.host if request and request.client else None
+    actual_include = include_drafts and (request and is_logged_in(request))
+    results = search_posts_by_query(conn, q, user_ip, include_drafts=actual_include)
     return {"results": results, "total": len(results)}
 
 
 @router.get("/{post_id}", response_model=PostOut)
-def get_post_route(post_id: int, conn=Depends(get_db)):
+def get_post_route(post_id: int, request: Request, conn=Depends(get_db)):
     post = get_post(conn, post_id)
     if not post:
+        raise HTTPException(status_code=404, detail="文章不存在")
+    if post.get("status") == "draft" and not is_logged_in(request):
         raise HTTPException(status_code=404, detail="文章不存在")
     return post
 

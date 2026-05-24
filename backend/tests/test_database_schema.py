@@ -108,5 +108,5 @@ def test_posts_columns(test_db):
     cursor = test_db.cursor()
     cursor.execute("PRAGMA table_info(posts)")
     columns = {row[1] for row in cursor.fetchall()}
-    expected_columns = {'id', 'title', 'content', 'category', 'image_url', 'created_at', 'updated_at'}
+    expected_columns = {'id', 'title', 'content', 'category', 'image_url', 'status', 'created_at', 'updated_at'}
     assert columns == expected_columns

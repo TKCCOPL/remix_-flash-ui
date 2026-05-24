@@ -16,8 +16,8 @@ def create_post(conn, post: PostCreate):
     return get_post_repository(conn, post_id)
 
 
-def list_posts(conn, skip: int = 0, limit: int = 10):
-    return get_posts_repository(conn, skip=skip, limit=limit)
+def list_posts(conn, skip: int = 0, limit: int = 10, include_drafts: bool = False):
+    return get_posts_repository(conn, skip=skip, limit=limit, include_drafts=include_drafts)
 
 
 def get_post(conn, post_id: int):
@@ -35,11 +35,11 @@ def delete_post(conn, post_id: int):
     return delete_post_repository(conn, post_id)
 
 
-def get_archive_data(conn):
-    return get_posts_for_archive_repository(conn)
+def get_archive_data(conn, include_drafts: bool = False):
+    return get_posts_for_archive_repository(conn, include_drafts=include_drafts)
 
 
-def search_posts_by_query(conn, query: str, user_ip: str = None):
-    results = search_posts_repository(conn, query)
+def search_posts_by_query(conn, query: str, user_ip: str = None, include_drafts: bool = False):
+    results = search_posts_repository(conn, query, include_drafts=include_drafts)
     log_search_repository(conn, query, user_ip)
     return results

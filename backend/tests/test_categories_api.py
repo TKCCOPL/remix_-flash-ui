@@ -18,6 +18,7 @@ def test_categories_endpoint_returns_all_categories():
         content TEXT NOT NULL,
         category TEXT,
         image_url TEXT,
+        status TEXT DEFAULT 'published',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )

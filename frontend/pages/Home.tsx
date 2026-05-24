@@ -67,13 +67,13 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const featuredPost = posts[0];
+  const isFiltering = selectedCategory && selectedCategory !== t.home.all;
+  const featuredPost = isFiltering ? undefined : posts[0];
   const featuredImageUrl = featuredPost?.image_url?.trim() || '';
   const allListPosts = useMemo(() => {
-    const list = posts.slice(1);
-    if (!selectedCategory || selectedCategory === t.home.all) return list;
-    return list.filter((post) => (post.category || t.post.general) === selectedCategory);
-  }, [posts, selectedCategory, t.home.all, t.post.general]);
+    if (!isFiltering) return posts.slice(1);
+    return posts.filter((post) => (post.category || t.post.general) === selectedCategory);
+  }, [posts, isFiltering, selectedCategory, t.home.all, t.post.general]);
   const totalPages = Math.ceil(allListPosts.length / postsPerPage);
   const listPosts = allListPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
   const categories = Array.from(new Set(posts.map((post) => post.category || t.post.general))).slice(0, 5);
@@ -130,103 +130,114 @@ export default function Home() {
         </section>
       )}
 
-      <section className="grid lg:grid-cols-4 gap-16">
-        <div className="lg:col-span-1 space-y-10">
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-6 flex items-center gap-2">
-              <Tag className="w-4 h-4" /> {t.home.categories}
-            </h3>
-            <div className="flex flex-wrap lg:flex-col gap-2">
-              {[t.home.all, ...categories].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setSelectedCategory(cat === t.home.all ? null : cat);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-2 text-sm rounded-xl transition-all text-left ${
-                    (cat === t.home.all && !selectedCategory) || selectedCategory === cat
-                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 font-medium'
-                      : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-900'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+      <div className="space-y-16">
+        {/* Categories Tabs */}
+        <section className="flex flex-col gap-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="flex flex-wrap gap-3">
+            {[t.home.all, ...categories].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat === t.home.all ? null : cat);
+                  setCurrentPage(1);
+                }}
+                className={`px-6 py-3 text-sm font-medium rounded-full transition-all shadow-sm border ${
+                  (cat === t.home.all && !selectedCategory) || selectedCategory === cat
+                    ? 'text-white bg-indigo-600 border-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none'
+                    : 'text-stone-600 dark:text-stone-300 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
-        </div>
+        </section>
 
-        <div className="lg:col-span-3">
-          <div className="flex items-center gap-2 mb-10">
-            <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">{t.home.latest}</h2>
+        {/* Bento Grid Posts */}
+        <section className="space-y-8">
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t.home.latest}</h2>
             <div className="h-px flex-1 bg-stone-100 dark:bg-stone-800" />
           </div>
 
-          <div className="space-y-16">
-            {listPosts.map((post, index) => (
-              <article
-                key={post.id}
-                className="group relative flex flex-col items-start stagger-item"
-                style={{ '--stagger-index': index } as React.CSSProperties}
-              >
-                <div className="flex items-center gap-3 text-xs mb-3">
-                  <time dateTime={post.created_at} className="text-stone-400">
-                    {formatPostDate(post.created_at, formats.long, locale)}
-                  </time>
-                  <span className="text-stone-200">/</span>
-                  <span className="font-medium text-stone-500 dark:text-stone-400 uppercase tracking-widest text-[10px]">
-                    {post.category || t.post.general}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-stone-900 dark:text-stone-100 group-hover:text-stone-500 dark:group-hover:text-stone-300 transition-colors">
-                  <Link to={`/post/${post.id}`}>
-                    {post.title}
-                  </Link>
-                </h3>
-                <p className="mt-4 line-clamp-2 text-stone-600 dark:text-stone-300 leading-relaxed max-w-2xl">
-                  {post.content.replace(/[#*`>]/g, '')}
-                </p>
-                <div className="mt-6 flex items-center text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:gap-1 transition-all">
-                  <Link to={`/post/${post.id}`} className="flex items-center">
-                    {t.home.readArticle} <ChevronRight className="ml-0.5 w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
-                  </Link>
-                </div>
-              </article>
-            ))}
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-10 border-t border-stone-100 dark:border-stone-800">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {listPosts.map((post, index) => {
+              const imageUrl = post.image_url?.trim() || '';
+              return (
+                <article
+                  key={post.id}
+                  className="group relative flex flex-col bg-white dark:bg-stone-900/50 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-stone-200/50 dark:hover:shadow-none border border-stone-100 dark:border-stone-800 transition-all duration-300 hover:-translate-y-2 stagger-item"
+                  style={{ '--stagger-index': index } as React.CSSProperties}
                 >
-                  <ChevronLeft className="w-4 h-4" /> {t.home.previous}
-                </button>
-                <div className="flex items-center gap-2 text-sm text-stone-400 dark:text-stone-500">
-                  <span className="text-stone-900 dark:text-stone-100 font-medium">
-                    {pageIndicator(language, currentPage, totalPages)}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  {t.home.next} <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {!loading && listPosts.length === 0 && (
-              <div className="py-20 text-center border-2 border-dashed border-stone-100 dark:border-stone-800 rounded-3xl">
-                <p className="text-stone-400">{error || t.home.empty}</p>
-              </div>
-            )}
+                  {imageUrl && (
+                    <div className="w-full aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-800">
+                      <img src={imageUrl} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    </div>
+                  )}
+                  
+                  <div className="p-8 flex flex-col flex-1">
+                    <div className="flex items-center gap-3 text-xs mb-5">
+                      <span className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium rounded-lg">
+                        {post.category || t.post.general}
+                      </span>
+                      <time dateTime={post.created_at} className="text-stone-400 font-medium">
+                        {formatPostDate(post.created_at, formats.medium, locale)}
+                      </time>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
+                      <Link to={`/post/${post.id}`}>
+                        {post.title}
+                      </Link>
+                    </h3>
+                    
+                    <p className="line-clamp-3 text-sm text-stone-500 dark:text-stone-400 leading-relaxed mb-8 flex-1">
+                      {post.content.replace(/[#*`>]/g, '')}
+                    </p>
+                    
+                    <div className="mt-auto flex items-center text-sm font-bold text-stone-900 dark:text-stone-100 group-hover:gap-2 transition-all">
+                      <Link to={`/post/${post.id}`} className="flex items-center">
+                        {t.home.readArticle} <ArrowRight className="ml-1.5 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                      </Link>
+                    </div>
+                  </div>
+                  <Link to={`/post/${post.id}`} className="absolute inset-0 z-0" />
+                </article>
+              );
+            })}
           </div>
-        </div>
-      </section>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-10 border-t border-stone-100 dark:border-stone-800 mt-16">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" /> {t.home.previous}
+              </button>
+              <div className="flex items-center gap-2 text-sm text-stone-400 dark:text-stone-500">
+                <span className="text-stone-900 dark:text-stone-100 font-medium">
+                  {pageIndicator(language, currentPage, totalPages)}
+                </span>
+              </div>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                {t.home.next} <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {!loading && listPosts.length === 0 && (
+            <div className="py-24 text-center border-2 border-dashed border-stone-200 dark:border-stone-800 rounded-[2rem] bg-stone-50/50 dark:bg-stone-900/20">
+              <p className="text-stone-500 dark:text-stone-400 text-lg">{error || t.home.empty}</p>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

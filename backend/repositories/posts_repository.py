@@ -1,14 +1,14 @@
-def get_posts(conn, skip: int = 0, limit: int = 10):
+def get_posts(conn, skip: int = 0, limit: int = 10, include_drafts: bool = False):
     cursor = conn.cursor()
-    cursor.execute(
-        """
+    query = """
         SELECT id, title, content, category, image_url, status, created_at, updated_at
         FROM posts
-        ORDER BY created_at DESC
-        LIMIT ? OFFSET ?
-        """,
-        (limit, skip),
-    )
+    """
+    if not include_drafts:
+        query += " WHERE status = 'published'"
+    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    
+    cursor.execute(query, (limit, skip))
     return [dict(row) for row in cursor.fetchall()]
 
 
@@ -65,13 +65,16 @@ def delete_post(conn, post_id: int):
     return cursor.rowcount > 0
 
 
-def get_posts_for_archive(conn):
+def get_posts_for_archive(conn, include_drafts: bool = False):
     cursor = conn.cursor()
-    cursor.execute('''
+    query = '''
         SELECT id, title, content, created_at
         FROM posts
-        ORDER BY created_at DESC
-    ''')
+    '''
+    if not include_drafts:
+        query += " WHERE status = 'published'"
+    query += " ORDER BY created_at DESC"
+    cursor.execute(query)
     posts = cursor.fetchall()
 
     archive = {}
@@ -107,14 +110,18 @@ def get_posts_for_archive(conn):
     return result
 
 
-def search_posts(conn, query: str):
+def search_posts(conn, query: str, include_drafts: bool = False):
     cursor = conn.cursor()
-    cursor.execute('''
+    sql = '''
         SELECT id, title, content, category, created_at
         FROM posts
-        WHERE title LIKE ? OR content LIKE ? OR category LIKE ?
-        ORDER BY created_at DESC
-    ''', (f'%{query}%', f'%{query}%', f'%{query}%'))
+        WHERE (title LIKE ? OR content LIKE ? OR category LIKE ?)
+    '''
+    if not include_drafts:
+        sql += " AND status = 'published'"
+    sql += " ORDER BY created_at DESC"
+    
+    cursor.execute(sql, (f'%{query}%', f'%{query}%', f'%{query}%'))
     posts = cursor.fetchall()
 
     results = []

@@ -18,6 +18,7 @@ def test_archive_endpoint_returns_grouped_posts():
         content TEXT NOT NULL,
         category TEXT,
         image_url TEXT,
+        status TEXT DEFAULT 'published',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
