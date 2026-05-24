@@ -3,16 +3,10 @@ export const uploadApi = {
     const formData = new FormData();
     formData.append('file', file);
     
-    const token = localStorage.getItem('token');
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
     const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData,
-      headers
+      credentials: 'include', // 统一使用 cookie 认证
     });
     
     if (!response.ok) {

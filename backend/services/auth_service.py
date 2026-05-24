@@ -1,13 +1,51 @@
-from fastapi import Request
+import os
+import secrets
+from datetime import datetime, timedelta, timezone
 
-ADMIN_USER = "admin"
-ADMIN_PASS = "123456"
-SESSION_COOKIE = "admin_logged_in"
+from fastapi import Request
+from jose import JWTError, jwt
+
+# ── 凭证从环境变量读取，禁止硬编码 ──────────────────────────────────────────
+ADMIN_USER: str = os.environ.get("ADMIN_USER", "admin")
+ADMIN_PASS: str | None = os.environ.get("ADMIN_PASS")  # 生产环境必须设置，无默认值
+
+# ── JWT 密钥：生产环境必须通过 SECRET_KEY 环境变量注入 ─────────────────────
+# 若未设置，每次重启都会生成随机 key（重启后所有已登录 session 失效）
+SECRET_KEY: str = os.environ.get("SECRET_KEY", secrets.token_hex(32))
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_HOURS = 24
 
 
 def login_ok(username: str, password: str) -> bool:
-    return username == ADMIN_USER and password == ADMIN_PASS
+    """验证用户名和密码（恒定时间比较防止时序攻击）"""
+    if ADMIN_PASS is None:
+        # 生产环境未设置 ADMIN_PASS，拒绝所有登录
+        return False
+    user_match = secrets.compare_digest(username, ADMIN_USER)
+    pass_match = secrets.compare_digest(password, ADMIN_PASS)
+    return user_match and pass_match
+
+
+def create_session_token(username: str) -> str:
+    """生成签名 JWT token"""
+    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    payload = {"sub": username, "exp": expire}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_session_token(token: str) -> str | None:
+    """验证 JWT token，返回用户名；无效或过期返回 None"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str | None = payload.get("sub")
+        return username
+    except JWTError:
+        return None
 
 
 def is_logged_in(request: Request) -> bool:
-    return request.cookies.get("session") == SESSION_COOKIE
+    """检查请求是否携带有效的已签名 session token"""
+    token = request.cookies.get("session")
+    if not token:
+        return False
+    return verify_session_token(token) is not None

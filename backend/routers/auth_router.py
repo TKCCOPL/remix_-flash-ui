@@ -1,19 +1,25 @@
 from fastapi import APIRouter, Form, HTTPException, Request, Response
 
-from services.auth_service import is_logged_in, login_ok
+from limiter import limiter
+from services.auth_service import create_session_token, is_logged_in, login_ok, ACCESS_TOKEN_EXPIRE_HOURS
 
 router = APIRouter()
 
 
 @router.post("/login")
-def login(response: Response, username: str = Form(...), password: str = Form(...)):
+@limiter.limit("5/minute")
+def login(request: Request, response: Response, username: str = Form(...), password: str = Form(...)):
     if not login_ok(username, password):
         raise HTTPException(status_code=401, detail="invalid credentials")
+
+    token = create_session_token(username)
     response.set_cookie(
         "session",
-        "admin_logged_in",
-        httponly=True,
-        samesite="lax",
+        token,
+        httponly=True,          # 禁止 JS 访问
+        secure=True,            # 仅通过 HTTPS 传输
+        samesite="lax",         # 防 CSRF
+        max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,  # 24 小时过期
     )
     return {"ok": True}
 

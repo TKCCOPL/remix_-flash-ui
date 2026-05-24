@@ -35,7 +35,7 @@ React 19 + Vite + Tailwind CSS 4.0 application.
 
 - **Routing**: React Router 7. Routes: `/`, `/post/:id`, `/profile`, `/admin`, `/admin/edit[:id]`, `/login`
 - **API layer** (`frontend/api/client.ts`): `apiFetch<T>()` wraps fetch with credentials, JSON handling, and `ApiError` for non-2xx responses. Vite proxies `/api` to `http://127.0.0.1:8000`.
-- **Auth**: Cookie-based sessions. Credentials: `admin` / `123456`. Endpoints in `backend/routers/auth_router.py`.
+- **Auth**: Cookie-based sessions. Credentials: `admin` / (通过环境变量 `ADMIN_PASS` 设置). Endpoints in `backend/routers/auth_router.py`.
 - **State**: `frontend/context/Preferences.tsx` provides theme/language context. `frontend/store.ts` is legacy localStorage logic.
 - **i18n**: `frontend/i18n.ts` contains UI strings in `zh`/`en`. Use `useI18n()` from Preferences context.
 - **Styling**: Tailwind CSS 4 with Inter + JetBrains Mono fonts. Dark mode via `.dark` class selector.

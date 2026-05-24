@@ -1,3 +1,5 @@
+import hashlib
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from database import get_db
@@ -42,9 +44,11 @@ def get_archive_route(include_drafts: bool = False, request: Request = None, con
 
 @router.get("/search")
 def search_posts_route(q: str, include_drafts: bool = False, request: Request = None, conn=Depends(get_db)):
-    user_ip = request.client.host if request and request.client else None
+    # 对 IP 进行单向哈希处理，避免记录可识别个人身份的原始 IP（GDPR/个保法合规）
+    raw_ip = request.client.host if request and request.client else ""
+    hashed_ip = hashlib.sha256(raw_ip.encode()).hexdigest()[:16] if raw_ip else None
     actual_include = include_drafts and (request and is_logged_in(request))
-    results = search_posts_by_query(conn, q, user_ip, include_drafts=actual_include)
+    results = search_posts_by_query(conn, q, hashed_ip, include_drafts=actual_include)
     return {"results": results, "total": len(results)}
 
 
