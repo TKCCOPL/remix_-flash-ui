@@ -398,6 +398,12 @@ export default function Admin() {
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevent focus shifting
+                        setSortBy(option.value);
+                        setIsSortDropdownOpen(false);
+                      }}
                       onClick={() => {
                         setSortBy(option.value);
                         setIsSortDropdownOpen(false);
