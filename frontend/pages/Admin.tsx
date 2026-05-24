@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import {
@@ -344,7 +344,7 @@ export default function Admin() {
 
       {/* Filter bar (Search & Sort) */}
       <div
-        className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6 animate-fade-in-up stagger-item"
+        className={`flex flex-col sm:flex-row gap-3 items-center justify-between mb-6 animate-fade-in-up stagger-item ${isSortDropdownOpen ? 'z-[100] relative' : ''}`}
         style={{ '--stagger-index': 2 } as React.CSSProperties}
       >
         <div className="relative w-full sm:max-w-md">
@@ -364,14 +364,14 @@ export default function Admin() {
           {/* Invisible backdrop to close dropdown on outside click */}
           {isSortDropdownOpen && (
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0"
               onClick={() => setIsSortDropdownOpen(false)}
             />
           )}
           <button
             type="button"
             onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-            className="relative z-50 flex items-center justify-between w-full sm:w-auto px-4 py-2 bg-stone-100 dark:bg-stone-800/50 hover:bg-stone-200 dark:hover:bg-stone-800 text-sm font-medium text-stone-700 dark:text-stone-300 rounded-xl transition-colors outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="relative z-[1] flex items-center justify-between w-full sm:w-auto px-4 py-2 bg-stone-100 dark:bg-stone-800/50 hover:bg-stone-200 dark:hover:bg-stone-800 text-sm font-medium text-stone-700 dark:text-stone-300 rounded-xl transition-colors outline-none focus:ring-2 focus:ring-indigo-500/30"
           >
             <span className="mr-3">{sortOptions.find(o => o.value === sortBy)?.label}</span>
             <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
@@ -384,7 +384,7 @@ export default function Admin() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute right-0 top-full mt-2 w-full sm:w-44 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right"
+                className="absolute right-0 top-full mt-2 w-full sm:w-44 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-xl overflow-hidden z-[1] origin-top-right"
               >
                 <div className="p-1.5 flex flex-col gap-0.5">
                   {sortOptions.map((option) => (
