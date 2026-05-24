@@ -42,6 +42,21 @@ export default function AdminEdit() {
     el.style.height = `${el.scrollHeight}px`;
   }, [content]);
 
+  const settingsSidebarRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isSettingsOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (settingsSidebarRef.current && !settingsSidebarRef.current.contains(e.target as Node)) {
+        const target = e.target as Element;
+        if (!target.closest('[data-settings-toggle="true"]')) {
+          setIsSettingsOpen(false);
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSettingsOpen]);
+
   useEffect(() => {
     if (error) setError('');
   }, [title, content]);
@@ -184,7 +199,7 @@ export default function AdminEdit() {
             />
           </motion.div>
         ) : (
-          <div className="prose prose-lg dark:prose-invert max-w-none">
+          <div className="prose prose-lg dark:prose-invert max-w-none flex-1">
             {title && <h1 className="text-4xl md:text-5xl font-black mb-8 leading-tight">{title}</h1>}
             {content ? (
               <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
@@ -200,6 +215,7 @@ export default function AdminEdit() {
         <AnimatePresence>
           {isSettingsOpen && (
             <motion.aside
+              ref={settingsSidebarRef as any}
               initial={{ x: '100%', opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
@@ -317,6 +333,7 @@ export default function AdminEdit() {
                 <button
                   type="button"
                   onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  data-settings-toggle="true"
                   className={`p-2.5 rounded-xl transition-all ${
                     isSettingsOpen
                       ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner'

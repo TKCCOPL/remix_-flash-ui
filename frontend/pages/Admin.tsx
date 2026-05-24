@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import {
@@ -11,6 +11,8 @@ import {
   FileText,
   LayoutGrid,
   TrendingUp,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n, usePreferences } from '../context/Preferences';
@@ -55,6 +57,8 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState('');
@@ -98,6 +102,17 @@ export default function Admin() {
     };
   }, [navigate, t.login.error]);
 
+  useEffect(() => {
+    if (!isSortDropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSortDropdownOpen]);
+
   const categories = useMemo(() => {
     return [...new Set(posts.map((post) => post.category).filter(Boolean))].sort();
   }, [posts]);
@@ -140,6 +155,13 @@ export default function Admin() {
 
     return result;
   }, [posts, searchQuery, categoryFilter, sortBy]);
+
+  const sortOptions = useMemo(() => [
+    { value: 'newest', label: t.admin.sort.newest },
+    { value: 'oldest', label: t.admin.sort.oldest },
+    { value: 'titleAsc', label: t.admin.sort.titleAsc },
+    { value: 'titleDesc', label: t.admin.sort.titleDesc },
+  ], [t]);
 
   const totalPages = Math.ceil(filteredAndSortedPosts.length / postsPerPage);
   const paginatedPosts = filteredAndSortedPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
@@ -350,17 +372,50 @@ export default function Admin() {
             className="w-full pl-6 pr-4 py-2 bg-transparent border-b border-stone-200/50 dark:border-stone-800/50 outline-none focus:border-stone-900 dark:focus:border-stone-100 transition-colors text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
           />
         </div>
-        <div className="flex w-full sm:w-auto">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 bg-transparent text-sm font-medium text-stone-500 dark:text-stone-400 outline-none hover:text-stone-900 dark:hover:text-stone-100 transition-colors appearance-none cursor-pointer"
+        <div 
+          className="relative w-full sm:w-auto" 
+          ref={sortDropdownRef}
+        >
+          <button
+            type="button"
+            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+            className="flex items-center justify-between w-full sm:w-auto px-4 py-2 bg-stone-100 dark:bg-stone-800/50 hover:bg-stone-200 dark:hover:bg-stone-800 text-sm font-medium text-stone-700 dark:text-stone-300 rounded-xl transition-colors outline-none focus:ring-2 focus:ring-indigo-500/30"
           >
-            <option value="newest" className="dark:bg-stone-900">{t.admin.sort.newest}</option>
-            <option value="oldest" className="dark:bg-stone-900">{t.admin.sort.oldest}</option>
-            <option value="titleAsc" className="dark:bg-stone-900">{t.admin.sort.titleAsc}</option>
-            <option value="titleDesc" className="dark:bg-stone-900">{t.admin.sort.titleDesc}</option>
-          </select>
+            <span className="mr-3">{sortOptions.find(o => o.value === sortBy)?.label}</span>
+            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
+          <AnimatePresence>
+            {isSortDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute right-0 top-full mt-2 w-full sm:w-40 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right"
+              >
+                <div className="p-1.5 flex flex-col gap-0.5">
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setSortBy(option.value);
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        sortBy === option.value
+                          ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                          : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
+                      }`}
+                    >
+                      {option.label}
+                      {sortBy === option.value && <Check className="w-3.5 h-3.5" />}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

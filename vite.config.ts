@@ -17,6 +17,9 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
       },
+      watch: {
+        ignored: ['**/backend/**', '**/dist/**', '**/docs/**'],
+      },
     },
     publicDir: path.resolve(__dirname, 'frontend/public'),
     plugins: [
