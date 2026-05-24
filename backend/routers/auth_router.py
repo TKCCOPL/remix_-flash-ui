@@ -25,8 +25,14 @@ def login(request: Request, response: Response, username: str = Form(...), passw
 
 
 @router.post("/logout")
-def logout(response: Response):
+def logout(request: Request, response: Response):
+    token = request.cookies.get("session")
+    if token:
+        from services.auth_service import revoke_session_token
+        revoke_session_token(token)
+        
     response.delete_cookie("session")
+    response.delete_cookie("csrf_token")
     return {"ok": True}
 
 

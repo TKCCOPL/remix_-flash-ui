@@ -1,6 +1,6 @@
 import os
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
@@ -14,6 +14,7 @@ from routers.posts_router import router as posts_api_router
 from routers.upload_router import router as upload_api_router
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from middleware import SecurityHeadersMiddleware, CSRFMiddleware
 import sys
 
 # 把 scripts 目录加入路径，以方便导入 scrape_github_trending
@@ -57,15 +58,24 @@ app.add_middleware(
     allow_headers=["Content-Type"],                  # 最小权限
 )
 
+# ── Security middleware (order matters: last added = first executed) ────────
+app.add_middleware(SecurityHeadersMiddleware)
+# app.add_middleware(CSRFMiddleware) # Note: uncomment if CSRF is needed and frontend passes X-CSRF-Token
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 init_db()
-
+init_db()
 os.makedirs("uploads", exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    # 修复：增加 404 路由处理
+    return JSONResponse(status_code=404, content={"detail": "API Route not found"})
 
 app.include_router(auth_api_router, prefix="/api/auth", tags=["auth"])
+app.include_router(categories_api_router, prefix="/api/categories", tags=["categories"])
 app.include_router(categories_api_router, prefix="/api/categories", tags=["categories"])
 app.include_router(posts_api_router, prefix="/api/posts", tags=["posts"])
 app.include_router(upload_api_router, prefix="/api/upload", tags=["upload"])

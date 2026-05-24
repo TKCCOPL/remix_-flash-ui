@@ -110,18 +110,24 @@ def get_posts_for_archive(conn, include_drafts: bool = False):
     return result
 
 
+
+def _escape_like(val: str) -> str:
+    """Escape special LIKE characters % _ and \\ for SQLite."""
+    return val.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
 def search_posts(conn, query: str, include_drafts: bool = False):
     cursor = conn.cursor()
     sql = '''
         SELECT id, title, content, category, created_at
         FROM posts
-        WHERE (title LIKE ? OR content LIKE ? OR category LIKE ?)
+        WHERE (title LIKE ? ESCAPE '\\' OR content LIKE ? ESCAPE '\\' OR category LIKE ? ESCAPE '\\')
     '''
     if not include_drafts:
         sql += " AND status = 'published'"
     sql += " ORDER BY created_at DESC"
     
-    cursor.execute(sql, (f'%{query}%', f'%{query}%', f'%{query}%'))
+    escaped = _escape_like(query)
+    cursor.execute(sql, (f'%{escaped}%', f'%{escaped}%', f'%{escaped}%'))
     posts = cursor.fetchall()
 
     results = []

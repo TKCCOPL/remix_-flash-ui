@@ -9,9 +9,16 @@ from jose import JWTError, jwt
 ADMIN_USER: str = os.environ.get("ADMIN_USER", "admin")
 ADMIN_PASS: str | None = os.environ.get("ADMIN_PASS")  # 生产环境必须设置，无默认值
 
+import uuid
+BLACKLISTED_TOKENS = set()
+
 # ── JWT 密钥：生产环境必须通过 SECRET_KEY 环境变量注入 ─────────────────────
 # 若未设置，每次重启都会生成随机 key（重启后所有已登录 session 失效）
-SECRET_KEY: str = os.environ.get("SECRET_KEY", secrets.token_hex(32))
+SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
+if not SECRET_KEY:
+    print("WARNING: SECRET_KEY environment variable is not set. JWT tokens will be invalid/ephemeral.")
+    SECRET_KEY = secrets.token_hex(32)
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
@@ -29,7 +36,7 @@ def login_ok(username: str, password: str) -> bool:
 def create_session_token(username: str) -> str:
     """生成签名 JWT token"""
     expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
-    payload = {"sub": username, "exp": expire}
+    payload = {"sub": username, "exp": expire, "jti": str(uuid.uuid4())}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -38,6 +45,8 @@ def verify_session_token(token: str) -> str | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str | None = payload.get("sub")
+        if payload.get("jti") in BLACKLISTED_TOKENS:
+            return None
         return username
     except JWTError:
         return None
@@ -49,3 +58,14 @@ def is_logged_in(request: Request) -> bool:
     if not token:
         return False
     return verify_session_token(token) is not None
+
+def revoke_session_token(token: str) -> bool:
+    """将 token 的 jti 加入黑名单"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jti = payload.get("jti")
+        if jti:
+            BLACKLISTED_TOKENS.add(jti)
+        return True
+    except JWTError:
+        return False

@@ -45,12 +45,17 @@ def init_db():
         searched_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
-
+    
     cursor.execute("PRAGMA table_info(posts)")
     column_names = {row[1] for row in cursor.fetchall()}
     if "image_url" not in column_names:
         cursor.execute("ALTER TABLE posts ADD COLUMN image_url TEXT")
     if "status" not in column_names:
         cursor.execute("ALTER TABLE posts ADD COLUMN status TEXT DEFAULT 'published'")
+
+    # 修复：添加缺失的数据库索引（在列补充之后）
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_status ON posts (status)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts (created_at DESC)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories (slug)')
     conn.commit()
     conn.close()

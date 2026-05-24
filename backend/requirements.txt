@@ -6,3 +6,5 @@ pydantic
 httpx
 python-jose[cryptography]
 slowapi
+apscheduler
+scrapling[all]
