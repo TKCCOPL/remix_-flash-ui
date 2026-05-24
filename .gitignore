@@ -56,7 +56,3 @@ backend/venv/
 flash_root_cause_analysis.md
 
 
-# Docker
-Dockerfile.backend
-Dockerfile.frontend
-docker-compose.yml
