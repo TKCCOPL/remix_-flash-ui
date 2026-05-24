@@ -5,11 +5,12 @@
 ## 功能特性
 
 - **极简设计**: 专注于内容可读性，自定义设计系统
-- **Markdown 支持**: 代码高亮、表格、引用等
-- **响应式布局**: 适配超宽屏到移动设备
-- **管理后台**: 文章管理（创建、编辑、删除）
-- **国际化**: 中英文切换，深色/浅色主题
-- **平滑动画**: 基于 Framer Motion 的路由过渡
+- **Markdown 支持**: 支持代码高亮、表格、嵌套 HTML 等，内置防 XSS 注入 (`rehype-sanitize`) 引擎
+- **自动化聚合**: 集成 GitHub Trending 自动化周榜爬虫 (`Scrapling` & `APScheduler`)，自动同步至数据库并生成原生文章结构
+- **响应式布局**: 适配超宽屏到移动设备，具备基于 DOM 实体验证的智能目录树与防抖 (`throttle`) 平滑滚动辅助
+- **管理后台**: 安全的文章发布与管理，空分类自动隐藏
+- **国际化**: 中英文一键切换，系统级深色/浅色自适应主题
+- **平滑动画**: 基于 Framer Motion 的路由与组件过渡动画
 
 ## 技术栈
 
@@ -18,7 +19,8 @@
 | React 19 | FastAPI |
 | Vite | SQLite |
 | Tailwind CSS 4.0 | Pydantic |
-| React Router 7 | |
+| React Router 7 | APScheduler (定时任务) |
+| rehype / remark | Scrapling (自动化爬虫) |
 
 ## 项目结构
 

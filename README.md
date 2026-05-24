@@ -5,11 +5,12 @@ A full-stack personal blog system built with **React 19**, **FastAPI**, and **SQ
 ## Features
 
 - **Minimalist Design**: Content-focused with a custom design system
-- **Markdown Support**: Code highlighting, tables, blockquotes
-- **Responsive Layout**: Fluid design from ultra-wide to mobile
-- **Admin Dashboard**: Secure post management (CRUD)
-- **i18n**: Chinese/English with dark/light theme
-- **Animations**: Smooth transitions via Framer Motion
+- **Markdown Support**: Code highlighting, tables, embedded HTML with built-in XSS sanitization (`rehype-sanitize`)
+- **Automated Aggregation**: Integrated GitHub Trending automated weekly crawler (`Scrapling` & `APScheduler`) that syncs to DB and generates native posts
+- **Responsive Layout**: Fluid design from ultra-wide to mobile, equipped with DOM-validated intelligent TOC and throttled smooth scrolling
+- **Admin Dashboard**: Secure post management (CRUD) with auto-hiding for empty categories
+- **i18n & Themes**: Chinese/English toggle with system-adaptive dark/light theme
+- **Animations**: Smooth page and component transitions via Framer Motion
 
 ## Tech Stack
 
@@ -18,7 +19,8 @@ A full-stack personal blog system built with **React 19**, **FastAPI**, and **SQ
 | React 19 | FastAPI |
 | Vite | SQLite |
 | Tailwind CSS 4.0 | Pydantic |
-| React Router 7 | |
+| React Router 7 | APScheduler (Cron Jobs) |
+| rehype / remark | Scrapling (Web Scraping)|
 
 ## Project Structure
 
