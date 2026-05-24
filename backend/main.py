@@ -66,7 +66,6 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 init_db()
-init_db()
 os.makedirs("uploads", exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
 @app.exception_handler(404)
@@ -75,7 +74,6 @@ async def not_found_handler(request: Request, exc):
     return JSONResponse(status_code=404, content={"detail": "API Route not found"})
 
 app.include_router(auth_api_router, prefix="/api/auth", tags=["auth"])
-app.include_router(categories_api_router, prefix="/api/categories", tags=["categories"])
 app.include_router(categories_api_router, prefix="/api/categories", tags=["categories"])
 app.include_router(posts_api_router, prefix="/api/posts", tags=["posts"])
 app.include_router(upload_api_router, prefix="/api/upload", tags=["upload"])
