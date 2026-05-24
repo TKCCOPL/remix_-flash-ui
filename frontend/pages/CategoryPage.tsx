@@ -19,6 +19,7 @@ export default function CategoryPage() {
   useEffect(() => {
     const fetchCategoryPosts = async () => {
       if (!slug) return
+      setLoading(true)
 
       try {
         const data = await categoriesApi.getPosts(slug)

@@ -34,13 +34,19 @@ def test_categories_endpoint_returns_all_categories():
     ''')
 
     cursor.execute('''
-    INSERT INTO categories (name, slug, description, post_count)
-    VALUES ('Tech', 'tech', 'Technology posts', 5)
+    INSERT INTO categories (name, slug, description)
+    VALUES ('Tech', 'tech', 'Technology posts')
     ''')
     cursor.execute('''
-    INSERT INTO categories (name, slug, description, post_count)
-    VALUES ('Design', 'design', 'Design posts', 3)
+    INSERT INTO categories (name, slug, description)
+    VALUES ('Design', 'design', 'Design posts')
     ''')
+    
+    for _ in range(5):
+        cursor.execute("INSERT INTO posts (title, content, category, status) VALUES ('T', 'C', 'Tech', 'published')")
+    for _ in range(3):
+        cursor.execute("INSERT INTO posts (title, content, category, status) VALUES ('T', 'C', 'Design', 'published')")
+    
     conn.commit()
 
     def override_get_db():

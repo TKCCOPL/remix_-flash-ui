@@ -4,8 +4,10 @@ import sqlite3
 def get_all_categories(conn: sqlite3.Connection) -> list[dict]:
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT id, name, slug, description, post_count
-        FROM categories
+        SELECT c.id, c.name, c.slug, c.description, COUNT(p.id) as post_count
+        FROM categories c
+        JOIN posts p ON c.name = p.category AND p.status = 'published'
+        GROUP BY c.id
         ORDER BY post_count DESC
     ''')
     categories = cursor.fetchall()
@@ -15,9 +17,11 @@ def get_all_categories(conn: sqlite3.Connection) -> list[dict]:
 def get_category_by_slug(conn: sqlite3.Connection, slug: str) -> dict | None:
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT id, name, slug, description, post_count
-        FROM categories
-        WHERE slug = ?
+        SELECT c.id, c.name, c.slug, c.description, COUNT(p.id) as post_count
+        FROM categories c
+        LEFT JOIN posts p ON c.name = p.category AND p.status = 'published'
+        WHERE c.slug = ?
+        GROUP BY c.id
     ''', (slug,))
     category = cursor.fetchone()
     return dict(category) if category else None

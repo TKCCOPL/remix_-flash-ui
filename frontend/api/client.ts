@@ -31,6 +31,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   const response = await fetch(resolveApiUrl(path), {
     credentials: 'include',
+    cache: 'no-store',
     ...init,
     headers,
   });

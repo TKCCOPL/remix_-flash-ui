@@ -4,6 +4,9 @@ import { format } from 'date-fns';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import throttle from 'lodash.throttle';
 import GithubSlugger from 'github-slugger';
 import { ArrowLeft, List } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
@@ -24,7 +27,7 @@ interface TocItem {
 }
 
 function extractToc(content: string): TocItem[] {
-  const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+  const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   const toc: TocItem[] = [];
   let match;
   const slugger = new GithubSlugger();
@@ -53,6 +56,7 @@ export default function PostDetail() {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
   const [activeTocId, setActiveTocId] = useState<string>('');
+  const [toc, setToc] = useState<TocItem[]>([]);
   const { language } = usePreferences();
   const t = useI18n();
   const locale = locales[language];
@@ -88,16 +92,32 @@ export default function PostDetail() {
     return () => { cancelled = true; };
   }, [id]);
 
-  const toc = useMemo(() => {
+  const rawToc = useMemo(() => {
     if (!post?.content) return [];
     return extractToc(post.content);
   }, [post?.content]);
+
+  // Filter TOC to only include items that actually exist in the DOM
+  useEffect(() => {
+    if (!rawToc.length) {
+      setToc([]);
+      return;
+    }
+    
+    // Slight delay to ensure Markdown has fully rendered
+    const timer = setTimeout(() => {
+      const validToc = rawToc.filter(item => document.getElementById(item.id) !== null);
+      setToc(validToc);
+    }, 150);
+    
+    return () => clearTimeout(timer);
+  }, [rawToc, post?.content]);
 
   // Handle TOC scroll spy
   useEffect(() => {
     if (!toc.length) return;
     
-    const handleScroll = () => {
+    const handleScroll = throttle(() => {
       const headingElements = toc.map(item => document.getElementById(item.id)).filter(Boolean);
       
       let currentActiveId = '';
@@ -112,17 +132,18 @@ export default function PostDetail() {
         }
       }
       
-      if (currentActiveId !== activeTocId) {
-        setActiveTocId(currentActiveId);
-      }
-    };
+      setActiveTocId(prev => prev !== currentActiveId ? currentActiveId : prev);
+    }, 100);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     // Trigger once on load
     handleScroll();
     
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [toc, activeTocId]);
+    return () => {
+      handleScroll.cancel();
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [toc]);
 
   if (error) {
     return (
@@ -152,13 +173,6 @@ export default function PostDetail() {
     <div className="w-full xl:grid xl:grid-cols-[1fr_250px] xl:gap-12 items-start relative">
       <article className="w-full max-w-3xl mx-auto xl:mx-0">
         <header className="mb-20">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-8 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t.post.backToPosts}
-          </button>
 
           {loading ? (
             <div className="animate-pulse">
@@ -206,10 +220,23 @@ export default function PostDetail() {
             <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-3/4" />
           </div>
         ) : (
-          <div className="prose prose-stone dark:prose-invert w-full max-w-none animate-fade-in" style={{ animationDelay: '0.15s' }}>
+          <div className="prose prose-stone dark:prose-invert w-full max-w-none animate-fade-in break-words overflow-hidden" style={{ animationDelay: '0.15s' }}>
             <Markdown 
               remarkPlugins={[remarkGfm]} 
-              rehypePlugins={[rehypeSlug]}
+              rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeSlug]}
+              components={{
+                img: ({ node, ...props }) => {
+                  let src = props.src || '';
+                  if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                    const match = post?.title.match(/\[GitHub Trending\] (.*)/);
+                    if (match) {
+                      const repo = match[1];
+                      src = `https://raw.githubusercontent.com/${repo}/main/${src.replace(/^\//, '')}`;
+                    }
+                  }
+                  return <img {...props} src={src} loading="lazy" />;
+                }
+              }}
             >
               {post!.content}
             </Markdown>
@@ -218,46 +245,77 @@ export default function PostDetail() {
       </article>
 
       {/* 侧边栏 TOC */}
-      {!loading && toc.length > 0 && (
+      {!loading && (
         <aside className="hidden xl:block sticky top-24 pt-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div className="bg-stone-50/50 dark:bg-stone-900/50 rounded-2xl p-6 border border-stone-100 dark:border-stone-800">
-            <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2">
-              <List className="w-4 h-4 text-stone-500" />
-              目录
-            </h3>
-            <ul className="space-y-2.5 text-sm">
-              {toc.map((item) => {
-                const isActive = activeTocId === item.id;
-                return (
-                  <li 
-                    key={item.id} 
-                    style={{ paddingLeft: `${(item.level - 2) * 12}px` }}
-                  >
-                    <a
-                      href={`#${item.id}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const el = document.getElementById(item.id);
-                        if (el) {
-                          // Scroll with offset for sticky header
-                          const y = el.getBoundingClientRect().top + window.scrollY - 80;
-                          window.scrollTo({ top: y, behavior: 'smooth' });
-                          // Also push state to history
-                          window.history.pushState(null, '', `#${item.id}`);
-                        }
-                      }}
-                      className={`block transition-colors duration-200 leading-snug ${
-                        isActive 
-                          ? 'text-indigo-600 dark:text-indigo-400 font-medium' 
-                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-                      }`}
-                    >
-                      {item.title}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
+          <div className="bg-stone-50/50 dark:bg-stone-900/50 rounded-2xl p-6 border border-stone-100 dark:border-stone-800 flex flex-col gap-6 max-h-[85vh]">
+            
+            {/* 返回列表按钮 */}
+            <Link
+              to="/"
+              className="inline-flex items-center text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-fit"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t.post.backToPosts}
+            </Link>
+
+            {/* 文章标题在目录区 */}
+            {post && (
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="text-lg font-bold text-stone-800 dark:text-stone-100 leading-snug hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
+              >
+                {post.title}
+              </a>
+            )}
+
+            {/* 目录 */}
+            {toc.length > 0 && (() => {
+              const minLevel = Math.min(...toc.map(t => t.level));
+              return (
+                <div className="pt-2 flex flex-col overflow-hidden">
+                  <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2 shrink-0">
+                    <List className="w-4 h-4 text-stone-500" />
+                    目录
+                  </h3>
+                  <ul className="space-y-2.5 text-sm overflow-y-auto pr-2 pb-2">
+                    {toc.map((item) => {
+                      const isActive = activeTocId === item.id;
+                      return (
+                        <li 
+                          key={item.id} 
+                          style={{ paddingLeft: `${(item.level - minLevel) * 12}px` }}
+                        >
+                          <a
+                            href={`#${item.id}`}
+                            title={item.title}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const el = document.getElementById(item.id);
+                              if (el) {
+                                const y = el.getBoundingClientRect().top + window.scrollY - 80;
+                                window.scrollTo({ top: y, behavior: 'smooth' });
+                                window.history.pushState(null, '', `#${item.id}`);
+                              }
+                            }}
+                            className={`block transition-colors duration-200 leading-snug truncate ${
+                              isActive 
+                                ? 'text-indigo-600 dark:text-indigo-400 font-medium' 
+                                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+                            }`}
+                          >
+                            {item.title}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })()}
           </div>
         </aside>
       )}
