@@ -86,6 +86,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 content={"detail": "CSRF token invalid"},
             )
 
+        # The cookie token is signed (raw.signature), extract raw part to compare with the header token.
         cookie_token_raw = cookie_token.rsplit(".", 1)[0]
         if not hmac.compare_digest(cookie_token_raw, header_token):
             return JSONResponse(
