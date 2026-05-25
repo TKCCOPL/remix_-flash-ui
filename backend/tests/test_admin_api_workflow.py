@@ -12,7 +12,13 @@ class AdminApiWorkflowTest(unittest.TestCase):
         conn.execute("DELETE FROM posts")
         conn.commit()
         conn.close()
-        self.client = TestClient(app)
+        self.client = TestClient(app, base_url="https://testserver")
+
+    def _csrf_headers(self, client: TestClient) -> dict:
+        if "csrf_token" not in client.cookies:
+            client.get("/api/auth/me")
+        csrf_token = client.cookies.get("csrf_token")
+        return {"X-CSRF-Token": csrf_token} if csrf_token else {}
 
     def test_me_requires_login(self):
         response = self.client.get("/api/auth/me")
@@ -26,12 +32,14 @@ class AdminApiWorkflowTest(unittest.TestCase):
         login = self.client.post(
             "/api/auth/login",
             data={"username": "admin", "password": "123456"},
+            headers=self._csrf_headers(self.client),
         )
         self.assertEqual(login.status_code, 200)
 
         create = self.client.post(
             "/api/posts",
             json={"title": "t1", "content": "c1", "category": "cat", "image_url": "https://example.com/cover.png"},
+            headers=self._csrf_headers(self.client),
         )
         self.assertEqual(create.status_code, 200)
         post_id = create.json()["id"]
@@ -44,18 +52,20 @@ class AdminApiWorkflowTest(unittest.TestCase):
         update = self.client.put(
             f"/api/posts/{post_id}",
             json={"title": "t2", "image_url": ""},
+            headers=self._csrf_headers(self.client),
         )
         self.assertEqual(update.status_code, 200)
         self.assertEqual(update.json()["title"], "t2")
         self.assertEqual(update.json()["image_url"], "")
 
-        delete = self.client.delete(f"/api/posts/{post_id}")
+        delete = self.client.delete(f"/api/posts/{post_id}", headers=self._csrf_headers(self.client))
         self.assertEqual(delete.status_code, 200)
 
     def test_public_can_read_posts(self):
         login = self.client.post(
             "/api/auth/login",
             data={"username": "admin", "password": "123456"},
+            headers=self._csrf_headers(self.client),
         )
         self.assertEqual(login.status_code, 200)
 
@@ -67,11 +77,12 @@ class AdminApiWorkflowTest(unittest.TestCase):
                 "category": "public-cat",
                 "image_url": "https://example.com/public.png",
             },
+            headers=self._csrf_headers(self.client),
         )
         self.assertEqual(create.status_code, 200)
         post_id = create.json()["id"]
 
-        anonymous_client = TestClient(app)
+        anonymous_client = TestClient(app, base_url="https://testserver")
 
         list_response = anonymous_client.get("/api/posts")
         self.assertEqual(list_response.status_code, 200)
