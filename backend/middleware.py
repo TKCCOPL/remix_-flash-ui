@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 CSRF_SECRET = os.environ.get("CSRF_SECRET")
 if not CSRF_SECRET:
-    logger.warning("CSRF_SECRET is not set. Generated a random secret for this process.")
+    logger.warning("CSRF_SECRET is not set. Generated a random secret for this process; CSRF tokens expire on restart.")
     CSRF_SECRET = secrets.token_hex(32)
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_HEADER_NAME = "x-csrf-token"
