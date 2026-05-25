@@ -2,16 +2,29 @@
 
 import hashlib
 import hmac
+import logging
 import os
 import secrets
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-CSRF_SECRET=os.environ.get("CSRF_SECRET", "fallback-csrf-secret")
+logger = logging.getLogger(__name__)
+
+CSRF_SECRET = os.environ.get("CSRF_SECRET")
+if not CSRF_SECRET:
+    logger.warning("CSRF_SECRET is not set. Generated a random secret for this process.")
+    CSRF_SECRET = secrets.token_hex(32)
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_HEADER_NAME = "x-csrf-token"
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+
+
+def _is_secure_request(request: Request) -> bool:
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    if forwarded_proto:
+        return forwarded_proto.split(",")[0].strip().lower() == "https"
+    return request.url.scheme == "https"
 
 
 def generate_csrf_token() -> str:
@@ -56,6 +69,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 response.set_cookie(
                     CSRF_COOKIE_NAME, signed,
                     httponly=False,  # JS needs to read it
+                    secure=_is_secure_request(request),
                     samesite="lax",
                     max_age=86400,
                 )
@@ -96,6 +110,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        # Relaxed CSP for API backend (no inline scripts needed)
-        response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+        if _is_secure_request(request):
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        if not request.url.path.startswith(("/docs", "/redoc", "/openapi.json", "/docs/oauth2-redirect")):
+            # Relaxed CSP for API backend (no inline scripts needed)
+            response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
         return response

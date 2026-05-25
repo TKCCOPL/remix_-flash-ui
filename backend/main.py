@@ -55,12 +55,12 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,                          # 允许携带 cookie
     allow_methods=["GET", "POST", "PUT", "DELETE"],  # 明确列出，不使用通配符
-    allow_headers=["Content-Type"],                  # 最小权限
+    allow_headers=["Content-Type", "X-CSRF-Token"],  # 最小权限
 )
 
 # ── Security middleware (order matters: last added = first executed) ────────
 app.add_middleware(SecurityHeadersMiddleware)
-# app.add_middleware(CSRFMiddleware) # Note: uncomment if CSRF is needed and frontend passes X-CSRF-Token
+app.add_middleware(CSRFMiddleware)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
