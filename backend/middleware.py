@@ -86,7 +86,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 content={"detail": "CSRF token invalid"},
             )
 
-        if not hmac.compare_digest(cookie_token, header_token):
+        cookie_token_raw = cookie_token.rsplit(".", 1)[0]
+        if not hmac.compare_digest(cookie_token_raw, header_token):
             return JSONResponse(
                 status_code=403,
                 content={"detail": "CSRF token mismatch"},
