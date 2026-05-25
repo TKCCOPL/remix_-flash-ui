@@ -1,5 +1,9 @@
+import os
 import sqlite3
 import unittest
+
+os.environ.setdefault("ADMIN_USER", "admin")
+os.environ.setdefault("ADMIN_PASS", "123456")
 
 from fastapi.testclient import TestClient
 
