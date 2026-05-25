@@ -16,8 +16,14 @@ function getCookieValue(name: string): string | undefined {
   if (typeof document === 'undefined') {
     return undefined;
   }
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : undefined;
+  const cookies = document.cookie ? document.cookie.split('; ') : [];
+  for (const cookie of cookies) {
+    const [cookieName, ...rest] = cookie.split('=');
+    if (cookieName === name) {
+      return decodeURIComponent(rest.join('='));
+    }
+  }
+  return undefined;
 }
 
 function shouldUseJsonContentType(body: BodyInit | null | undefined): boolean {

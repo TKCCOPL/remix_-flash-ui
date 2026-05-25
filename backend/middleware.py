@@ -34,7 +34,7 @@ def generate_csrf_token() -> str:
 
 def _sign_token(token: str) -> str:
     """Sign a CSRF token so it can be validated."""
-    sig = hmac.new(CSRF_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()[:16]
+    sig = hmac.new(CSRF_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()
     return f"{token}.{sig}"
 
 
@@ -43,7 +43,7 @@ def _verify_token(signed: str) -> bool:
     if "." not in signed:
         return False
     token, sig = signed.rsplit(".", 1)
-    expected = hmac.new(CSRF_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()[:16]
+    expected = hmac.new(CSRF_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()
     return hmac.compare_digest(sig, expected)
 
 

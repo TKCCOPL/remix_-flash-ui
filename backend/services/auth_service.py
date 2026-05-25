@@ -1,6 +1,7 @@
 import logging
 import os
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Request
@@ -12,7 +13,6 @@ logger = logging.getLogger(__name__)
 ADMIN_USER: str = os.environ.get("ADMIN_USER", "admin")
 ADMIN_PASS: str | None = os.environ.get("ADMIN_PASS")  # 生产环境必须设置，无默认值
 
-import uuid
 BLACKLISTED_TOKENS: dict[str, int] = {}
 
 
@@ -28,7 +28,7 @@ def _prune_blacklist(now: int | None = None) -> None:
 # 若未设置，每次重启都会生成随机 key（重启后所有已登录 session 失效）
 SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
 if not SECRET_KEY:
-    logger.warning("SECRET_KEY environment variable is not set. JWT tokens will be invalid/ephemeral.")
+    logger.warning("SECRET_KEY environment variable is not set. Generated an ephemeral key; sessions expire on restart.")
     SECRET_KEY = secrets.token_hex(32)
 
 ALGORITHM = "HS256"
