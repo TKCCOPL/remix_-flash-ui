@@ -1,9 +1,12 @@
+import logging
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Request
 from jose import JWTError, jwt
+
+logger = logging.getLogger(__name__)
 
 # ── 凭证从环境变量读取，禁止硬编码 ──────────────────────────────────────────
 ADMIN_USER: str = os.environ.get("ADMIN_USER", "admin")
@@ -16,7 +19,7 @@ BLACKLISTED_TOKENS = set()
 # 若未设置，每次重启都会生成随机 key（重启后所有已登录 session 失效）
 SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
 if not SECRET_KEY:
-    print("WARNING: SECRET_KEY environment variable is not set. JWT tokens will be invalid/ephemeral.")
+    logger.warning("SECRET_KEY environment variable is not set. JWT tokens will be invalid/ephemeral.")
     SECRET_KEY = secrets.token_hex(32)
 
 ALGORITHM = "HS256"
