@@ -55,11 +55,6 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        # Skip CSRF for login endpoint (uses form credentials)
-        if request.url.path == "/api/auth/login":
-            response = await call_next(request)
-            return response
-
         if request.method in SAFE_METHODS:
             response = await call_next(request)
             # Set CSRF cookie if not already present
