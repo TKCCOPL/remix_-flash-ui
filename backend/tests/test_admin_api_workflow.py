@@ -17,8 +17,11 @@ class AdminApiWorkflowTest(unittest.TestCase):
     def _csrf_headers(self, client: TestClient) -> dict:
         if "csrf_token" not in client.cookies:
             client.get("/api/auth/me")
-        csrf_token = client.cookies.get("csrf_token")
-        return {"X-CSRF-Token": csrf_token} if csrf_token else {}
+        csrf_signed = client.cookies.get("csrf_token")
+        if not csrf_signed:
+            return {}
+        csrf_token = csrf_signed.rsplit(".", 1)[0] if "." in csrf_signed else csrf_signed
+        return {"X-CSRF-Token": csrf_token}
 
     def test_me_requires_login(self):
         response = self.client.get("/api/auth/me")
