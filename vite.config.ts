@@ -26,10 +26,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
     ],
-    define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
+    // define block removed: Gemini API key must not be exposed to frontend
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'frontend'),

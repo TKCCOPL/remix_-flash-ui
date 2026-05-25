@@ -55,3 +55,10 @@ backend/venv/
 .superpowers/
 flash_root_cause_analysis.md
 
+
+
+# Docker / Nginx
+Dockerfile.backend
+Dockerfile.frontend
+docker-compose.yml
+nginx.conf

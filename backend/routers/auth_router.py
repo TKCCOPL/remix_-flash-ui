@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Form, HTTPException, Request, Response
 
 from limiter import limiter
-from services.auth_service import create_session_token, is_logged_in, login_ok, ACCESS_TOKEN_EXPIRE_HOURS
+from services.auth_service import (
+    ACCESS_TOKEN_EXPIRE_HOURS,
+    create_session_token,
+    is_logged_in,
+    login_ok,
+    revoke_session_token,
+)
 
 router = APIRouter()
 
@@ -25,8 +31,13 @@ def login(request: Request, response: Response, username: str = Form(...), passw
 
 
 @router.post("/logout")
-def logout(response: Response):
+def logout(request: Request, response: Response):
+    token = request.cookies.get("session")
+    if token:
+        revoke_session_token(token)
+        
     response.delete_cookie("session")
+    response.delete_cookie("csrf_token")
     return {"ok": True}
 
 

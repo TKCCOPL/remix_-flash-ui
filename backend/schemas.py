@@ -1,23 +1,24 @@
 from typing import Optional
+from enum import Enum
 
-from pydantic import BaseModel, field_validator, model_validator
-
+from pydantic import BaseModel, field_validator, model_validator, Field
+class PostStatus(str, Enum):
+    published = 'published'
+    draft = 'draft'
+    archived = 'archived'
 
 class PostCreate(BaseModel):
-    title: str
-    content: str
-    category: Optional[str] = None
-    image_url: Optional[str] = None
-    status: Optional[str] = 'published'
-
-
+    title: str = Field(..., max_length=200)
+    content: str = Field(..., max_length=50000)
+    category: Optional[str] = Field(None, max_length=50)
+    image_url: Optional[str] = Field(None, max_length=1000)
+    status: PostStatus = PostStatus.published
 class PostUpdate(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    category: Optional[str] = None
-    image_url: Optional[str] = None
-    status: Optional[str] = None
-
+    title: Optional[str] = Field(None, max_length=200)
+    content: Optional[str] = Field(None, max_length=50000)
+    category: Optional[str] = Field(None, max_length=50)
+    image_url: Optional[str] = Field(None, max_length=1000)
+    status: Optional[PostStatus] = None
     @field_validator('title', 'content')
     @classmethod
     def non_empty_string(cls, v):

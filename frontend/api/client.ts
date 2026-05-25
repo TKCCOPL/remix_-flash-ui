@@ -8,6 +8,24 @@ export class ApiError extends Error {
   }
 }
 
+const CSRF_COOKIE_NAME = 'csrf_token';
+const CSRF_HEADER_NAME = 'X-CSRF-Token';
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+function getCookieValue(name: string): string | undefined {
+  if (typeof document === 'undefined') {
+    return undefined;
+  }
+  const cookies = document.cookie ? document.cookie.split('; ') : [];
+  for (const cookie of cookies) {
+    const [cookieName, ...rest] = cookie.split('=');
+    if (cookieName === name) {
+      return decodeURIComponent(rest.join('='));
+    }
+  }
+  return undefined;
+}
+
 function shouldUseJsonContentType(body: BodyInit | null | undefined): boolean {
   if (!body) {
     return false;
@@ -25,8 +43,15 @@ function resolveApiUrl(path: string): string {
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
+  const method = (init?.method ?? 'GET').toUpperCase();
   if (!headers.has('Content-Type') && shouldUseJsonContentType(init?.body)) {
     headers.set('Content-Type', 'application/json');
+  }
+  if (!SAFE_METHODS.has(method)) {
+    const csrfToken = getCookieValue(CSRF_COOKIE_NAME);
+    if (csrfToken && !headers.has(CSRF_HEADER_NAME)) {
+      headers.set(CSRF_HEADER_NAME, csrfToken);
+    }
   }
 
   const response = await fetch(resolveApiUrl(path), {
