@@ -112,6 +112,7 @@ export const translations = {
     admin: {
       title: '管理后台',
       subtitle: '管理内容并跟踪表现。',
+      badge: '管理员',
       newPost: '新建文章',
       logout: '退出登录',
       stats: {
@@ -163,6 +164,7 @@ export const translations = {
         categories: '分类管理',
         comments: '评论管理',
         stats: '数据统计',
+        users: '用户管理',
       },
       comments: {
         title: '评论管理',
@@ -199,6 +201,45 @@ export const translations = {
           delete: '批量删除',
         },
         empty: '暂无评论',
+        loading: '加载中...',
+      },
+      users: {
+        title: '用户管理',
+        subtitle: '管理 OAuth 访客用户',
+        totalUsers: '共 {count} 位用户',
+        search: '搜索用户名或邮箱...',
+        filter: {
+          all: '全部',
+          github: 'GitHub',
+          gitee: 'Gitee',
+        },
+        table: {
+          user: '用户',
+          email: '邮箱',
+          provider: '提供者',
+          registeredAt: '注册时间',
+          comments: '评论',
+          favorites: '收藏',
+          actions: '操作',
+        },
+        actions: {
+          detail: '详情',
+          delete: '删除',
+          deleteUser: '删除用户',
+        },
+        detail: {
+          title: '用户详情',
+          stats: {
+            comments: '评论数',
+            favorites: '收藏数',
+            activeDays: '活跃天数',
+          },
+          recentComments: '最近评论',
+        },
+        confirm: {
+          delete: '确定要删除用户 {username} 吗？该操作将同时删除该用户的所有评论和收藏，且不可恢复。',
+        },
+        empty: '暂无用户',
         loading: '加载中...',
       },
     },
@@ -366,6 +407,7 @@ export const translations = {
     admin: {
       title: 'Admin Dashboard',
       subtitle: 'Manage your content and track performance.',
+      badge: 'Admin',
       newPost: 'New Post',
       logout: 'Logout',
       stats: {
@@ -417,6 +459,7 @@ export const translations = {
         categories: 'Categories',
         comments: 'Comments',
         stats: 'Statistics',
+        users: 'Users',
       },
       comments: {
         title: 'Comment Management',
@@ -453,6 +496,45 @@ export const translations = {
           delete: 'Batch Delete',
         },
         empty: 'No comments yet',
+        loading: 'Loading...',
+      },
+      users: {
+        title: 'User Management',
+        subtitle: 'Manage OAuth guest users',
+        totalUsers: '{count} users total',
+        search: 'Search username or email...',
+        filter: {
+          all: 'All',
+          github: 'GitHub',
+          gitee: 'Gitee',
+        },
+        table: {
+          user: 'User',
+          email: 'Email',
+          provider: 'Provider',
+          registeredAt: 'Registered',
+          comments: 'Comments',
+          favorites: 'Favorites',
+          actions: 'Actions',
+        },
+        actions: {
+          detail: 'Detail',
+          delete: 'Delete',
+          deleteUser: 'Delete User',
+        },
+        detail: {
+          title: 'User Detail',
+          stats: {
+            comments: 'Comments',
+            favorites: 'Favorites',
+            activeDays: 'Active Days',
+          },
+          recentComments: 'Recent Comments',
+        },
+        confirm: {
+          delete: 'Are you sure you want to delete user {username}? This will also delete all their comments and favorites, and cannot be undone.',
+        },
+        empty: 'No users yet',
         loading: 'Loading...',
       },
     },

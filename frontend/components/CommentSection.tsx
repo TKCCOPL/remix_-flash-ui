@@ -196,7 +196,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                   </span>
                   {comment.oauth_provider === 'admin' && (
                     <span className="px-1.5 py-0.5 text-[10px] font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">
-                      管理员
+                      {t.admin.badge}
                     </span>
                   )}
                   <span className="text-xs text-stone-400 dark:text-stone-500">
@@ -267,7 +267,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                             </span>
                             {reply.oauth_provider === 'admin' && (
                               <span className="px-1.5 py-0.5 text-[10px] font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">
-                                管理员
+                                {t.admin.badge}
                               </span>
                             )}
                             <span className="text-xs text-stone-400">

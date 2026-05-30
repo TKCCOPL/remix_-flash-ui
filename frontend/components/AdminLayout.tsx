@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   MessageSquare,
   BarChart3,
+  Users,
 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
@@ -82,6 +83,7 @@ export default function AdminLayout() {
     { icon: LayoutDashboard, path: '/admin', label: t.admin.sidebar.overview },
     { icon: MessageSquare, path: '/admin/comments', label: t.admin.sidebar.comments },
     { icon: BarChart3, path: '/admin/stats', label: t.admin.sidebar.stats },
+    { icon: Users, path: '/admin/users', label: t.admin.sidebar.users },
   ];
 
   const sidebarContent = (

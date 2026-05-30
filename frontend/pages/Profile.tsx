@@ -98,6 +98,7 @@ export default function Profile() {
     avatar_url: null,
     email: null,
     oauth_provider: 'admin',
+    is_admin: true,
   } : null);
 
   if (!displayUser) return null;

@@ -30,9 +30,16 @@ export default function UserCard({ user, favoritesCount, commentsCount, onLogout
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight truncate">
-            {user.username}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight truncate">
+              {user.username}
+            </h1>
+            {user.is_admin && (
+              <span className="px-2 py-1 text-sm font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full">
+                {t.admin.badge}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-0.5">
             {t.profile.loginMethod(user.oauth_provider)}
           </p>

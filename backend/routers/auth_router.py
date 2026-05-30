@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Form, HTTPException, Request, Response
 
+from config import GUEST_COOKIE_NAME
 from limiter import limiter
 from middleware import _is_secure_request
 from services.auth_service import (

@@ -14,6 +14,7 @@ import Admin from './pages/Admin';
 import AdminEdit from './pages/AdminEdit';
 import Comments from './pages/Comments';
 import Stats from './pages/Stats';
+import Users from './pages/Users';
 import Login from './pages/Login';
 
 function AnimatedRoutes() {
@@ -74,6 +75,7 @@ function AnimatedRoutes() {
           <Route index element={<Admin />} />
           <Route path="comments" element={<Comments />} />
           <Route path="stats" element={<Stats />} />
+          <Route path="users" element={<Users />} />
           <Route path="edit" element={<AdminEdit />} />
           <Route path="edit/:id" element={<AdminEdit />} />
         </Route>
