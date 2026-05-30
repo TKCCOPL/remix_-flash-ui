@@ -56,17 +56,14 @@ def delete_comment_route(comment_id: int, request: Request, conn=Depends(get_db)
 
 
 @user_router.get("/users/me/comments")
-async def get_my_comments(
+def get_my_comments(
     request: Request,
+    conn=Depends(get_db),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
 ):
     """Get current user's comments."""
     user = require_login(request)
-    conn = get_db()
-    try:
-        user_id = resolve_user_id(user, conn)
-        comments = get_comments_by_user(conn, user_id, skip, limit)
-        return comments
-    finally:
-        conn.close()
+    user_id = resolve_user_id(user, conn)
+    comments = get_comments_by_user(conn, user_id, skip, limit)
+    return comments
