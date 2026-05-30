@@ -9,6 +9,7 @@ from services.comments_service import (
     delete_comment,
     MAX_COMMENT_LENGTH,
 )
+from services.auth_service import create_session_token
 
 
 @pytest.fixture
@@ -119,3 +120,84 @@ def test_create_reply_to_reply(db_conn):
     reply = create_comment(db_conn, post_id, user["id"], "Reply", parent_id=parent["id"])
     with pytest.raises(ValueError, match="Cannot reply to a reply"):
         create_comment(db_conn, post_id, user["id"], "Reply to reply", parent_id=reply["id"])
+
+
+# ── API-level tests ─────────────────────────────────────────────────────────
+
+
+@pytest.fixture
+def client():
+    """Create a FastAPI TestClient with CSRF disabled for testing."""
+    from fastapi.testclient import TestClient
+    from main import app
+    from middleware import CSRFMiddleware
+
+    # Remove CSRF middleware for test simplicity
+    app.user_middleware = [
+        m for m in app.user_middleware
+        if m.cls != CSRFMiddleware
+    ]
+    # Rebuild middleware stack
+    app.middleware_stack = None
+
+    with TestClient(app, raise_server_exceptions=False) as c:
+        yield c
+
+
+@pytest.fixture
+def sample_post(db_conn):
+    """Create a sample post for API tests."""
+    post_id = _create_post(db_conn, title="API Test Post", content="Test content")
+    post = db_conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
+    return dict(post)
+
+
+@pytest.fixture
+def auth_headers(db_conn):
+    """Create auth headers with a valid session cookie."""
+    # Create a user in the database
+    user = _create_user(db_conn, oauth_id="api_user", username="api_user")
+    # Generate a session token
+    token = create_session_token("api_user")
+    return {"Cookie": f"session={token}"}
+
+
+def test_create_comment_reply_to_reply_returns_400(client, auth_headers, sample_post):
+    """Replying to a reply should return 400, not 500."""
+    # Create parent comment
+    resp1 = client.post(
+        f"/api/posts/{sample_post['id']}/comments",
+        json={"content": "Parent comment"},
+        headers=auth_headers,
+    )
+    assert resp1.status_code == 200
+    parent_id = resp1.json()["id"]
+
+    # Create reply to parent
+    resp2 = client.post(
+        f"/api/posts/{sample_post['id']}/comments",
+        json={"content": "Reply to parent", "parent_id": parent_id},
+        headers=auth_headers,
+    )
+    assert resp2.status_code == 200
+    reply_id = resp2.json()["id"]
+
+    # Try to reply to reply (should fail with 400)
+    resp3 = client.post(
+        f"/api/posts/{sample_post['id']}/comments",
+        json={"content": "Reply to reply", "parent_id": reply_id},
+        headers=auth_headers,
+    )
+    assert resp3.status_code == 400
+    assert "Cannot reply to a reply" in resp3.json()["detail"]
+
+
+def test_create_comment_invalid_parent_returns_400(client, auth_headers, sample_post):
+    """Non-existent parent comment should return 400."""
+    resp = client.post(
+        f"/api/posts/{sample_post['id']}/comments",
+        json={"content": "Orphan reply", "parent_id": 99999},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 400
+    assert "Parent comment not found" in resp.json()["detail"]
