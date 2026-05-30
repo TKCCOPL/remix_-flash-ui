@@ -155,8 +155,23 @@ def test_comments_columns(test_db):
     cursor = test_db.cursor()
     cursor.execute("PRAGMA table_info(comments)")
     columns = {row[1] for row in cursor.fetchall()}
-    expected_columns = {'id', 'post_id', 'user_id', 'content', 'status', 'created_at'}
+    expected_columns = {'id', 'post_id', 'user_id', 'content', 'status', 'created_at', 'parent_id'}
     assert columns == expected_columns
+
+
+def test_comments_table_has_parent_id_column(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(comments)")
+    columns = {row[1] for row in cursor.fetchall()}
+    assert "parent_id" in columns, "comments table should have parent_id column"
+
+
+def test_comments_parent_id_is_nullable(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(comments)")
+    columns = {row[1]: row for row in cursor.fetchall()}
+    parent_id_col = columns['parent_id']
+    assert parent_id_col[3] == 0, "parent_id should be nullable (NOT NULL = 0)"
 
 
 def test_comments_status_default(test_db):
@@ -225,4 +240,6 @@ def test_indexes_exist(test_db):
     cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_favorites_user'")
     assert cursor.fetchone() is not None
     cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_favorites_post'")
+    assert cursor.fetchone() is not None
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_comments_parent'")
     assert cursor.fetchone() is not None

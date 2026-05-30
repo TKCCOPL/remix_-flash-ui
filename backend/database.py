@@ -107,6 +107,13 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, status, created_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id)')
+
+    cursor.execute("PRAGMA table_info(comments)")
+    comment_columns = {row[1] for row in cursor.fetchall()}
+    if "parent_id" not in comment_columns:
+        cursor.execute("ALTER TABLE comments ADD COLUMN parent_id INTEGER REFERENCES comments(id)")
+
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_post ON favorites(post_id)')
     conn.commit()
