@@ -3,6 +3,11 @@ import os
 
 DB_FILE = 'data/blog.sqlite3'
 
+def seed_database():
+    """Seed database with test data if empty."""
+    from seed import seed_database as _seed
+    _seed()
+
 def get_db():
     conn = sqlite3.connect(DB_FILE, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -118,3 +123,6 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_post ON favorites(post_id)')
     conn.commit()
     conn.close()
+
+    # Seed database with test data if empty
+    seed_database()
