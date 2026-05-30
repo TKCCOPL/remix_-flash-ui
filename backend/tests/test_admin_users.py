@@ -1,4 +1,7 @@
 import sqlite3
+import tempfile
+import os
+import shutil
 import pytest
 from repositories.users_repository import (
     get_users_with_stats,
@@ -264,3 +267,166 @@ def test_delete_user_success(db):
 def test_delete_user_nonexistent(db):
     with pytest.raises(ValueError, match="用户不存在"):
         delete_user(db, 999)
+
+
+from fastapi.testclient import TestClient
+from main import app
+from dependencies.auth import require_login
+from database import get_db
+
+
+_api_db_file = tempfile.mktemp(suffix=".sqlite3")
+_api_conn = sqlite3.connect(_api_db_file)
+_api_conn.row_factory = sqlite3.Row
+_api_cursor = _api_conn.cursor()
+
+_api_cursor.execute("""
+    CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        oauth_provider TEXT NOT NULL,
+        oauth_id TEXT NOT NULL,
+        username TEXT NOT NULL,
+        avatar_url TEXT,
+        email TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(oauth_provider, oauth_id)
+    )
+""")
+_api_cursor.execute("""
+    CREATE TABLE posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+""")
+_api_cursor.execute("""
+    CREATE TABLE comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        status TEXT DEFAULT 'approved',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES posts(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+""")
+_api_cursor.execute("""
+    CREATE TABLE favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES posts(id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(post_id, user_id)
+    )
+""")
+
+_api_cursor.execute(
+    "INSERT INTO users (oauth_provider, oauth_id, username, email) VALUES (?, ?, ?, ?)",
+    ("admin", "admin", "管理员", "admin@blog.com"),
+)
+_api_cursor.execute(
+    "INSERT INTO users (oauth_provider, oauth_id, username, email) VALUES (?, ?, ?, ?)",
+    ("github", "1001", "张三", "zhangsan@example.com"),
+)
+_api_cursor.execute(
+    "INSERT INTO users (oauth_provider, oauth_id, username, email) VALUES (?, ?, ?, ?)",
+    ("gitee", "2001", "李四", "lisi@example.com"),
+)
+_api_cursor.execute(
+    "INSERT INTO posts (id, title, content) VALUES (?, ?, ?)",
+    (1, "测试文章", "内容"),
+)
+_api_cursor.execute(
+    "INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)",
+    (1, 2, "测试评论"),
+)
+_api_cursor.execute(
+    "INSERT INTO favorites (post_id, user_id) VALUES (?, ?)",
+    (1, 2),
+)
+_api_conn.commit()
+
+
+def override_require_login():
+    return True
+
+
+def override_get_db():
+    conn = sqlite3.connect(_api_db_file)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+app.dependency_overrides[require_login] = override_require_login
+app.dependency_overrides[get_db] = override_get_db
+client = TestClient(app, base_url="https://testserver")
+
+
+def _get_csrf_headers(c: TestClient) -> dict:
+    if "csrf_token" not in c.cookies:
+        c.get("/api/auth/me")
+    csrf_signed = c.cookies.get("csrf_token")
+    if not csrf_signed:
+        return {}
+    csrf_token = csrf_signed.rsplit(".", 1)[0] if "." in csrf_signed else csrf_signed
+    return {"X-CSRF-Token": csrf_token}
+
+
+def test_api_get_users():
+    response = client.get("/api/admin/users")
+    assert response.status_code == 200
+    data = response.json()
+    assert "users" in data
+    assert "total" in data
+
+
+def test_api_get_users_with_search():
+    response = client.get("/api/admin/users?search=张三")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["users"]) == 1
+    assert data["users"][0]["username"] == "张三"
+
+
+def test_api_get_users_with_provider_filter():
+    response = client.get("/api/admin/users?provider=github")
+    assert response.status_code == 200
+    data = response.json()
+    assert all(u["oauth_provider"] == "github" for u in data["users"])
+
+
+def test_api_get_user_detail():
+    response = client.get("/api/admin/users/2")
+    assert response.status_code == 200
+    data = response.json()
+    assert "user" in data
+    assert "stats" in data
+    assert "recent_comments" in data
+
+
+def test_api_get_user_detail_not_found():
+    response = client.get("/api/admin/users/999")
+    assert response.status_code == 404
+
+
+def test_api_delete_user():
+    response = client.delete(
+        "/api/admin/users/3", headers=_get_csrf_headers(client)
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "用户已删除"
+
+
+def test_api_delete_user_not_found():
+    response = client.delete(
+        "/api/admin/users/999", headers=_get_csrf_headers(client)
+    )
+    assert response.status_code == 404
