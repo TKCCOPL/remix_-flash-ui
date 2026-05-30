@@ -9,6 +9,9 @@ export type ApiPost = {
   status: 'published' | 'draft';
   created_at: string;
   updated_at: string;
+  view_count: number;
+  comment_count: number;
+  favorite_count: number;
 };
 
 type PostCreatePayload = {
