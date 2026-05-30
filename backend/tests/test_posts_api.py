@@ -63,6 +63,7 @@ def test_get_single_post_endpoint():
         category TEXT,
         image_url TEXT,
         status TEXT DEFAULT 'published',
+        view_count INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )

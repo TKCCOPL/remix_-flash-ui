@@ -16,7 +16,7 @@ def get_post(conn, post_id: int):
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, title, content, category, image_url, status, created_at, updated_at
+        SELECT id, title, content, category, image_url, status, created_at, updated_at, view_count
         FROM posts
         WHERE id = ?
         """,
@@ -152,3 +152,29 @@ def log_search(conn, query: str, user_ip: str = None):
         VALUES (?, ?)
     ''', (query, user_ip))
     conn.commit()
+
+
+def increment_view_count(conn, post_id: int):
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE posts SET view_count = view_count + 1 WHERE id = ?",
+        (post_id,),
+    )
+    conn.commit()
+
+
+def get_post_with_stats(conn, post_id: int):
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT p.id, p.title, p.content, p.category, p.image_url, p.status,
+               p.created_at, p.updated_at, p.view_count,
+               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.status = 'approved') as comment_count,
+               (SELECT COUNT(*) FROM favorites f WHERE f.post_id = p.id) as favorite_count
+        FROM posts p
+        WHERE p.id = ?
+        """,
+        (post_id,),
+    )
+    row = cursor.fetchone()
+    return dict(row) if row else None
