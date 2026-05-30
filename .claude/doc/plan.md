@@ -53,6 +53,28 @@ XiaoC Blog - 基于 React 19、FastAPI 和 SQLite 的全栈个人博客系统。
   - 移除 App.tsx 中的 `AnimatePresence`
 - **文件**：`frontend/pages/*.tsx`, `frontend/index.css`, `frontend/App.tsx`
 
+## OAuth 访客登录功能 (2026-05-30)
+
+### 任务列表
+| # | 任务 | 状态 | 文件 |
+|---|------|------|------|
+| 1 | OAuth 提供商抽象层 | ✅ 已完成 | `backend/oauth_providers.py` |
+| 2 | OAuth 路由实现 | ✅ 已完成 | `backend/routers/oauth_router.py` |
+| 3 | JWT 服务 | ✅ 已完成 | `backend/services/oauth_service.py` |
+| 4 | 用户仓库 | ✅ 已完成 | `backend/repositories/users_repository.py` |
+| 5 | 评论功能 | ✅ 已完成 | `backend/routers/comments_router.py` |
+| 6 | 收藏功能 | ✅ 已完成 | `backend/routers/favorites_router.py` |
+| 7 | 前端 AuthContext | ✅ 已完成 | `frontend/context/AuthContext.tsx` |
+| 8 | OAuth 菜单组件 | ✅ 已完成 | `frontend/components/OAuthMenu.tsx` |
+| 9 | 用户菜单组件 | ✅ 已完成 | `frontend/components/UserMenu.tsx` |
+| 10 | 评论组件 | ✅ 已完成 | `frontend/components/CommentSection.tsx` |
+| 11 | 收藏按钮组件 | ✅ 已完成 | `frontend/components/FavoriteButton.tsx` |
+
+### 测试结果
+- 87 个后端测试全部通过
+- GitHub/Gitee OAuth 重定向正常
+- 评论和收藏 API 正常
+
 ## 提交记录
 1. `feat: add categories and search_logs tables to database schema`
 2. `fix: improve database schema tests to verify actual code and column attributes`
@@ -75,3 +97,6 @@ XiaoC Blog - 基于 React 19、FastAPI 和 SQLite 的全栈个人博客系统。
 19. `fix: 修复页面切换闪烁 - 正确配置 AnimatePresence 包裹 Routes`
 20. `fix: 移除 AnimatePresence 以彻底解决页面切换闪烁`
 21. `fix: 移除 HeroCanvas CSS fadeUp 动画以解决首页切换闪烁`
+22. `feat: implement OAuth guest login with GitHub and Gitee providers`
+23. `feat: add comments and favorites modules`
+24. `fix: exempt OAuth logout from CSRF validation`

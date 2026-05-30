@@ -9,6 +9,8 @@
 - **自动化聚合**: 集成 GitHub Trending 自动化周榜爬虫 (`Scrapling` & `APScheduler`)，自动同步至数据库并生成原生文章结构
 - **响应式布局**: 适配超宽屏到移动设备，具备基于 DOM 实体验证的智能目录树与防抖 (`throttle`) 平滑滚动辅助
 - **管理后台**: 安全的文章发布与管理，空分类自动隐藏
+- **OAuth 访客登录**: 支持 GitHub 和 Gitee 第三方登录，访客可评论和收藏文章
+- **评论与收藏**: 登录用户可对文章进行评论和收藏操作
 - **国际化**: 中英文一键切换，系统级深色/浅色自适应主题
 - **平滑动画**: 基于 Framer Motion 的路由与组件过渡动画
 
@@ -40,16 +42,43 @@
 
 ## API 端点
 
+### 认证
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/api/auth/login` | 用户登录 |
-| POST | `/api/auth/logout` | 用户登出 |
-| GET | `/api/auth/me` | 获取当前用户 |
+| POST | `/api/auth/login` | 管理员登录 |
+| POST | `/api/auth/logout` | 管理员登出 |
+| GET | `/api/auth/me` | 获取当前管理员用户 |
+
+### 文章
+| 方法 | 路径 | 说明 |
+|------|------|------|
 | GET | `/api/posts/` | 获取文章列表 |
 | GET | `/api/posts/:id` | 获取文章详情 |
 | POST | `/api/posts/` | 创建文章 |
 | PUT | `/api/posts/:id` | 更新文章 |
 | DELETE | `/api/posts/:id` | 删除文章 |
+
+### OAuth 访客登录
+| 方法 | 路径 | 说明 |
+|------|------|-------------|
+| GET | `/api/oauth/:provider` | 获取 OAuth 授权 URL |
+| GET | `/api/oauth/:provider/callback` | OAuth 回调处理 |
+| GET | `/api/oauth/me` | 获取当前访客用户 |
+| POST | `/api/oauth/logout` | 访客登出 |
+
+### 评论
+| 方法 | 路径 | 说明 |
+|------|------|-------------|
+| GET | `/api/comments/post/:post_id` | 获取文章评论 |
+| POST | `/api/comments/` | 创建评论 |
+| DELETE | `/api/comments/:id` | 删除评论 |
+
+### 收藏
+| 方法 | 路径 | 说明 |
+|------|------|-------------|
+| POST | `/api/favorites/toggle` | 切换收藏状态 |
+| GET | `/api/favorites/check/:post_id` | 检查是否已收藏 |
+| GET | `/api/favorites/list` | 获取用户收藏列表 |
 
 ## 管理后台
 

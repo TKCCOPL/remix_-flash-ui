@@ -110,3 +110,119 @@ def test_posts_columns(test_db):
     columns = {row[1] for row in cursor.fetchall()}
     expected_columns = {'id', 'title', 'content', 'category', 'image_url', 'status', 'created_at', 'updated_at'}
     assert columns == expected_columns
+
+
+def test_users_table_exists(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 'users'
+
+
+def test_users_columns(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(users)")
+    columns = {row[1] for row in cursor.fetchall()}
+    expected_columns = {'id', 'oauth_provider', 'oauth_id', 'username', 'avatar_url', 'email', 'created_at'}
+    assert columns == expected_columns
+
+
+def test_users_oauth_unique(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA index_list(users)")
+    indexes = cursor.fetchall()
+    unique_indexes = [idx for idx in indexes if idx[2] == 1]
+    unique_columns = set()
+    for idx in unique_indexes:
+        index_name = idx[1]
+        cursor.execute(f"PRAGMA index_info({index_name})")
+        for col in cursor.fetchall():
+            unique_columns.add(col[2])
+    assert 'oauth_provider' in unique_columns, "oauth_provider should have UNIQUE constraint with oauth_id"
+    assert 'oauth_id' in unique_columns, "oauth_id should have UNIQUE constraint with oauth_provider"
+
+
+def test_comments_table_exists(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='comments'")
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 'comments'
+
+
+def test_comments_columns(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(comments)")
+    columns = {row[1] for row in cursor.fetchall()}
+    expected_columns = {'id', 'post_id', 'user_id', 'content', 'status', 'created_at'}
+    assert columns == expected_columns
+
+
+def test_comments_status_default(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(comments)")
+    columns = {row[1]: row for row in cursor.fetchall()}
+    status_col = columns['status']
+    assert status_col[4] in ("approved", "'approved'"), "status column should have DEFAULT 'approved'"
+
+
+def test_comments_post_id_not_null(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(comments)")
+    columns = {row[1]: row for row in cursor.fetchall()}
+    post_id_col = columns['post_id']
+    assert post_id_col[3] == 1, "post_id should have NOT NULL constraint"
+
+
+def test_comments_user_id_not_null(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(comments)")
+    columns = {row[1]: row for row in cursor.fetchall()}
+    user_id_col = columns['user_id']
+    assert user_id_col[3] == 1, "user_id should have NOT NULL constraint"
+
+
+def test_favorites_table_exists(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='favorites'")
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 'favorites'
+
+
+def test_favorites_columns(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(favorites)")
+    columns = {row[1] for row in cursor.fetchall()}
+    expected_columns = {'id', 'post_id', 'user_id', 'created_at'}
+    assert columns == expected_columns
+
+
+def test_favorites_unique(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA index_list(favorites)")
+    indexes = cursor.fetchall()
+    unique_indexes = [idx for idx in indexes if idx[2] == 1]
+    unique_columns = set()
+    for idx in unique_indexes:
+        index_name = idx[1]
+        cursor.execute(f"PRAGMA index_info({index_name})")
+        for col in cursor.fetchall():
+            unique_columns.add(col[2])
+    assert 'post_id' in unique_columns, "post_id should have UNIQUE constraint with user_id"
+    assert 'user_id' in unique_columns, "user_id should have UNIQUE constraint with post_id"
+
+
+def test_indexes_exist(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_users_oauth'")
+    assert cursor.fetchone() is not None
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_comments_post'")
+    assert cursor.fetchone() is not None
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_comments_user'")
+    assert cursor.fetchone() is not None
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_favorites_user'")
+    assert cursor.fetchone() is not None
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_favorites_post'")
+    assert cursor.fetchone() is not None

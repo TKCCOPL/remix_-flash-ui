@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Command, Sun, Moon, Languages, Menu, X, Code2, Coffee, Sparkles, TerminalSquare, PenTool, Feather } from 'lucide-react';
+import { Search, Command, Sun, Moon, Languages, Menu, X, Code2, Coffee, Sparkles, TerminalSquare, PenTool, Feather, LogIn } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
+import { useAuth } from '../context/AuthContext';
+import OAuthMenu from './OAuthMenu';
+import UserMenu from './UserMenu';
 
 interface SearchResult {
   id: number;
@@ -15,6 +18,8 @@ export default function Layout() {
   const location = useLocation();
   const { language, theme, toggleLanguage, toggleTheme } = usePreferences();
   const t = useI18n();
+  const { user } = useAuth();
+  const [showOAuthMenu, setShowOAuthMenu] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -216,9 +221,17 @@ export default function Layout() {
               </button>
             </div>
 
-            <Link to="/profile" className="w-8 h-8 rounded-full overflow-hidden border-2 border-stone-200 dark:border-stone-700 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors ml-1 hidden sm:block">
-              <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover" />
-            </Link>
+            {user ? (
+              <UserMenu />
+            ) : (
+              <button
+                onClick={() => setShowOAuthMenu(true)}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 hover:shadow-sm transition-all ml-1 hidden sm:flex"
+                aria-label="Login"
+              >
+                <LogIn className="w-4 h-4" />
+              </button>
+            )}
 
             <button
               onClick={() => setMobileNavOpen(!mobileNavOpen)}
@@ -273,6 +286,8 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+
+      <OAuthMenu open={showOAuthMenu} onClose={() => setShowOAuthMenu(false)} />
     </div>
   );
 }

@@ -53,9 +53,53 @@ def init_db():
     if "status" not in column_names:
         cursor.execute("ALTER TABLE posts ADD COLUMN status TEXT DEFAULT 'published'")
 
+    # ── OAuth guest tables ──────────────────────────────────────────────────
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        oauth_provider TEXT NOT NULL,
+        oauth_id TEXT NOT NULL,
+        username TEXT NOT NULL,
+        avatar_url TEXT,
+        email TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(oauth_provider, oauth_id)
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        status TEXT DEFAULT 'approved',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES posts(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES posts(id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(post_id, user_id)
+    )
+    ''')
+
     # Add missing database indexes after column backfill
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_status ON posts (status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts (created_at DESC)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories (slug)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, status, created_at)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_post ON favorites(post_id)')
     conn.commit()
     conn.close()

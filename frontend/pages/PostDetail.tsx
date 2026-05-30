@@ -14,6 +14,7 @@ import { dateFormats, locales } from '../i18n';
 import { ApiError } from '../api/client';
 import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
+import CommentSection from '../components/CommentSection';
 
 function normalizeDate(value: string): string {
   if (value.includes('T')) return value;
@@ -242,6 +243,8 @@ export default function PostDetail() {
             </Markdown>
           </div>
         )}
+
+        {!loading && post && <CommentSection postId={post.id} />}
       </article>
 
       {/* 侧边栏 TOC */}

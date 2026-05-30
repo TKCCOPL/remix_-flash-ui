@@ -50,6 +50,17 @@ playwright-report/
 
 # Venv
 backend/venv/
+.venv/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Database files
+backend/data/*.sqlite3
+data/*.sqlite3
+
+# Build artifacts
+dist/
 
 # Antigravity Brain
 .superpowers/

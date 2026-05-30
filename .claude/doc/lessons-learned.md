@@ -36,4 +36,42 @@
 - `frontend/App.tsx` - 路由配置
 
 ## 类别：后端
-<!-- 在此添加后端相关经验 -->
+
+### OAuth 实施经验
+
+#### 1. config.py 必须手动加载 .env 文件
+**问题**：`os.environ.get("GITHUB_CLIENT_ID")` 返回空字符串
+**原因**：FastAPI 不会自动加载 `.env` 文件
+**解决**：
+```python
+from pathlib import Path
+from dotenv import load_dotenv
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(env_path)
+```
+
+#### 2. FastAPI 路由顺序陷阱
+**问题**：`/{provider}` 路由捕获了 `/me`、`/logout` 等路径
+**原因**：FastAPI 按定义顺序匹配，参数路由会贪婪匹配
+**解决**：固定路径路由必须定义在参数路由之前
+
+#### 3. CSRF 保护阻止退出登录
+**问题**：POST `/api/oauth/logout` 返回 403 Forbidden
+**原因**：CSRF 中间件要求所有 POST 请求携带 CSRF token
+**解决**：在 `backend/middleware.py` 中添加豁免路径 `CSRF_EXEMPT_PATHS = {"/api/oauth/logout"}`
+
+#### 4. OAuth 回调 URL 端口问题
+**问题**：OAuth 回调失败
+**原因**：.env 文件中配置了错误的端口
+**解决**：更新 .env 文件中的重定向 URI为实际使用的端口
+
+#### 5. Claude Code 后台任务限制
+**问题**：启动的 uvicorn 进程会自动退出
+**原因**：Claude Code 的后台任务有超时和资源限制
+**解决**：需要在系统终端中手动启动服务
+
+### OAuth 技术决策
+- **OAuth 提供商抽象层**：将 GitHub 和 Gitee 的 OAuth 逻辑抽象到统一接口
+- **JWT + httponly Cookie**：选择 JWT (HS256) 作为 session token，存储在 httponly cookie 中
+- **双重提交 Cookie CSRF 保护**：对非安全方法使用双重提交 Cookie 模式
+- **数据库 UNIQUE 约束**：users 表的 `(oauth_provider, oauth_id)` 联合唯一索引防止重复注册
