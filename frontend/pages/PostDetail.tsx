@@ -24,6 +24,12 @@ interface TocItem {
   level: number;
 }
 
+function calculateReadingTime(content: string): number {
+  const words = content.length;
+  const wordsPerMinute = 200; // Chinese reading speed
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
+}
+
 function extractToc(content: string): TocItem[] {
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   const toc: TocItem[] = [];
@@ -198,10 +204,16 @@ export default function PostDetail() {
                   {post!.category || t.post.general}
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-stone-800 dark:text-stone-100 mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-stone-800 dark:text-stone-100 mb-4 leading-tight">
                 {post!.title}
               </h1>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-400">
+                <span>👁 {post!.view_count}</span>
+                <span>💬 {post!.comment_count}</span>
+                <span>🔖 {post!.favorite_count}</span>
+                <span>⏱ {calculateReadingTime(post!.content)} min</span>
+              </div>
+              <div className="flex items-center gap-4 mt-4">
                 <FavoriteButton postId={post!.id} />
               </div>
             </div>
