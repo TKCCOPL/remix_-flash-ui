@@ -17,6 +17,7 @@ from routers.posts_router import router as posts_api_router
 from routers.oauth_router import router as oauth_api_router
 from routers.upload_router import router as upload_api_router
 from routers.admin_comments_router import router as admin_comments_router
+from routers.admin_stats_router import router as admin_stats_router
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from middleware import SecurityHeadersMiddleware, CSRFMiddleware
@@ -88,3 +89,4 @@ app.include_router(favorites_user_router, prefix="/api", tags=["favorites"])
 app.include_router(upload_api_router, prefix="/api/upload", tags=["upload"])
 app.include_router(oauth_api_router, prefix="/api/oauth", tags=["oauth"])
 app.include_router(admin_comments_router, prefix="/api/admin/comments", tags=["admin-comments"])
+app.include_router(admin_stats_router, prefix="/api/admin/stats", tags=["admin-stats"])
