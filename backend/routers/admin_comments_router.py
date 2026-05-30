@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
 import sqlite3
-import json
 
 from database import get_db
 from dependencies.auth import require_login
@@ -14,6 +14,21 @@ from repositories.comments_admin_repository import (
     add_filter,
     delete_filter,
 )
+
+
+class CommentStatusUpdate(BaseModel):
+    status: str
+
+
+class BatchDeleteRequest(BaseModel):
+    ids: list[int]
+
+
+class FilterCreate(BaseModel):
+    filter_type: str
+    pattern: str
+    action: str = 'pending'
+
 
 router = APIRouter()
 
@@ -36,15 +51,13 @@ def list_comments_route(
 @router.put("/{comment_id}/status")
 def update_status_route(
     comment_id: int,
-    request: Request,
+    body: CommentStatusUpdate,
     conn=Depends(get_db),
     _=Depends(require_login),
 ):
-    body = json.loads(request._body)
-    status = body.get("status")
-    if status not in ("approved", "rejected", "pending"):
+    if body.status not in ("approved", "rejected", "pending"):
         raise HTTPException(status_code=400, detail="Invalid status")
-    if not update_comment_status(conn, comment_id, status):
+    if not update_comment_status(conn, comment_id, body.status):
         raise HTTPException(status_code=404, detail="Comment not found")
     return {"message": "状态已更新"}
 
@@ -63,15 +76,13 @@ def delete_comment_route(
 
 @router.post("/batch-delete")
 def batch_delete_route(
-    request: Request,
+    body: BatchDeleteRequest,
     conn=Depends(get_db),
     _=Depends(require_login),
 ):
-    body = json.loads(request._body)
-    ids = body.get("ids", [])
-    if not ids:
+    if not body.ids:
         raise HTTPException(status_code=400, detail="No IDs provided")
-    count = batch_delete_comments(conn, ids)
+    count = batch_delete_comments(conn, body.ids)
     return {"message": f"已删除 {count} 条评论"}
 
 
@@ -86,17 +97,11 @@ def list_filters_route(
 
 @router.post("/filters")
 def add_filter_route(
-    request: Request,
+    body: FilterCreate,
     conn=Depends(get_db),
     _=Depends(require_login),
 ):
-    body = json.loads(request._body)
-    filter_type = body.get("filter_type")
-    pattern = body.get("pattern")
-    action = body.get("action", "pending")
-    if not filter_type or not pattern:
-        raise HTTPException(status_code=400, detail="filter_type and pattern required")
-    return add_filter(conn, filter_type, pattern, action)
+    return add_filter(conn, body.filter_type, body.pattern, body.action)
 
 
 @router.delete("/filters/{filter_id}")
