@@ -194,6 +194,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                   <span className="text-sm font-medium text-stone-800 dark:text-stone-100">
                     {comment.username}
                   </span>
+                  {comment.oauth_provider === 'admin' && (
+                    <span className="px-1.5 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">
+                      {t.admin.badge}
+                    </span>
+                  )}
                   <span className="text-xs text-stone-400 dark:text-stone-500">
                     {formatCommentDate(comment.created_at)}
                   </span>
@@ -260,6 +265,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                             <span className="text-sm font-medium text-stone-800 dark:text-stone-100">
                               {reply.username}
                             </span>
+                            {reply.oauth_provider === 'admin' && (
+                              <span className="px-1.5 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">
+                                {t.admin.badge}
+                              </span>
+                            )}
                             <span className="text-xs text-stone-400">
                               {formatCommentDate(reply.created_at)}
                             </span>

@@ -9,6 +9,7 @@ export type Comment = {
   avatar_url: string | null;
   content: string;
   parent_id: number | null;
+  oauth_provider: string;
   replies: Comment[];
   created_at: string;
 };

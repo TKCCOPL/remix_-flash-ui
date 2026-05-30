@@ -112,6 +112,7 @@ export const translations = {
     admin: {
       title: '管理后台',
       subtitle: '管理内容并跟踪表现。',
+      badge: '管理员',
       newPost: '新建文章',
       logout: '退出登录',
       stats: {
@@ -360,6 +361,7 @@ export const translations = {
     admin: {
       title: 'Admin Dashboard',
       subtitle: 'Manage your content and track performance.',
+      badge: 'Admin',
       newPost: 'New Post',
       logout: 'Logout',
       stats: {
