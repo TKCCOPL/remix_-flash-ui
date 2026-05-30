@@ -44,7 +44,7 @@ def list_comments_route(
     _=Depends(require_login),
 ):
     comments = get_comments_with_filter(conn, status=status, search=search, skip=skip, limit=limit)
-    total = count_comments(conn, status=status)
+    total = count_comments(conn, status=status, search=search)
     return {"comments": comments, "total": total, "skip": skip, "limit": limit}
 
 

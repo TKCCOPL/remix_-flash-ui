@@ -1,6 +1,11 @@
 import sqlite3
 
 
+def _escape_like(val: str) -> str:
+    """Escape special LIKE characters % _ and \\ for SQLite."""
+    return val.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def get_comments_with_filter(
     conn: sqlite3.Connection,
     status: str = None,
@@ -26,8 +31,8 @@ def get_comments_with_filter(
         params.append(status)
 
     if search:
-        query += " AND c.content LIKE ?"
-        params.append(f"%{search}%")
+        query += " AND c.content LIKE ? ESCAPE '\\'"
+        params.append(f"%{_escape_like(search)}%")
 
     query += " ORDER BY c.created_at DESC LIMIT ? OFFSET ?"
     params.extend([limit, skip])
@@ -36,7 +41,7 @@ def get_comments_with_filter(
     return [dict(row) for row in cursor.fetchall()]
 
 
-def count_comments(conn: sqlite3.Connection, status: str = None) -> int:
+def count_comments(conn: sqlite3.Connection, status: str = None, search: str = None) -> int:
     cursor = conn.cursor()
     query = "SELECT COUNT(*) FROM comments WHERE 1=1"
     params = []
@@ -44,6 +49,10 @@ def count_comments(conn: sqlite3.Connection, status: str = None) -> int:
     if status:
         query += " AND status = ?"
         params.append(status)
+
+    if search:
+        query += " AND content LIKE ? ESCAPE '\\'"
+        params.append(f"%{_escape_like(search)}%")
 
     cursor.execute(query, params)
     return cursor.fetchone()[0]
