@@ -6,11 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { commentsApi, type Comment } from '../api/comments';
 import { dateFormats, locales } from '../i18n';
 import OAuthMenu from './OAuthMenu';
-
-function normalizeDate(value: string): string {
-  if (value.includes('T')) return value;
-  return value.replace(' ', 'T');
-}
+import { normalizeDate } from '../utils/date';
 
 type CommentSectionProps = {
   postId: number;
@@ -19,7 +15,7 @@ type CommentSectionProps = {
 export default function CommentSection({ postId }: CommentSectionProps) {
   const t = useI18n();
   const { language } = usePreferences();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const locale = locales[language];
   const formats = dateFormats[language];
 
@@ -30,6 +26,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const [error, setError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [showOAuthMenu, setShowOAuthMenu] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const loadComments = useCallback(async () => {
     try {
@@ -64,19 +61,23 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   };
 
   const handleDelete = async (commentId: number) => {
+    if (deletingId !== null) return;
     if (!window.confirm(t.oauth.deleteCommentConfirm)) return;
 
+    setDeletingId(commentId);
     try {
       await commentsApi.remove(commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
     } catch {
       setSubmitError(t.oauth.deleteError);
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const canDelete = (comment: Comment) => {
     if (!user) return false;
-    if (user.id) return user.id === comment.user_id;
+    if (user.id != null) return user.id === comment.user_id;
     return true;
   };
 
@@ -93,7 +94,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         {t.oauth.commentsTitle}
       </h2>
 
-      {user ? (
+      {authLoading ? (
+        <div className="mb-10 animate-pulse">
+          <div className="h-24 rounded-2xl bg-stone-200 dark:bg-stone-700" />
+        </div>
+      ) : user ? (
         <div className="mb-10">
           <textarea
             value={content}

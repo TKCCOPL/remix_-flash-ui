@@ -8,13 +8,7 @@ import { dateFormats, locales, pageIndicator } from '../i18n';
 import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import HeroCanvas from '../components/HeroCanvas';
-
-function normalizeDate(value: string): string {
-  if (value.includes('T')) {
-    return value;
-  }
-  return value.replace(' ', 'T');
-}
+import { normalizeDate } from '../utils/date';
 
 function formatPostDate(value: string, pattern: string, locale: Locale): string {
   const date = new Date(normalizeDate(value));

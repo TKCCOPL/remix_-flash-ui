@@ -1,8 +1,12 @@
+import httpx
 from abc import ABC, abstractmethod
 from config import (
     GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_REDIRECT_URI,
     GITEE_CLIENT_ID, GITEE_CLIENT_SECRET, GITEE_REDIRECT_URI,
 )
+
+# Shared timeout configuration for all OAuth provider HTTP requests
+HTTP_TIMEOUT = httpx.Timeout(10.0)
 
 
 class OAuthProvider(ABC):
@@ -30,8 +34,7 @@ class GitHubProvider(OAuthProvider):
         )
 
     async def exchange_code_for_token(self, code: str) -> str:
-        import httpx
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.post(
                 "https://github.com/login/oauth/access_token",
                 json={
@@ -41,12 +44,12 @@ class GitHubProvider(OAuthProvider):
                 },
                 headers={"Accept": "application/json"},
             )
+            resp.raise_for_status()
             data = resp.json()
             return data.get("access_token")
 
     async def get_user_info(self, access_token: str) -> dict:
-        import httpx
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.get(
                 "https://api.github.com/user",
                 headers={
@@ -54,6 +57,7 @@ class GitHubProvider(OAuthProvider):
                     "Accept": "application/json",
                 },
             )
+            resp.raise_for_status()
             data = resp.json()
             return {
                 "oauth_id": str(data["id"]),
@@ -75,8 +79,7 @@ class GiteeProvider(OAuthProvider):
         )
 
     async def exchange_code_for_token(self, code: str) -> str:
-        import httpx
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.post(
                 "https://gitee.com/oauth/token",
                 data={
@@ -87,16 +90,17 @@ class GiteeProvider(OAuthProvider):
                     "redirect_uri": GITEE_REDIRECT_URI,
                 },
             )
+            resp.raise_for_status()
             data = resp.json()
             return data.get("access_token")
 
     async def get_user_info(self, access_token: str) -> dict:
-        import httpx
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.get(
                 "https://gitee.com/api/v5/user",
-                params={"access_token": access_token},
+                headers={"Authorization": f"Bearer {access_token}"},
             )
+            resp.raise_for_status()
             data = resp.json()
             return {
                 "oauth_id": str(data["id"]),

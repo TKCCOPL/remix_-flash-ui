@@ -11,7 +11,8 @@ from limiter import limiter
 from routers.auth_router import router as auth_api_router
 from routers.categories_router import router as categories_api_router
 from routers.comments_router import router as comments_api_router
-from routers.favorites_router import router as favorites_api_router
+from routers.favorites_router import post_router as favorites_post_router
+from routers.favorites_router import user_router as favorites_user_router
 from routers.posts_router import router as posts_api_router
 from routers.oauth_router import router as oauth_api_router
 from routers.upload_router import router as upload_api_router
@@ -80,7 +81,7 @@ app.include_router(auth_api_router, prefix="/api/auth", tags=["auth"])
 app.include_router(categories_api_router, prefix="/api/categories", tags=["categories"])
 app.include_router(posts_api_router, prefix="/api/posts", tags=["posts"])
 app.include_router(comments_api_router, prefix="/api/posts", tags=["comments"])
-app.include_router(favorites_api_router, prefix="/api/posts", tags=["favorites"])
-app.include_router(favorites_api_router, prefix="/api", tags=["favorites"])
+app.include_router(favorites_post_router, prefix="/api/posts", tags=["favorites"])
+app.include_router(favorites_user_router, prefix="/api", tags=["favorites"])
 app.include_router(upload_api_router, prefix="/api/upload", tags=["upload"])
 app.include_router(oauth_api_router, prefix="/api/oauth", tags=["oauth"])

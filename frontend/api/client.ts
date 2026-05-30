@@ -50,7 +50,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   if (!SAFE_METHODS.has(method)) {
     const csrfToken = getCookieValue(CSRF_COOKIE_NAME);
     if (csrfToken && !headers.has(CSRF_HEADER_NAME)) {
-      headers.set(CSRF_HEADER_NAME, csrfToken);
+      // The cookie value is signed as "token.signature" — extract the raw token
+      // portion to match what the backend CSRF middleware expects in the header.
+      const rawToken = csrfToken.includes('.') ? csrfToken.substring(0, csrfToken.lastIndexOf('.')) : csrfToken;
+      headers.set(CSRF_HEADER_NAME, rawToken);
     }
   }
 

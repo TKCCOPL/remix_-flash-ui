@@ -1,7 +1,10 @@
+import logging
 import os
 import secrets
 from pathlib import Path
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # 加载 .env 文件（从项目根目录）
 env_path = Path(__file__).parent.parent / ".env"
@@ -17,6 +20,7 @@ GITEE_REDIRECT_URI = os.environ.get("GITEE_REDIRECT_URI", "http://localhost:8000
 
 GUEST_JWT_SECRET = os.environ.get("GUEST_JWT_SECRET", "")
 if not GUEST_JWT_SECRET:
+    logger.warning("GUEST_JWT_SECRET is not set. Generated a random secret; tokens expire on restart.")
     GUEST_JWT_SECRET = secrets.token_hex(32)
 
 GUEST_JWT_ALGORITHM = "HS256"

@@ -15,11 +15,7 @@ import { ApiError } from '../api/client';
 import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import CommentSection from '../components/CommentSection';
-
-function normalizeDate(value: string): string {
-  if (value.includes('T')) return value;
-  return value.replace(' ', 'T');
-}
+import { normalizeDate } from '../utils/date';
 
 interface TocItem {
   id: string;

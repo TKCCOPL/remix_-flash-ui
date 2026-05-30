@@ -54,9 +54,6 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     - On unsafe methods (POST/PUT/DELETE/PATCH), validates the cookie against the header.
     """
 
-    # Paths exempt from CSRF validation (e.g., OAuth logout)
-    CSRF_EXEMPT_PATHS = {"/api/oauth/logout"}
-
     async def dispatch(self, request: Request, call_next):
         if request.method in SAFE_METHODS:
             response = await call_next(request)
@@ -73,10 +70,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 )
             return response
 
-        # Unsafe method: validate CSRF (skip for exempt paths)
-        if request.url.path in self.CSRF_EXEMPT_PATHS:
-            return await call_next(request)
-
+        # Unsafe method: validate CSRF
         cookie_token = request.cookies.get(CSRF_COOKIE_NAME)
         header_token = request.headers.get(CSRF_HEADER_NAME)
 

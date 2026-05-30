@@ -20,6 +20,7 @@ import { dateFormats, locales } from '../i18n';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { ApiPost, postsApi } from '../api/posts';
+import { normalizeDate } from '../utils/date';
 
 type AdminPost = {
   id: string;
@@ -43,13 +44,6 @@ function mapApiPost(post: ApiPost): AdminPost {
     createdAt: post.created_at,
     updatedAt: post.updated_at,
   };
-}
-
-function normalizeDate(value: string): string {
-  if (value.includes('T')) {
-    return value;
-  }
-  return value.replace(' ', 'T');
 }
 
 export default function Admin() {

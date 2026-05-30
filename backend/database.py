@@ -55,6 +55,14 @@ def init_db():
 
     # ── OAuth guest tables ──────────────────────────────────────────────────
     cursor.execute('''
+    CREATE TABLE IF NOT EXISTS oauth_states (
+        state TEXT PRIMARY KEY,
+        provider TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         oauth_provider TEXT NOT NULL,

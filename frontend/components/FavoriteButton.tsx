@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bookmark } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,12 @@ export default function FavoriteButton({ postId }: Props) {
   const { user } = useAuth();
   const [favorited, setFavorited] = useState(false);
   const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -21,7 +27,7 @@ export default function FavoriteButton({ postId }: Props) {
     const check = async () => {
       try {
         const data = await favoritesApi.check(postId);
-        if (!cancelled) setFavorited(data.favorited);
+        if (!cancelled && mountedRef.current) setFavorited(data.favorited);
       } catch {
         // silently ignore
       }
@@ -29,27 +35,28 @@ export default function FavoriteButton({ postId }: Props) {
 
     void check();
     return () => { cancelled = true; };
-  }, [user, postId]);
+  }, [user?.id, postId]);
 
-  if (!user) return null;
-
-  const handleToggle = async () => {
+  const handleToggle = useCallback(async () => {
     if (loading) return;
     setLoading(true);
     try {
       const data = await favoritesApi.toggle(postId);
-      setFavorited(data.favorited);
+      if (mountedRef.current) setFavorited(data.favorited);
     } catch {
       // silently ignore
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
-  };
+  }, [loading, postId]);
+
+  if (!user) return null;
 
   return (
     <button
       onClick={handleToggle}
       disabled={loading}
+      aria-pressed={favorited}
       className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
         favorited
           ? 'text-indigo-600 dark:text-indigo-400'
