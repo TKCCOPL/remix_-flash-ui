@@ -17,29 +17,33 @@ export default function CategoryPage() {
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
+    let cancelled = false;
     const fetchCategoryPosts = async () => {
       if (!slug) return
       setLoading(true)
 
       try {
         const data = await categoriesApi.getPosts(slug)
+        if (cancelled) return
         setCategory(data.category)
         setPosts(data.posts)
         setCache(`category_${slug}`, data.category)
         setCache(`category_posts_${slug}`, data.posts)
       } catch (err) {
+        if (cancelled) return
         if (err instanceof ApiError && err.status === 404) {
           setNotFound(true)
         } else {
           setError(t.categoryPage.loadError)
         }
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     fetchCategoryPosts()
-  }, [slug])
+    return () => { cancelled = true; }
+  }, [slug, t.categoryPage.loadError])
 
   if (notFound) {
     return (
