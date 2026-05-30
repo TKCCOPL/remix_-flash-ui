@@ -13,6 +13,7 @@ export default function FavoriteButton({ postId }: Props) {
   const { user } = useAuth();
   const [favorited, setFavorited] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [animating, setAnimating] = useState(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function FavoriteButton({ postId }: Props) {
   const handleToggle = useCallback(async () => {
     if (loading) return;
     setLoading(true);
+    setAnimating(true);
     try {
       const data = await favoritesApi.toggle(postId);
       if (mountedRef.current) setFavorited(data.favorited);
@@ -47,6 +49,9 @@ export default function FavoriteButton({ postId }: Props) {
       // silently ignore
     } finally {
       if (mountedRef.current) setLoading(false);
+      setTimeout(() => {
+        if (mountedRef.current) setAnimating(false);
+      }, 200);
     }
   }, [loading, postId]);
 
@@ -57,18 +62,15 @@ export default function FavoriteButton({ postId }: Props) {
       onClick={handleToggle}
       disabled={loading}
       aria-pressed={favorited}
-      className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
+      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
         favorited
-          ? 'text-indigo-600 dark:text-indigo-400'
-          : 'text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400'
-      }`}
+          ? 'bg-indigo-500 border-indigo-500 text-white'
+          : 'bg-white dark:bg-stone-800 border-stone-300 dark:border-stone-600 text-stone-400 hover:border-indigo-400 hover:text-indigo-400'
+      } ${animating ? 'scale-110' : 'scale-100'}`}
     >
       <Bookmark
-        className={`w-4 h-4 transition-colors ${
-          favorited ? 'fill-indigo-600 dark:fill-indigo-400' : ''
-        }`}
+        className={`w-4 h-4 ${favorited ? 'fill-white' : ''}`}
       />
-      {favorited ? t.post.favorited : t.post.favorite}
     </button>
   );
 }
