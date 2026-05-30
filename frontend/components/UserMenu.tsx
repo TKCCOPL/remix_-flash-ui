@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
 
 export default function UserMenu() {
   const t = useI18n();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -24,6 +25,7 @@ export default function UserMenu() {
   const handleLogout = async () => {
     await logout();
     setOpen(false);
+    navigate('/');
   };
 
   if (!user) return null;
@@ -57,12 +59,12 @@ export default function UserMenu() {
             </div>
 
             <Link
-              to="/favorites"
+              to="/profile"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-stone-800/80 transition-colors"
             >
-              <Heart className="w-4 h-4" />
-              {t.userMenu.favorites}
+              <User className="w-4 h-4" />
+              {t.nav.profile}
             </Link>
 
             <button
