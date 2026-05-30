@@ -6,8 +6,8 @@ def create_or_update_user(
     oauth_provider: str,
     oauth_id: str,
     username: str,
-    avatar_url: str = None,
-    email: str = None,
+    avatar_url: str | None = None,
+    email: str | None = None,
 ) -> dict:
     cursor = conn.cursor()
     cursor.execute(
@@ -57,8 +57,8 @@ def get_users_with_stats(
     conn: sqlite3.Connection,
     skip: int = 0,
     limit: int = 20,
-    search: str = None,
-    provider: str = None,
+    search: str | None = None,
+    provider: str | None = None,
 ) -> list[dict]:
     cursor = conn.cursor()
     query = """
@@ -91,9 +91,22 @@ def get_users_with_stats(
     return [dict(row) for row in cursor.fetchall()]
 
 
-def count_users(conn: sqlite3.Connection) -> int:
+def count_users(
+    conn: sqlite3.Connection,
+    search: str | None = None,
+    provider: str | None = None,
+) -> int:
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM users WHERE oauth_provider != 'admin'")
+    query = "SELECT COUNT(*) FROM users WHERE oauth_provider != 'admin'"
+    params = []
+    if search:
+        query += " AND (username LIKE ? OR email LIKE ?)"
+        search_pattern = f"%{search}%"
+        params.extend([search_pattern, search_pattern])
+    if provider:
+        query += " AND oauth_provider = ?"
+        params.append(provider)
+    cursor.execute(query, params)
     return cursor.fetchone()[0]
 
 

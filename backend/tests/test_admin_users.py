@@ -6,6 +6,7 @@ from repositories.users_repository import (
     get_user_recent_comments,
     delete_user_cascade,
     count_users,
+    get_user_active_days,
 )
 
 
@@ -85,6 +86,18 @@ def db():
         "INSERT INTO favorites (post_id, user_id) VALUES (?, ?)",
         (1, 2),
     )
+    cursor.execute(
+        "INSERT INTO comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, ?)",
+        (1, 2, "第二天评论", "2024-01-02 10:00:00"),
+    )
+    cursor.execute(
+        "INSERT INTO comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, ?)",
+        (1, 2, "同一天第二条评论", "2024-01-02 15:00:00"),
+    )
+    cursor.execute(
+        "INSERT INTO favorites (post_id, user_id, created_at) VALUES (?, ?, ?)",
+        (1, 3, "2024-01-01 10:00:00"),
+    )
     conn.commit()
     yield conn
     conn.close()
@@ -131,7 +144,7 @@ def test_get_users_with_stats_includes_counts(db):
     """用户列表应包含评论数和收藏数"""
     users = get_users_with_stats(db)
     user = next(u for u in users if u["username"] == "张三")
-    assert user["comment_count"] == 1
+    assert user["comment_count"] == 3
     assert user["favorite_count"] == 1
 
 
@@ -141,18 +154,37 @@ def test_count_users_excludes_admin(db):
     assert count == 2
 
 
+def test_count_users_with_search(db):
+    """用户计数应支持搜索过滤"""
+    count = count_users(db, search="张三")
+    assert count == 1
+
+
+def test_count_users_with_provider(db):
+    """用户计数应支持提供者过滤"""
+    count = count_users(db, provider="github")
+    assert count == 1
+
+
+def test_count_users_with_search_and_provider(db):
+    """用户计数应同时支持搜索和提供者过滤"""
+    count = count_users(db, search="张三", provider="github")
+    assert count == 1
+    count = count_users(db, search="张三", provider="gitee")
+    assert count == 0
+
+
 def test_get_user_stats(db):
     """获取用户统计信息"""
     stats = get_user_stats(db, 2)
-    assert stats["comment_count"] == 1
+    assert stats["comment_count"] == 3
     assert stats["favorite_count"] == 1
 
 
 def test_get_user_recent_comments(db):
     """获取用户最近评论"""
     comments = get_user_recent_comments(db, 2)
-    assert len(comments) == 1
-    assert comments[0]["content"] == "测试评论"
+    assert len(comments) == 3
     assert comments[0]["post_title"] == "测试文章"
 
 
@@ -179,3 +211,17 @@ def test_delete_user_cascade_nonexistent(db):
     """删除不存在的用户应返回 False"""
     deleted = delete_user_cascade(db, 999)
     assert deleted is False
+
+
+def test_get_user_active_days(db):
+    """活跃天数应统计不同的日期数"""
+    # user 2 has comments on current date and 2024-01-02 = 2 distinct days
+    days = get_user_active_days(db, 2)
+    assert days == 2
+
+
+def test_get_user_active_days_same_day(db):
+    """同一天多次活动应计为1天"""
+    # user 3 has one favorite on 2024-01-01 = 1 distinct day
+    days = get_user_active_days(db, 3)
+    assert days == 1
