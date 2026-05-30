@@ -36,11 +36,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       const data = await commentsApi.list(postId);
       setComments(data);
     } catch {
-      setError(t.oauth.commentLoading);
+      setError('Failed to load comments');
     } finally {
       setLoading(false);
     }
-  }, [postId, t.oauth.commentLoading]);
+  }, [postId]);
 
   useEffect(() => {
     void loadComments();

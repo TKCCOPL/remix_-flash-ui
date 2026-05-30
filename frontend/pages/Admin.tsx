@@ -93,7 +93,7 @@ export default function Admin() {
     return () => {
       cancelled = true;
     };
-  }, [navigate, t.login.error]);
+  }, [navigate]);
 
   const categories = useMemo(() => {
     return [...new Set(posts.map((post) => post.category).filter(Boolean))].sort();
