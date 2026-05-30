@@ -52,6 +52,8 @@ def init_db():
         cursor.execute("ALTER TABLE posts ADD COLUMN image_url TEXT")
     if "status" not in column_names:
         cursor.execute("ALTER TABLE posts ADD COLUMN status TEXT DEFAULT 'published'")
+    if "view_count" not in column_names:
+        cursor.execute("ALTER TABLE posts ADD COLUMN view_count INTEGER DEFAULT 0")
 
     # ── OAuth guest tables ──────────────────────────────────────────────────
     cursor.execute('''

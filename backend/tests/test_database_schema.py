@@ -108,8 +108,24 @@ def test_posts_columns(test_db):
     cursor = test_db.cursor()
     cursor.execute("PRAGMA table_info(posts)")
     columns = {row[1] for row in cursor.fetchall()}
-    expected_columns = {'id', 'title', 'content', 'category', 'image_url', 'status', 'created_at', 'updated_at'}
+    expected_columns = {'id', 'title', 'content', 'category', 'image_url', 'status', 'view_count', 'created_at', 'updated_at'}
     assert columns == expected_columns
+
+
+def test_posts_table_has_view_count_column(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(posts)")
+    columns = {row[1] for row in cursor.fetchall()}
+    assert "view_count" in columns, "posts table should have view_count column"
+
+
+def test_posts_view_count_default(test_db):
+    cursor = test_db.cursor()
+    cursor.execute("PRAGMA table_info(posts)")
+    columns = {row[1]: row for row in cursor.fetchall()}
+    view_count_col = columns['view_count']
+    assert view_count_col[2] == 'INTEGER', "view_count should be INTEGER type"
+    assert view_count_col[4] == '0', "view_count should have DEFAULT 0"
 
 
 def test_users_table_exists(test_db):
