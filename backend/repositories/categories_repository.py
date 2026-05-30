@@ -33,7 +33,7 @@ def get_posts_by_category_slug(conn: sqlite3.Connection, slug: str) -> list[dict
         SELECT p.id, p.title, p.content, p.category, p.image_url, p.created_at
         FROM posts p
         JOIN categories c ON p.category = c.name
-        WHERE c.slug = ?
+        WHERE c.slug = ? AND p.status = 'published'
         ORDER BY p.created_at DESC
     ''', (slug,))
     posts = cursor.fetchall()
