@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from database import get_db
@@ -7,10 +7,14 @@ from services.comments_service import (
     create_comment,
     delete_comment,
     get_comments_by_post,
+    get_comments_by_user,
 )
 from repositories.comments_repository import get_comment_by_id
 
 router = APIRouter()
+
+# User-scoped routes: mounted at /api
+user_router = APIRouter()
 
 
 class CommentCreate(BaseModel):
@@ -49,3 +53,20 @@ def delete_comment_route(comment_id: int, request: Request, conn=Depends(get_db)
 
     delete_comment(conn, comment_id, user["user_id"])
     return {"detail": "comment deleted"}
+
+
+@user_router.get("/users/me/comments")
+async def get_my_comments(
+    request: Request,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Get current user's comments."""
+    user = require_login(request)
+    conn = get_db()
+    try:
+        user_id = resolve_user_id(user, conn)
+        comments = get_comments_by_user(conn, user_id, skip, limit)
+        return comments
+    finally:
+        conn.close()

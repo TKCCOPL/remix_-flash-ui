@@ -56,3 +56,20 @@ def get_comment_count_by_post(conn, post_id: int):
         (post_id,),
     )
     return cursor.fetchone()["count"]
+
+
+def get_comments_by_user_id(conn, user_id, skip=0, limit=20):
+    """Get comments by user id with post info."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT c.id, c.post_id, c.content, c.created_at, p.title as post_title
+        FROM comments c
+        JOIN posts p ON c.post_id = p.id
+        WHERE c.user_id = ? AND c.status = 'approved'
+        ORDER BY c.created_at DESC
+        LIMIT ? OFFSET ?
+        """,
+        (user_id, limit, skip),
+    )
+    return [dict(row) for row in cursor.fetchall()]

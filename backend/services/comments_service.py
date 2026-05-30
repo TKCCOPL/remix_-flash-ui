@@ -2,6 +2,7 @@ from repositories.comments_repository import (
     create_comment_record,
     get_comment_by_id,
     get_comments_by_post_id,
+    get_comments_by_user_id,
     delete_comment_record,
 )
 
@@ -26,3 +27,8 @@ def delete_comment(conn, comment_id: int, user_id: int):
     if comment["user_id"] != user_id:
         return False
     return delete_comment_record(conn, comment_id)
+
+
+def get_comments_by_user(conn, user_id, skip=0, limit=20):
+    """Get comments by user id."""
+    return get_comments_by_user_id(conn, user_id, skip, limit)
