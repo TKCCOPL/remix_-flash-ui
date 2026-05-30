@@ -154,6 +154,46 @@ export const translations = {
         overview: '概览',
         posts: '文章管理',
         categories: '分类管理',
+        users: '用户管理',
+      },
+      users: {
+        title: '用户管理',
+        subtitle: '管理 OAuth 访客用户',
+        totalUsers: '共 {count} 位用户',
+        search: '搜索用户名或邮箱...',
+        filter: {
+          all: '全部',
+          github: 'GitHub',
+          gitee: 'Gitee',
+        },
+        table: {
+          user: '用户',
+          email: '邮箱',
+          provider: '提供者',
+          registeredAt: '注册时间',
+          comments: '评论',
+          favorites: '收藏',
+          actions: '操作',
+        },
+        actions: {
+          detail: '详情',
+          delete: '删除',
+          deleteUser: '删除用户',
+        },
+        detail: {
+          title: '用户详情',
+          stats: {
+            comments: '评论数',
+            favorites: '收藏数',
+            activeDays: '活跃天数',
+          },
+          recentComments: '最近评论',
+        },
+        confirm: {
+          delete: '确定要删除用户 {username} 吗？该操作将同时删除该用户的所有评论和收藏，且不可恢复。',
+        },
+        empty: '暂无用户',
+        loading: '加载中...',
       },
     },
     editor: {
@@ -362,6 +402,46 @@ export const translations = {
         overview: 'Overview',
         posts: 'Posts',
         categories: 'Categories',
+        users: 'Users',
+      },
+      users: {
+        title: 'User Management',
+        subtitle: 'Manage OAuth guest users',
+        totalUsers: '{count} users total',
+        search: 'Search username or email...',
+        filter: {
+          all: 'All',
+          github: 'GitHub',
+          gitee: 'Gitee',
+        },
+        table: {
+          user: 'User',
+          email: 'Email',
+          provider: 'Provider',
+          registeredAt: 'Registered',
+          comments: 'Comments',
+          favorites: 'Favorites',
+          actions: 'Actions',
+        },
+        actions: {
+          detail: 'Detail',
+          delete: 'Delete',
+          deleteUser: 'Delete User',
+        },
+        detail: {
+          title: 'User Detail',
+          stats: {
+            comments: 'Comments',
+            favorites: 'Favorites',
+            activeDays: 'Active Days',
+          },
+          recentComments: 'Recent Comments',
+        },
+        confirm: {
+          delete: 'Are you sure you want to delete user {username}? This will also delete all their comments and favorites, and cannot be undone.',
+        },
+        empty: 'No users yet',
+        loading: 'Loading...',
       },
     },
     editor: {
