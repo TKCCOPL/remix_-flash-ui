@@ -34,7 +34,7 @@ export default function UserCard({ user, favoritesCount, commentsCount, onLogout
             {user.username}
           </h1>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-0.5">
-            {t.oauth.login}
+            {t.profile.loginMethod(user.oauth_provider)}
           </p>
         </div>
         <button

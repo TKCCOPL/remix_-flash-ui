@@ -5,6 +5,7 @@ export type GuestUser = {
   username: string;
   avatar_url: string | null;
   email: string | null;
+  oauth_provider: string;
 };
 
 export const oauthApi = {
