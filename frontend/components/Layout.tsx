@@ -4,15 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Command, Sun, Moon, Languages, Menu, X, Code2, Coffee, Sparkles, TerminalSquare, PenTool, Feather, LogIn } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
+import { postsApi, type SearchResult } from '../api/posts';
 import OAuthMenu from './OAuthMenu';
 import UserMenu from './UserMenu';
-
-interface SearchResult {
-  id: number;
-  title: string;
-  summary: string;
-  category: string | null;
-}
 
 export default function Layout() {
   const location = useLocation();
@@ -38,11 +32,8 @@ export default function Layout() {
 
     setIsSearching(true);
     try {
-      const response = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResults(data.results.slice(0, 5));
-      }
+      const data = await postsApi.search(query);
+      setSearchResults(data.results.slice(0, 5));
     } catch (error) {
       console.error('Search error:', error);
     } finally {
