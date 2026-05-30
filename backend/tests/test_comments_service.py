@@ -84,3 +84,38 @@ def test_content_too_long(db_conn):
     long_content = "x" * (MAX_COMMENT_LENGTH + 1)
     with pytest.raises(ValueError, match="too long"):
         create_comment(db_conn, post_id, user["id"], long_content)
+
+
+def test_create_reply_with_valid_parent(db_conn):
+    user = _create_user(db_conn)
+    post_id = _create_post(db_conn)
+    parent = create_comment(db_conn, post_id, user["id"], "Parent comment")
+    reply = create_comment(db_conn, post_id, user["id"], "Reply", parent_id=parent["id"])
+    assert reply["content"] == "Reply"
+    assert reply["parent_id"] == parent["id"]
+    assert reply["post_id"] == post_id
+
+
+def test_create_reply_with_invalid_parent(db_conn):
+    user = _create_user(db_conn)
+    post_id = _create_post(db_conn)
+    with pytest.raises(ValueError, match="Parent comment not found"):
+        create_comment(db_conn, post_id, user["id"], "Reply", parent_id=999)
+
+
+def test_create_reply_to_different_post(db_conn):
+    user = _create_user(db_conn)
+    post1 = _create_post(db_conn, title="Post 1")
+    post2 = _create_post(db_conn, title="Post 2")
+    parent = create_comment(db_conn, post1, user["id"], "Parent on post 1")
+    with pytest.raises(ValueError, match="different post"):
+        create_comment(db_conn, post2, user["id"], "Reply on post 2", parent_id=parent["id"])
+
+
+def test_create_reply_to_reply(db_conn):
+    user = _create_user(db_conn)
+    post_id = _create_post(db_conn)
+    parent = create_comment(db_conn, post_id, user["id"], "Parent")
+    reply = create_comment(db_conn, post_id, user["id"], "Reply", parent_id=parent["id"])
+    with pytest.raises(ValueError, match="Cannot reply to a reply"):
+        create_comment(db_conn, post_id, user["id"], "Reply to reply", parent_id=reply["id"])

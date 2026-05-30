@@ -11,10 +11,20 @@ from repositories.comments_repository import (
 MAX_COMMENT_LENGTH = 1000
 
 
-def create_comment(conn, post_id: int, user_id: int, content: str):
+def create_comment(conn, post_id: int, user_id: int, content: str, parent_id: int = None):
     if len(content) > MAX_COMMENT_LENGTH:
         raise ValueError(f"Comment is too long (max {MAX_COMMENT_LENGTH} characters)")
-    comment_id = create_comment_record(conn, post_id, user_id, content)
+
+    if parent_id is not None:
+        parent = get_comment_by_id(conn, parent_id)
+        if not parent:
+            raise ValueError("Parent comment not found")
+        if parent["post_id"] != post_id:
+            raise ValueError("Parent comment belongs to a different post")
+        if parent["parent_id"] is not None:
+            raise ValueError("Cannot reply to a reply (only one level allowed)")
+
+    comment_id = create_comment_record(conn, post_id, user_id, content, parent_id=parent_id)
     return get_comment_by_id(conn, comment_id)
 
 
