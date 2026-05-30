@@ -60,6 +60,8 @@ def update_post(conn, post_id: int, title: str | None, content: str | None, cate
 
 def delete_post(conn, post_id: int):
     cursor = conn.cursor()
+    cursor.execute("DELETE FROM comments WHERE post_id = ?", (post_id,))
+    cursor.execute("DELETE FROM favorites WHERE post_id = ?", (post_id,))
     cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
     conn.commit()
     return cursor.rowcount > 0
