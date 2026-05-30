@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
+import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/auth';
 
 const SIDEBAR_WIDTH = 240;
@@ -25,6 +26,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const t = useI18n();
+  const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('admin_sidebar_collapsed') === 'true';
   });
@@ -62,7 +64,7 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     try {
-      await authApi.logout();
+      await logout();
       navigate('/login');
     } catch {
       navigate('/login');

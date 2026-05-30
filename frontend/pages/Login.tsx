@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/Preferences';
+import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 
@@ -11,6 +12,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const t = useI18n();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +37,8 @@ export default function Login() {
         setError(t.login.error);
         return;
       }
+      // Refresh auth state before navigating
+      await refreshUser();
       navigate('/admin');
     } catch (requestError) {
       if (requestError instanceof ApiError && requestError.status === 401) {
