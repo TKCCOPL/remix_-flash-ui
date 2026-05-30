@@ -29,6 +29,7 @@ export default function Home() {
   const formats = dateFormats[language];
   const postsPerPage = 10;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const NONE_CATEGORY = '__none__';
 
   useEffect(() => {
     let cancelled = false;
@@ -61,16 +62,16 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const isFiltering = selectedCategory && selectedCategory !== t.home.all;
+  const isFiltering = !!selectedCategory;
   const featuredPost = isFiltering ? undefined : posts[0];
   const featuredImageUrl = featuredPost?.image_url?.trim() || '';
   const allListPosts = useMemo(() => {
     if (!isFiltering) return posts.slice(1);
-    return posts.filter((post) => (post.category || t.post.general) === selectedCategory);
-  }, [posts, isFiltering, selectedCategory, t.home.all, t.post.general]);
+    return posts.filter((post) => (post.category ?? NONE_CATEGORY) === selectedCategory);
+  }, [posts, isFiltering, selectedCategory, NONE_CATEGORY]);
   const totalPages = Math.ceil(allListPosts.length / postsPerPage);
   const listPosts = allListPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
-  const categories = Array.from(new Set(posts.map((post) => post.category || t.post.general))).slice(0, 5);
+  const categories = Array.from(new Set(posts.map((post) => post.category ?? NONE_CATEGORY))).slice(0, 5);
 
   return (
     <div className="w-full space-y-24">
@@ -141,7 +142,7 @@ export default function Home() {
                     : 'text-stone-600 dark:text-stone-300 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800'
                 }`}
               >
-                {cat}
+                {cat === NONE_CATEGORY ? t.post.general : cat}
               </button>
             ))}
           </div>
