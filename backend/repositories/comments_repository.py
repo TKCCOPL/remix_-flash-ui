@@ -1,14 +1,14 @@
 import sqlite3
 
 
-def create_comment_record(conn, post_id: int, user_id: int, content: str, status: str = "approved"):
+def create_comment_record(conn, post_id: int, user_id: int, content: str, status: str = "approved", parent_id: int = None):
     cursor = conn.cursor()
     cursor.execute(
         """
-        INSERT INTO comments (post_id, user_id, content, status, created_at)
-        VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
+        INSERT INTO comments (post_id, user_id, content, status, parent_id, created_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'))
         """,
-        (post_id, user_id, content, status),
+        (post_id, user_id, content, status, parent_id),
     )
     conn.commit()
     return cursor.lastrowid
@@ -18,7 +18,7 @@ def get_comment_by_id(conn, comment_id: int):
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, post_id, user_id, content, status, created_at
+        SELECT id, post_id, user_id, content, status, parent_id, created_at
         FROM comments
         WHERE id = ?
         """,
@@ -30,19 +30,31 @@ def get_comment_by_id(conn, comment_id: int):
 
 def get_comments_by_post_id(conn, post_id: int, skip: int = 0, limit: int = 20):
     cursor = conn.cursor()
+
     cursor.execute(
         """
-        SELECT c.id, c.post_id, c.user_id, c.content, c.status, c.created_at,
+        SELECT c.id, c.post_id, c.user_id, c.content, c.status, c.parent_id, c.created_at,
                u.username, u.avatar_url
         FROM comments c
         JOIN users u ON c.user_id = u.id
         WHERE c.post_id = ? AND c.status = 'approved'
         ORDER BY c.created_at DESC
-        LIMIT ? OFFSET ?
         """,
-        (post_id, limit, skip),
+        (post_id,),
     )
-    return [dict(row) for row in cursor.fetchall()]
+    all_comments = [dict(row) for row in cursor.fetchall()]
+
+    comment_map = {c["id"]: {**c, "replies": []} for c in all_comments}
+    top_level = []
+
+    for comment in all_comments:
+        comment_with_replies = comment_map[comment["id"]]
+        if comment["parent_id"] and comment["parent_id"] in comment_map:
+            comment_map[comment["parent_id"]]["replies"].append(comment_with_replies)
+        else:
+            top_level.append(comment_with_replies)
+
+    return top_level[skip:skip + limit]
 
 
 def delete_comment_record(conn, comment_id: int):
