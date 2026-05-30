@@ -1,5 +1,17 @@
 import { apiFetch } from './client';
 
+// Original comment type for blog post comments
+export type Comment = {
+  id: number;
+  post_id: number;
+  user_id: number;
+  username: string;
+  avatar_url: string | null;
+  content: string;
+  created_at: string;
+};
+
+// Type for user's comment history (profile page)
 export type ApiComment = {
   id: number;
   post_id: number;
@@ -9,6 +21,18 @@ export type ApiComment = {
 };
 
 export const commentsApi = {
-  list: (skip = 0, limit = 20) =>
+  // Blog post comments
+  list: (postId: number | string, skip = 0, limit = 20) =>
+    apiFetch<Comment[]>(`/api/posts/${postId}/comments?skip=${skip}&limit=${limit}`),
+  create: (postId: number | string, content: string) =>
+    apiFetch<Comment>(`/api/posts/${postId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
+  remove: (commentId: number | string) =>
+    apiFetch<void>(`/api/posts/comments/${commentId}`, { method: 'DELETE' }),
+
+  // User's comment history (for profile page)
+  listByUser: (skip = 0, limit = 20) =>
     apiFetch<ApiComment[]>(`/api/users/me/comments?skip=${skip}&limit=${limit}`),
 };

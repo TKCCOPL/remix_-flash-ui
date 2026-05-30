@@ -6,6 +6,7 @@ import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
+import About from './pages/About';
 import ArchivePage from './pages/ArchivePage';
 import CategoriesPage from './pages/CategoriesPage';
 import CategoryPage from './pages/CategoryPage';
@@ -39,6 +40,7 @@ function AnimatedRoutes() {
           <Route index element={<Home />} />
           <Route path="post/:id" element={<PostDetail />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="about" element={<About />} />
           <Route path="archive" element={<ArchivePage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="categories/:slug" element={<CategoryPage />} />

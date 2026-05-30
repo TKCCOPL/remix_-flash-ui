@@ -130,6 +130,7 @@ export default function Layout() {
             </Link>
             <nav className="hidden md:flex space-x-1">
               {navLink('/', t.nav.home)}
+              {navLink('/about', t.nav.about)}
               {navLink('/archive', t.nav.archive)}
               {navLink('/categories', t.nav.categories)}
             </nav>
@@ -254,6 +255,7 @@ export default function Layout() {
               className="absolute top-[calc(100%+0.5rem)] left-0 right-0 bg-white/95 dark:bg-stone-950/95 backdrop-blur-2xl border border-stone-200/60 dark:border-stone-800/60 rounded-[2rem] p-4 shadow-2xl dark:shadow-black/50 md:hidden flex flex-col gap-2 origin-top"
             >
               {navLink('/', t.nav.home)}
+              {navLink('/about', t.nav.about)}
               {navLink('/archive', t.nav.archive)}
               {navLink('/categories', t.nav.categories)}
             </motion.div>

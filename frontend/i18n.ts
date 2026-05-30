@@ -29,6 +29,7 @@ export const translations = {
     nav: {
       home: '首页',
       profile: '简介',
+      about: '关于',
       admin: '管理',
       archive: '归档',
       categories: '分类',
@@ -231,6 +232,7 @@ export const translations = {
     nav: {
       home: 'Home',
       profile: 'Profile',
+      about: 'About',
       admin: 'Admin',
       archive: 'Archive',
       categories: 'Categories',

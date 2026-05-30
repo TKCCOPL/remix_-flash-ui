@@ -53,7 +53,7 @@ export default function Profile() {
 
     const fetchComments = async () => {
       try {
-        const data = await commentsApi.list();
+        const data = await commentsApi.listByUser();
         if (!cancelled) setComments(data);
       } catch {
         // silently ignore
