@@ -27,7 +27,7 @@ def create_comment_route(post_id: int, comment: CommentCreate, request: Request,
     user = require_login(request)
     user_id = resolve_user_id(user, conn)
 
-    created = create_comment(conn, post_id, user_id, comment.content)
+    created = create_comment(conn, post_id, user_id, comment.content, parent_id=comment.parent_id)
     return created
 
 
