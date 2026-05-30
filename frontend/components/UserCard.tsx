@@ -1,6 +1,5 @@
 import { LogOut } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
-import { useAuth } from '../context/AuthContext';
 import type { GuestUser } from '../api/oauth';
 
 type UserCardProps = {
@@ -35,7 +34,7 @@ export default function UserCard({ user, favoritesCount, commentsCount, onLogout
             {user.username}
           </h1>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-0.5">
-            {t.profile.loginMethod('GitHub')}
+            {t.oauth.login}
           </p>
         </div>
         <button
@@ -66,11 +65,6 @@ export default function UserCard({ user, favoritesCount, commentsCount, onLogout
           </div>
         </div>
       </div>
-
-      {/* Edit Profile Button */}
-      <button className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors">
-        {t.profile.editProfile}
-      </button>
     </div>
   );
 }
