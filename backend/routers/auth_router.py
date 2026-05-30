@@ -12,6 +12,11 @@ from services.auth_service import (
 router = APIRouter()
 
 
+def _is_secure_request(request: Request) -> bool:
+    """Check if the request was made over HTTPS."""
+    return request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+
+
 @router.post("/login")
 @limiter.limit("5/minute")
 def login(request: Request, response: Response, username: str = Form(...), password: str = Form(...)):
@@ -22,10 +27,10 @@ def login(request: Request, response: Response, username: str = Form(...), passw
     response.set_cookie(
         "session",
         token,
-        httponly=True,          # 禁止 JS 访问
-        secure=True,            # 仅通过 HTTPS 传输
-        samesite="lax",         # 防 CSRF
-        max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,  # 24 小时过期
+        httponly=True,
+        secure=_is_secure_request(request),
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,
     )
     return {"ok": True}
 
@@ -35,9 +40,10 @@ def logout(request: Request, response: Response):
     token = request.cookies.get("session")
     if token:
         revoke_session_token(token)
-        
-    response.delete_cookie("session")
-    response.delete_cookie("csrf_token")
+
+    secure = _is_secure_request(request)
+    response.delete_cookie("session", secure=secure)
+    response.delete_cookie("csrf_token", secure=secure)
     return {"ok": True}
 
 
