@@ -15,6 +15,7 @@ import { ApiError } from '../api/client';
 import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import CommentSection from '../components/CommentSection';
+import FavoriteButton from '../components/FavoriteButton';
 import { normalizeDate } from '../utils/date';
 
 interface TocItem {
@@ -200,6 +201,9 @@ export default function PostDetail() {
               <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-stone-800 dark:text-stone-100 mb-6 leading-tight">
                 {post!.title}
               </h1>
+              <div className="flex items-center gap-4">
+                <FavoriteButton postId={post!.id} />
+              </div>
             </div>
           )}
         </header>
