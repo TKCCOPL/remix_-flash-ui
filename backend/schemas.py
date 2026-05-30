@@ -45,6 +45,9 @@ class PostOut(BaseModel):
     status: str
     created_at: str
     updated_at: str
+    view_count: int = 0
+    comment_count: int = 0
+    favorite_count: int = 0
 
 
 class ArchivePost(BaseModel):

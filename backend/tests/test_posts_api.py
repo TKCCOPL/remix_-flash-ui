@@ -94,3 +94,24 @@ def test_get_single_post_endpoint():
 
     app.dependency_overrides.clear()
     conn.close()
+
+
+def test_post_out_has_stats_fields():
+    """Test PostOut schema has view_count, comment_count, favorite_count."""
+    from schemas import PostOut
+
+    post = PostOut(
+        id=1,
+        title="Test",
+        content="Content",
+        category=None,
+        status="published",
+        created_at="2024-01-01",
+        updated_at="2024-01-01",
+        view_count=10,
+        comment_count=5,
+        favorite_count=3
+    )
+    assert post.view_count == 10
+    assert post.comment_count == 5
+    assert post.favorite_count == 3
