@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form, HTTPException, Request, Response
 
 from config import GUEST_COOKIE_NAME
 from limiter import limiter
+from middleware import _is_secure_request
 from services.auth_service import (
     ACCESS_TOKEN_EXPIRE_HOURS,
     create_session_token,
@@ -20,16 +21,17 @@ def login(request: Request, response: Response, username: str = Form(...), passw
         raise HTTPException(status_code=401, detail="invalid credentials")
 
     token = create_session_token(username)
+    is_secure = _is_secure_request(request)
     response.set_cookie(
         "session",
         token,
-        httponly=True,          # 禁止 JS 访问
-        secure=True,            # 仅通过 HTTPS 传输
-        samesite="lax",         # 防 CSRF
-        max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,  # 24 小时过期
+        httponly=True,
+        secure=is_secure,
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,
     )
     # Clear guest cookie to prevent identity conflict
-    response.delete_cookie(GUEST_COOKIE_NAME)
+    response.delete_cookie(GUEST_COOKIE_NAME, secure=is_secure)
     return {"ok": True}
 
 
@@ -39,10 +41,11 @@ def logout(request: Request, response: Response):
     if token:
         revoke_session_token(token)
 
-    response.delete_cookie("session")
-    response.delete_cookie("csrf_token")
+    is_secure = _is_secure_request(request)
+    response.delete_cookie("session", secure=is_secure)
+    response.delete_cookie("csrf_token", secure=is_secure)
     # Also clear guest cookie on admin logout
-    response.delete_cookie(GUEST_COOKIE_NAME)
+    response.delete_cookie(GUEST_COOKIE_NAME, secure=is_secure)
     return {"ok": True}
 
 
