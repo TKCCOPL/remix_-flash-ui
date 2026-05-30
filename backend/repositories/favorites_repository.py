@@ -42,10 +42,12 @@ def get_favorites_by_user(
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, post_id, user_id, created_at
-        FROM favorites
-        WHERE user_id = ?
-        ORDER BY created_at DESC
+        SELECT f.id, f.post_id, f.user_id, f.created_at,
+               p.title, p.category, p.image_url
+        FROM favorites f
+        JOIN posts p ON f.post_id = p.id
+        WHERE f.user_id = ?
+        ORDER BY f.created_at DESC
         LIMIT ? OFFSET ?
         """,
         (user_id, limit, skip),
