@@ -40,6 +40,49 @@ A full-stack personal blog system built with **React 19**, **FastAPI**, and **SQ
 └── index.html          # Vite entry
 ```
 
+## Development Setup
+
+### Frontend
+
+```bash
+npm install
+npm run dev          # Start dev server at http://localhost:3000
+```
+
+### Backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+
+# First time - seed test data
+python seed.py
+
+# Start dev server
+uvicorn main:app --reload --host 0.0.0.0 --port 8001
+```
+
+### Database Management
+
+The SQLite database (`backend/data/blog.sqlite3`) is gitignored to keep production data separate.
+
+| Environment | Database | Purpose |
+|-------------|----------|---------|
+| Local | `backend/data/blog.sqlite3` | Testing with seed data |
+| VPS Production | Docker container DB | Real user data |
+
+```bash
+# Seed local database with test data
+cd backend
+python seed.py
+
+# Reset local database
+rm data/blog.sqlite3
+python seed.py
+```
+
+> **Note**: Production database is managed separately on VPS. Do not sync database files via git.
+
 ## API Endpoints
 
 ### Auth

@@ -40,6 +40,49 @@
 └── index.html          # Vite 入口
 ```
 
+## 开发环境搭建
+
+### 前端
+
+```bash
+npm install
+npm run dev          # 启动开发服务器 http://localhost:3000
+```
+
+### 后端
+
+```bash
+cd backend
+pip install -r requirements.txt
+
+# 首次运行 - 初始化测试数据
+python seed.py
+
+# 启动开发服务器
+uvicorn main:app --reload --host 0.0.0.0 --port 8001
+```
+
+### 数据库管理
+
+SQLite 数据库文件 (`backend/data/blog.sqlite3`) 已加入 `.gitignore`，生产数据与本地测试数据分离。
+
+| 环境 | 数据库 | 用途 |
+|------|--------|------|
+| 本地开发 | `backend/data/blog.sqlite3` | 测试数据（可重置） |
+| VPS 生产 | Docker 容器内数据库 | 真实用户数据 |
+
+```bash
+# 初始化本地测试数据
+cd backend
+python seed.py
+
+# 重置本地数据库
+rm data/blog.sqlite3
+python seed.py
+```
+
+> **注意**: 生产环境数据库在 VPS 上独立管理，不要通过 git 同步数据库文件。
+
 ## API 端点
 
 ### 认证

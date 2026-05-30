@@ -11,6 +11,55 @@
 
 ## 类别：前端
 
+### Gitee 图标显示错误
+
+**问题描述**：登录弹窗中 Gitee 图标显示为错误的圆形图案
+
+**根本原因**：
+- `OAuthMenu.tsx` 中的 SVG path 数据错误
+- 使用了错误的图标路径，不是官方 Gitee 图标
+
+**解决方案**：
+1. 从 Simple Icons 获取正确的 Gitee SVG path
+2. 替换 `frontend/components/OAuthMenu.tsx` 中的 SVG path 数据
+
+**经验总结**：
+- 使用第三方图标时，应从官方或可信来源获取 SVG 数据
+- 内联 SVG 图标需要验证 path 数据的正确性
+- 推荐使用 [Simple Icons](https://simpleicons.org/) 获取品牌图标
+
+**相关文件**：
+- `frontend/components/OAuthMenu.tsx` - OAuth 登录菜单组件
+
+---
+
+### 个人主页登录方式显示
+
+**问题描述**：个人主页显示通用的"登录"文本，而非具体的登录方式（GitHub/Gitee）
+
+**根本原因**：
+1. 后端 `/api/oauth/me` 端点未返回 `oauth_provider` 字段
+2. 前端 `GuestUser` 类型缺少 `oauth_provider` 属性
+3. `UserCard` 组件使用 `t.oauth.login` 而非 `t.profile.loginMethod()`
+
+**解决方案**：
+1. 后端：在 `oauth_router.py` 的 `/me` 响应中添加 `oauth_provider` 字段
+2. 前端类型：在 `oauth.ts` 的 `GuestUser` 类型中添加 `oauth_provider: string`
+3. 前端组件：在 `UserCard.tsx` 中使用 `t.profile.loginMethod(user.oauth_provider)`
+
+**经验总结**：
+- i18n 函数已定义但未使用时，应检查完整的数据流
+- 后端 API 响应应包含前端需要的所有字段
+- 类型定义应与后端响应保持同步
+
+**相关文件**：
+- `backend/routers/oauth_router.py` - OAuth 路由（/me 端点）
+- `frontend/api/oauth.ts` - GuestUser 类型定义
+- `frontend/components/UserCard.tsx` - 用户信息卡片组件
+- `frontend/i18n.ts` - 国际化文本（loginMethod 函数）
+
+---
+
 ### 动画闪烁问题
 **问题描述**：页面切换时出现白屏闪烁
 
@@ -34,6 +83,34 @@
 - `frontend/pages/*.tsx` - 页面组件动画
 - `frontend/index.css` - CSS 动画
 - `frontend/App.tsx` - 路由配置
+
+## 类别：数据库
+
+### 本地开发与生产环境数据库分离
+
+**问题描述**：本地开发时数据库为空，文章数据丢失
+
+**根本原因**：
+1. SQLite 数据库文件 `backend/data/blog.sqlite3` 被 `.gitignore` 忽略
+2. 本地数据库与 VPS 生产数据库是独立的
+3. 数据库结构变更时，`init_db()` 只创建表结构，不迁移数据
+
+**解决方案**：
+1. 创建种子数据脚本 `backend/seed.py`，本地开发时插入测试数据
+2. 种子脚本有安全检查，数据已存在时跳过
+3. 文档中明确说明本地/生产环境数据库分离策略
+
+**经验总结**：
+- 数据库文件不应通过 git 同步，避免生产数据泄露和冲突
+- 本地开发环境需要独立的种子数据脚本
+- 种子脚本应包含幂等性检查，避免重复插入
+- 数据库迁移应使用增量式操作（CREATE IF NOT EXISTS, ALTER TABLE ADD COLUMN）
+- 重要数据变更前应先备份数据库文件
+
+**相关文件**：
+- `backend/seed.py` - 种子数据脚本
+- `backend/database.py` - 数据库初始化（自动迁移）
+- `.gitignore` - 忽略数据库文件
 
 ## 类别：后端
 

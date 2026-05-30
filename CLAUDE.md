@@ -28,6 +28,25 @@ pytest                       # Run all tests
 pytest tests/test_admin_api_workflow.py  # Run specific test
 ```
 
+## 📦 Local Development Database
+
+The SQLite database (`backend/data/blog.sqlite3`) is gitignored. For local development:
+
+```bash
+# First time setup - seed test data
+cd backend
+python seed.py
+
+# Reset database (delete and re-seed)
+rm data/blog.sqlite3
+python seed.py
+```
+
+**Important**:
+- Production database is on VPS, do NOT sync it via git
+- Local database is for testing only
+- Seed script skips if data already exists
+
 ## ⚠️ VPS 生产环境测试规则
 
 当通过 SSH 连接到 VPS 开发时：

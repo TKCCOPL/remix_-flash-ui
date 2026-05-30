@@ -17,10 +17,13 @@ XiaoC Blog - 基于 React 19、FastAPI 和 SQLite 的全栈个人博客系统。
 | 8 | Navigation Integration | ✅ 已完成 | - | Layout.test.tsx | 添加导航链接和搜索功能 |
 | 9 | Final Integration and Polish | ✅ 已完成 | - | - | 响应式设计、暗色模式、i18n修复 |
 | 10 | Bug Fixes | ✅ 已完成 | - | - | 返回按钮、搜索、分类、动画闪烁修复 |
+| 11 | OAuth 访客登录功能 | ✅ 已完成 | - | - | GitHub/Gitee OAuth、评论、收藏 |
+| 12 | OAuth 功能修复与优化 | ✅ 已完成 | - | - | Gitee 图标、登录方式显示 |
+| 13 | 本地开发数据库管理 | ✅ 已完成 | - | - | 种子脚本、数据恢复、文档更新 |
 
 ## 当前进度
 - 正在执行：无
-- 已完成：11/11
+- 已完成：14/14
 
 ## Bug 修复记录
 
@@ -69,11 +72,90 @@ XiaoC Blog - 基于 React 19、FastAPI 和 SQLite 的全栈个人博客系统。
 | 9 | 用户菜单组件 | ✅ 已完成 | `frontend/components/UserMenu.tsx` |
 | 10 | 评论组件 | ✅ 已完成 | `frontend/components/CommentSection.tsx` |
 | 11 | 收藏按钮组件 | ✅ 已完成 | `frontend/components/FavoriteButton.tsx` |
+| 12 | 修复 Gitee 图标 | ✅ 已完成 | `frontend/components/OAuthMenu.tsx` |
+| 13 | /me 端点返回 oauth_provider | ✅ 已完成 | `backend/routers/oauth_router.py` |
+| 14 | GuestUser 类型添加 oauth_provider | ✅ 已完成 | `frontend/api/oauth.ts` |
+| 15 | 显示登录方式 | ✅ 已完成 | `frontend/components/UserCard.tsx` |
 
 ### 测试结果
 - 87 个后端测试全部通过
 - GitHub/Gitee OAuth 重定向正常
 - 评论和收藏 API 正常
+- Gitee 图标显示正确
+- 个人主页显示登录方式（GitHub/Gitee）
+
+### Bug 修复记录
+
+#### 1. Gitee 图标显示错误
+- **问题**：登录弹窗中 Gitee 图标显示为错误的圆形图案
+- **原因**：SVG path 数据错误，不是官方 Gitee 图标
+- **修复**：从 Simple Icons 获取正确的 SVG path 数据
+- **文件**：`frontend/components/OAuthMenu.tsx`
+
+#### 2. 个人主页登录方式显示
+- **问题**：个人主页显示通用的"登录"文本，而非具体的登录方式
+- **原因**：
+  - 后端 `/api/oauth/me` 未返回 `oauth_provider` 字段
+  - 前端 `GuestUser` 类型缺少 `oauth_provider` 属性
+  - `UserCard` 组件使用 `t.oauth.login` 而非 `t.profile.loginMethod()`
+- **修复**：
+  - 后端：在 `/me` 响应中添加 `oauth_provider` 字段
+  - 前端类型：添加 `oauth_provider: string`
+  - 前端组件：使用 `t.profile.loginMethod(user.oauth_provider)`
+- **文件**：
+  - `backend/routers/oauth_router.py`
+  - `frontend/api/oauth.ts`
+  - `frontend/components/UserCard.tsx`
+
+## Bug 修复与功能优化 (2026-05-30)
+
+### 1. 修复 Gitee 图标错误
+- **问题**：登录弹窗中 Gitee 图标显示为错误的圆形图案
+- **修复**：从 Simple Icons 获取正确的 SVG path 数据并替换
+- **文件**：`frontend/components/OAuthMenu.tsx`
+
+### 2. 个人主页登录方式显示
+- **问题**：个人主页显示通用的"登录"文本，而非具体的登录方式
+- **修复**：
+  - 后端 `/api/oauth/me` 端点添加 `oauth_provider` 字段
+  - 前端 `GuestUser` 类型添加 `oauth_provider` 属性
+  - `UserCard` 组件使用 `t.profile.loginMethod(user.oauth_provider)`
+- **文件**：
+  - `backend/routers/oauth_router.py`
+  - `frontend/api/oauth.ts`
+  - `frontend/components/UserCard.tsx`
+
+### 3. 本地开发数据库管理
+- **问题**：本地开发时数据库为空，文章数据丢失
+- **修复**：
+  - 创建种子数据脚本 `backend/seed.py`
+  - 从 git 历史恢复 10 篇文章和 4 个分类
+  - 更新项目文档说明数据库分离策略
+- **文件**：
+  - `backend/seed.py` - 种子数据脚本
+  - `CLAUDE.md` - 添加本地开发数据库说明
+  - `README.md` / `README.zh.md` - 添加开发环境搭建说明
+
+### 数据库分离策略
+- **本地开发**：使用种子数据脚本 `python seed.py` 初始化测试数据
+- **VPS 生产**：数据库独立管理，不通过 git 同步
+- **数据恢复**：从 git 历史中提取旧数据库文件恢复数据
+
+### 种子数据脚本功能
+```bash
+# 首次运行 - 插入测试数据
+cd backend
+python seed.py
+
+# 重置数据库
+rm data/blog.sqlite3
+python seed.py
+```
+
+**种子数据内容**：
+- 4 篇测试文章（React 19、FastAPI、Docker、Machine Learning）
+- 4 个分类（Technology、Programming、DevOps、AI & ML）
+- 幂等性检查：数据已存在时跳过插入
 
 ## 提交记录
 1. `feat: add categories and search_logs tables to database schema`
@@ -100,3 +182,9 @@ XiaoC Blog - 基于 React 19、FastAPI 和 SQLite 的全栈个人博客系统。
 22. `feat: implement OAuth guest login with GitHub and Gitee providers`
 23. `feat: add comments and favorites modules`
 24. `fix: exempt OAuth logout from CSRF validation`
+25. `fix: correct Gitee SVG icon in OAuthMenu component`
+26. `feat: add oauth_provider to /api/oauth/me response`
+27. `feat: display login method on profile page`
+28. `feat: add seed script for local development test data`
+29. `docs: add local development database management documentation`
+30. `fix: restore lost articles and categories data`
