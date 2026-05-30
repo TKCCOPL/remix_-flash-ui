@@ -43,3 +43,33 @@ export const adminCommentsApi = {
       body: JSON.stringify({ ids }),
     }),
 };
+
+export type StatsOverview = {
+  post_count: number;
+  user_count: number;
+  comment_count: number;
+  category_count: number;
+};
+
+export type CommentsTrend = {
+  date: string;
+  count: number;
+};
+
+export type PopularPost = {
+  id: number;
+  title: string;
+  comment_count: number;
+};
+
+export type CategoryDistribution = {
+  category: string;
+  count: number;
+};
+
+export const adminStatsApi = {
+  overview: () => apiFetch<StatsOverview>('/api/admin/stats/overview'),
+  commentsTrend: () => apiFetch<{ trend: CommentsTrend[] }>('/api/admin/stats/comments-trend'),
+  popularPosts: () => apiFetch<{ posts: PopularPost[] }>('/api/admin/stats/popular-posts'),
+  categoryDistribution: () => apiFetch<{ categories: CategoryDistribution[] }>('/api/admin/stats/category-distribution'),
+};
