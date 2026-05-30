@@ -131,7 +131,7 @@ export default function Stats() {
                     {i + 1}
                   </span>
                   <span className="flex-1 truncate text-sm text-stone-800 dark:text-stone-200">{post.title}</span>
-                  <span className="text-xs text-stone-400">{post.comment_count} 评论</span>
+                  <span className="text-xs text-stone-400">{post.comment_count} {t.admin.stats.overview.comments}</span>
                 </div>
               ))}
             </div>

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { MessageSquare, Search, Check, X, Trash2, MoreHorizontal } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Search, Check, X, Trash2 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { adminCommentsApi, AdminComment } from '../api/admin';
 
@@ -9,29 +9,41 @@ export default function Comments() {
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const commentsPerPage = 20;
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
+      const skip = (currentPage - 1) * commentsPerPage;
       const res = await adminCommentsApi.list({
+        skip,
+        limit: commentsPerPage,
         status: statusFilter || undefined,
         search: search || undefined,
       });
       setComments(res.comments);
       setTotal(res.total);
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载失败');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter, search]);
 
   useEffect(() => {
     void fetchComments();
-  }, [statusFilter]);
+  }, [fetchComments]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, search]);
 
   const handleSearch = () => {
     void fetchComments();
@@ -41,17 +53,18 @@ export default function Comments() {
     try {
       await adminCommentsApi.updateStatus(id, status);
       void fetchComments();
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '操作失败');
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
       await adminCommentsApi.remove(id);
+      setDeleteConfirm(null);
       void fetchComments();
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '删除失败');
     }
   };
 
@@ -61,8 +74,8 @@ export default function Comments() {
       await adminCommentsApi.batchDelete(selectedIds);
       setSelectedIds([]);
       void fetchComments();
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '批量删除失败');
     }
   };
 
@@ -78,6 +91,8 @@ export default function Comments() {
     rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   };
 
+  const totalPages = Math.ceil(total / commentsPerPage);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -90,7 +105,7 @@ export default function Comments() {
             {t.admin.comments.title}
           </h1>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
-            {t.admin.comments.subtitle}
+            {t.admin.comments.totalComments.replace('{count}', String(total))}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -105,6 +120,13 @@ export default function Comments() {
           )}
         </div>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
 
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-md">
@@ -255,7 +277,7 @@ export default function Comments() {
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(comment.id)}
+                          onClick={() => setDeleteConfirm(comment.id)}
                           className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                           title={t.admin.comments.actions.delete}
                         >
@@ -269,7 +291,87 @@ export default function Comments() {
             </table>
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 p-4 border-t border-stone-200 dark:border-stone-800">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+            >
+              {t.admin.comments.filter.all === '全部' ? '上一页' : 'Previous'}
+            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const page = i + 1;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === page
+                      ? 'bg-indigo-500 text-white'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+            >
+              {t.admin.comments.filter.all === '全部' ? '下一页' : 'Next'}
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mb-2">
+                {t.admin.comments.actions.delete}
+              </h3>
+              <p className="text-stone-600 dark:text-stone-400 mb-6">
+                {t.admin.comments.filter.all === '全部'
+                  ? '确定要删除这条评论吗？此操作不可恢复。'
+                  : 'Are you sure you want to delete this comment? This cannot be undone.'}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="px-4 py-2 rounded-xl text-sm font-medium bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+                >
+                  {t.admin.comments.filter.all === '全部' ? '取消' : 'Cancel'}
+                </button>
+                <button
+                  onClick={() => void handleDelete(deleteConfirm)}
+                  className="px-4 py-2 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+                >
+                  {t.admin.comments.actions.delete}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
