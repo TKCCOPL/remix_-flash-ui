@@ -12,7 +12,7 @@ export default function Layout() {
   const location = useLocation();
   const { language, theme, toggleLanguage, toggleTheme } = usePreferences();
   const t = useI18n();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [showOAuthMenu, setShowOAuthMenu] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -213,7 +213,7 @@ export default function Layout() {
               </button>
             </div>
 
-            {user ? (
+            {user || isAdmin ? (
               <UserMenu />
             ) : (
               <button

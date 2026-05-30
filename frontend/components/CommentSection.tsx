@@ -15,7 +15,7 @@ type CommentSectionProps = {
 export default function CommentSection({ postId }: CommentSectionProps) {
   const t = useI18n();
   const { language } = usePreferences();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const locale = locales[language];
   const formats = dateFormats[language];
 
@@ -118,7 +118,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         <div className="mb-10 animate-pulse">
           <div className="h-24 rounded-2xl bg-stone-200 dark:bg-stone-700" />
         </div>
-      ) : user ? (
+      ) : user || isAdmin ? (
         <div className="mb-10">
           <textarea
             value={content}
@@ -206,7 +206,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
-                  {user && (
+                  {(user || isAdmin) && (
                     <button
                       onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                       className="opacity-0 group-hover:opacity-100 p-1 rounded-full text-stone-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all"

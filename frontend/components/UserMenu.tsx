@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function UserMenu() {
   const t = useI18n();
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -28,7 +28,10 @@ export default function UserMenu() {
     navigate('/');
   };
 
-  if (!user) return null;
+  if (!user && !isAdmin) return null;
+
+  const displayName = user?.username || (isAdmin ? 'admin' : '');
+  const avatarUrl = user?.avatar_url || '/avatar.png';
 
   return (
     <div ref={ref} className="relative hidden sm:block">
@@ -37,8 +40,8 @@ export default function UserMenu() {
         className="w-8 h-8 rounded-full overflow-hidden border-2 border-stone-200 dark:border-stone-700 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors ml-1"
       >
         <img
-          src={user.avatar_url || '/avatar.png'}
-          alt={user.username}
+          src={avatarUrl}
+          alt={displayName}
           className="w-full h-full object-cover"
         />
       </button>
@@ -54,7 +57,12 @@ export default function UserMenu() {
           >
             <div className="px-4 py-3 border-b border-stone-200/60 dark:border-stone-800/60">
               <p className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate">
-                {user.username}
+                {displayName}
+                {isAdmin && (
+                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">
+                    管理员
+                  </span>
+                )}
               </p>
             </div>
 
