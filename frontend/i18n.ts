@@ -219,6 +219,11 @@ export const translations = {
       submitting: '发表中...',
       submitError: '评论发表失败',
       deleteError: '删除失败',
+      reply: '回复',
+      replyPlaceholder: (username: string) => `回复 @${username}...`,
+      replySubmit: '回复',
+      replySubmitting: '发送中...',
+      cancel: '取消',
     },
     userMenu: {
       logout: '退出登录',
@@ -422,6 +427,11 @@ export const translations = {
       submitting: 'Submitting...',
       submitError: 'Failed to submit comment',
       deleteError: 'Failed to delete comment',
+      reply: 'Reply',
+      replyPlaceholder: (username: string) => `Reply to @${username}...`,
+      replySubmit: 'Reply',
+      replySubmitting: 'Sending...',
+      cancel: 'Cancel',
     },
     userMenu: {
       logout: 'Logout',
