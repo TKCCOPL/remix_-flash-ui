@@ -8,7 +8,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import throttle from 'lodash.throttle';
 import GithubSlugger from 'github-slugger';
-import { ArrowLeft, List } from 'lucide-react';
+import { ArrowLeft, List, MessageSquare } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { dateFormats, locales } from '../i18n';
 import { ApiError } from '../api/client';
@@ -244,7 +244,9 @@ export default function PostDetail() {
           </div>
         )}
 
-        {!loading && post && <CommentSection postId={post.id} />}
+        <div id="comments">
+          {!loading && post && <CommentSection postId={post.id} />}
+        </div>
       </article>
 
       {/* 侧边栏 TOC */}
@@ -288,8 +290,8 @@ export default function PostDetail() {
                     {toc.map((item) => {
                       const isActive = activeTocId === item.id;
                       return (
-                        <li 
-                          key={item.id} 
+                        <li
+                          key={item.id}
                           style={{ paddingLeft: `${(item.level - minLevel) * 12}px` }}
                         >
                           <a
@@ -305,8 +307,8 @@ export default function PostDetail() {
                               }
                             }}
                             className={`block transition-colors duration-200 leading-snug truncate ${
-                              isActive 
-                                ? 'text-indigo-600 dark:text-indigo-400 font-medium' 
+                              isActive
+                                ? 'text-indigo-600 dark:text-indigo-400 font-medium'
                                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                             }`}
                           >
@@ -319,6 +321,22 @@ export default function PostDetail() {
                 </div>
               );
             })()}
+
+            {/* 评论快捷按钮 */}
+            <div className="pt-4 mt-auto border-t border-stone-200 dark:border-stone-700">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('comments');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm font-medium"
+              >
+                <MessageSquare className="w-4 h-4" />
+                写评论
+              </button>
+            </div>
           </div>
         </aside>
       )}
