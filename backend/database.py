@@ -102,6 +102,16 @@ def init_db():
     )
     ''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS comment_filters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filter_type TEXT NOT NULL,
+        pattern TEXT NOT NULL,
+        action TEXT DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     # Add missing database indexes after column backfill
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_status ON posts (status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts (created_at DESC)')
