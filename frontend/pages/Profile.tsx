@@ -1,71 +1,121 @@
-import { Mail, Globe, ExternalLink, Link2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/Preferences';
+import { useAuth } from '../context/AuthContext';
+import { favoritesApi, type ApiFavorite } from '../api/favorites';
+import { commentsApi, type ApiComment } from '../api/comments';
+import UserCard from '../components/UserCard';
+import ProfileTabs from '../components/ProfileTabs';
+import FavoritesList from '../components/FavoritesList';
+import CommentsList from '../components/CommentsList';
 
-// Profile 页面无异步数据，直接渲染，移除所有无效的 framer-motion 动画
-// (initial === animate 意味着没有任何视觉变化，只增加渲染开销)
 export default function Profile() {
   const t = useI18n();
+  const navigate = useNavigate();
+  const { user, logout, loading: authLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<'favorites' | 'comments'>('favorites');
+  const [favorites, setFavorites] = useState<ApiFavorite[]>([]);
+  const [comments, setComments] = useState<ApiComment[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [loadingComments, setLoadingComments] = useState(true);
 
-  return (
-    <div className="w-full max-w-3xl mx-auto py-8">
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
-        {/* 头像 */}
-        <div className="w-40 h-40 shrink-0 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden shadow-inner border-4 border-white dark:border-stone-900 mb-4 md:mb-0 animate-fade-in-scale">
-          <img
-            src="/avatar.png"
-            alt="Profile"
-            className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-          />
-        </div>
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/');
+    }
+  }, [user, authLoading, navigate]);
 
-        {/* 信息 */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <h1 className="text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">
-            {t.profile.title}
-          </h1>
-          <p className="text-xl text-stone-500 dark:text-stone-400 mb-6 font-mono text-sm leading-relaxed">
-            {t.profile.subtitle}
-          </p>
+  // Fetch favorites
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
 
-          <div className="prose prose-stone mb-8">
-            <p>{t.profile.intro1}</p>
-            <p>{t.profile.intro2}</p>
-            <p>{t.profile.intro3}</p>
-            <p>{t.profile.projectIntro1}</p>
-            <p>{t.profile.projectIntro2}</p>
-          </div>
+    const fetchFavorites = async () => {
+      try {
+        const data = await favoritesApi.list();
+        if (!cancelled) setFavorites(data);
+      } catch {
+        // silently ignore
+      } finally {
+        if (!cancelled) setLoadingFavorites(false);
+      }
+    };
 
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">
-              {t.profile.interests}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {t.profile.tags.map((tag, index) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 bg-stone-100 dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-sm rounded-lg hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-default stagger-item"
-                  style={{ '--stagger-index': index } as React.CSSProperties}
-                >
-                  {tag}
-                </span>
-              ))}
+    void fetchFavorites();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // Fetch comments
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    const fetchComments = async () => {
+      try {
+        const data = await commentsApi.list();
+        if (!cancelled) setComments(data);
+      } catch {
+        // silently ignore
+      } finally {
+        if (!cancelled) setLoadingComments(false);
+      }
+    };
+
+    void fetchComments();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  if (authLoading || !user) {
+    return (
+      <div className="w-full max-w-2xl mx-auto py-8">
+        <div className="animate-pulse space-y-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-stone-200 dark:bg-stone-800 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <div className="h-5 bg-stone-200 dark:bg-stone-800 rounded w-1/3" />
+              <div className="h-4 bg-stone-200 dark:bg-stone-800 rounded w-1/4" />
             </div>
           </div>
-
-          <div className="mt-10 pt-10 border-t border-stone-100 dark:border-stone-800 flex gap-4">
-            <a href="#" title="GitHub" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">
-              <Globe className="w-5 h-5" />
-            </a>
-            <a href="#" title="Twitter" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-[#1DA1F2] hover:text-white transition-colors">
-              <ExternalLink className="w-5 h-5" />
-            </a>
-            <a href="#" title="LinkedIn" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-[#0A66C2] hover:text-white transition-colors">
-              <Link2 className="w-5 h-5" />
-            </a>
-            <a href="#" title="Email" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">
-              <Mail className="w-5 h-5" />
-            </a>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-20 bg-stone-200 dark:bg-stone-800 rounded-xl" />
+            <div className="h-20 bg-stone-200 dark:bg-stone-800 rounded-xl" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-2xl mx-auto py-8 space-y-8">
+      {/* User Card */}
+      <UserCard
+        user={user}
+        favoritesCount={favorites.length}
+        commentsCount={comments.length}
+        onLogout={handleLogout}
+      />
+
+      {/* Tabs and Content */}
+      <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <ProfileTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          favoritesLabel={t.profile.favorites}
+          commentsLabel={t.profile.comments}
+        />
+
+        <div className="mt-6">
+          {activeTab === 'favorites' ? (
+            <FavoritesList favorites={favorites} loading={loadingFavorites} />
+          ) : (
+            <CommentsList comments={comments} loading={loadingComments} />
+          )}
         </div>
       </div>
     </div>
