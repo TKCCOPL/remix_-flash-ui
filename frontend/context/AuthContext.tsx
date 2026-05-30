@@ -21,18 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
+      // /api/user/me handles both admin and guest users
       const userData = await oauthApi.me();
       setUser(userData);
-      setIsAdmin(false);
+      setIsAdmin(userData.is_admin ?? false);
     } catch {
-      try {
-        await authApi.me();
-        setUser(null);
-        setIsAdmin(true);
-      } catch {
-        setUser(null);
-        setIsAdmin(false);
-      }
+      setUser(null);
+      setIsAdmin(false);
     } finally {
       setLoading(false);
     }

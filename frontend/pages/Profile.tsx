@@ -91,23 +91,14 @@ export default function Profile() {
     );
   }
 
-  // Create user object for admin or use existing user
-  const displayUser = user || (isAdmin ? {
-    id: null,
-    username: 'admin',
-    avatar_url: null,
-    email: null,
-    oauth_provider: 'admin',
-    is_admin: true,
-  } : null);
-
-  if (!displayUser) return null;
+  // user should now be populated for both admin and guest users
+  if (!user) return null;
 
   return (
     <div className="w-full max-w-2xl mx-auto py-8 space-y-8">
       {/* User Card */}
       <UserCard
-        user={displayUser}
+        user={user}
         favoritesCount={favorites.length}
         commentsCount={comments.length}
         onLogout={handleLogout}
