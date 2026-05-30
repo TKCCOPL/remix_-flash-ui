@@ -1,3 +1,6 @@
+import sqlite3
+
+
 def create_comment_record(conn, post_id: int, user_id: int, content: str, status: str = "approved"):
     cursor = conn.cursor()
     cursor.execute(
@@ -58,7 +61,7 @@ def get_comment_count_by_post(conn, post_id: int):
     return cursor.fetchone()["count"]
 
 
-def get_comments_by_user_id(conn, user_id, skip=0, limit=20):
+def get_comments_by_user_id(conn: sqlite3.Connection, user_id: int, skip: int = 0, limit: int = 20) -> list[dict]:
     """Get comments by user id with post info."""
     cursor = conn.cursor()
     cursor.execute(

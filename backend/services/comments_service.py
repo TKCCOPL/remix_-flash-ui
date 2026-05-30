@@ -1,3 +1,5 @@
+import sqlite3
+
 from repositories.comments_repository import (
     create_comment_record,
     get_comment_by_id,
@@ -29,6 +31,6 @@ def delete_comment(conn, comment_id: int, user_id: int):
     return delete_comment_record(conn, comment_id)
 
 
-def get_comments_by_user(conn, user_id, skip=0, limit=20):
+def get_comments_by_user(conn: sqlite3.Connection, user_id: int, skip: int = 0, limit: int = 20) -> list[dict]:
     """Get comments by user id."""
     return get_comments_by_user_id(conn, user_id, skip, limit)
