@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel, Field
 
 from database import get_db
 from dependencies.auth import require_login, resolve_user_id
+from schemas import CommentCreate
 from services.comments_service import (
     create_comment,
     delete_comment,
@@ -15,10 +15,6 @@ router = APIRouter()
 
 # User-scoped routes: mounted at /api
 user_router = APIRouter()
-
-
-class CommentCreate(BaseModel):
-    content: str = Field(..., min_length=1, max_length=1000)
 
 
 @router.get("/{post_id}/comments")

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from enum import Enum
 
 from pydantic import BaseModel, field_validator, model_validator, Field
@@ -61,3 +61,20 @@ class ArchiveMonth(BaseModel):
 
 class ArchiveResponse(BaseModel):
     data: dict[str, list[ArchiveMonth]]
+
+
+class CommentCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=1000)
+    parent_id: Optional[int] = None
+
+
+class CommentResponse(BaseModel):
+    id: int
+    post_id: int
+    user_id: int
+    username: str
+    avatar_url: Optional[str]
+    content: str
+    parent_id: Optional[int] = None
+    replies: List['CommentResponse'] = []
+    created_at: str
