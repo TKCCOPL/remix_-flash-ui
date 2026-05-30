@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Form, HTTPException, Request, Response
 
+from config import GUEST_COOKIE_NAME
 from limiter import limiter
 from services.auth_service import (
     ACCESS_TOKEN_EXPIRE_HOURS,
@@ -27,6 +28,8 @@ def login(request: Request, response: Response, username: str = Form(...), passw
         samesite="lax",         # 防 CSRF
         max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,  # 24 小时过期
     )
+    # Clear guest cookie to prevent identity conflict
+    response.delete_cookie(GUEST_COOKIE_NAME)
     return {"ok": True}
 
 
@@ -35,9 +38,11 @@ def logout(request: Request, response: Response):
     token = request.cookies.get("session")
     if token:
         revoke_session_token(token)
-        
+
     response.delete_cookie("session")
     response.delete_cookie("csrf_token")
+    # Also clear guest cookie on admin logout
+    response.delete_cookie(GUEST_COOKIE_NAME)
     return {"ok": True}
 
 

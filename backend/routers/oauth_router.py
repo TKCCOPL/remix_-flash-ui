@@ -44,6 +44,9 @@ async def oauth_logout(request: Request):
         revoke_guest_token(token)
     response = Response(status_code=204)
     response.delete_cookie(GUEST_COOKIE_NAME)
+    # Also clear admin session cookie on guest logout
+    response.delete_cookie("session")
+    response.delete_cookie("csrf_token")
     return response
 
 
@@ -113,4 +116,7 @@ async def oauth_callback(
         samesite="lax",
         max_age=GUEST_TOKEN_EXPIRE_HOURS * 3600,
     )
+    # Clear admin session cookie to prevent identity conflict
+    redirect_response.delete_cookie("session")
+    redirect_response.delete_cookie("csrf_token")
     return redirect_response
