@@ -61,7 +61,10 @@ def get_post_route(post_id: int, request: Request, conn=Depends(get_db)):
     if post.get("status") == "draft" and not is_logged_in(request):
         raise HTTPException(status_code=404, detail="文章不存在")
     increment_view_count(conn, post_id)
-    return get_post_with_stats(conn, post_id)
+    result = get_post_with_stats(conn, post_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="文章不存在")
+    return result
 
 
 @router.put("/{post_id}", response_model=PostOut)
