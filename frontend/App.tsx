@@ -12,6 +12,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import CategoryPage from './pages/CategoryPage';
 import Admin from './pages/Admin';
 import AdminEdit from './pages/AdminEdit';
+import Users from './pages/Users';
 import Login from './pages/Login';
 
 function AnimatedRoutes() {
@@ -70,6 +71,7 @@ function AnimatedRoutes() {
           </motion.div>
         }>
           <Route index element={<Admin />} />
+          <Route path="users" element={<Users />} />
           <Route path="edit" element={<AdminEdit />} />
           <Route path="edit/:id" element={<AdminEdit />} />
         </Route>
