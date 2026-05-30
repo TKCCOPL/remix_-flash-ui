@@ -45,6 +45,8 @@ def get_archive_route(include_drafts: bool = False, request: Request = None, con
 
 @router.get("/search")
 def search_posts_route(q: str, include_drafts: bool = False, request: Request = None, conn=Depends(get_db)):
+    if len(q.strip()) < 2:
+        return {"results": [], "total": 0}
     # 对 IP 进行单向哈希处理，避免记录可识别个人身份的原始 IP（GDPR/个保法合规）
     raw_ip = request.client.host if request and request.client else ""
     hashed_ip = hashlib.sha256(raw_ip.encode()).hexdigest()[:16] if raw_ip else None
