@@ -12,7 +12,7 @@ import CommentsList from '../components/CommentsList';
 export default function Profile() {
   const t = useI18n();
   const navigate = useNavigate();
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, isAdmin, logout, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'favorites' | 'comments'>('favorites');
   const [favorites, setFavorites] = useState<ApiFavorite[]>([]);
   const [comments, setComments] = useState<ApiComment[]>([]);
@@ -21,14 +21,14 @@ export default function Profile() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && !isAdmin) {
       navigate('/');
     }
-  }, [user, authLoading, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
 
   // Fetch favorites
   useEffect(() => {
-    if (!user) return;
+    if (!user && !isAdmin) return;
     let cancelled = false;
 
     const fetchFavorites = async () => {
@@ -48,7 +48,7 @@ export default function Profile() {
 
   // Fetch comments
   useEffect(() => {
-    if (!user) return;
+    if (!user && !isAdmin) return;
     let cancelled = false;
 
     const fetchComments = async () => {
@@ -64,14 +64,14 @@ export default function Profile() {
 
     void fetchComments();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, isAdmin]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
 
-  if (authLoading || !user) {
+  if (authLoading || (!user && !isAdmin)) {
     return (
       <div className="w-full max-w-2xl mx-auto py-8">
         <div className="animate-pulse space-y-6">
@@ -91,11 +91,22 @@ export default function Profile() {
     );
   }
 
+  // Create user object for admin or use existing user
+  const displayUser = user || (isAdmin ? {
+    id: null,
+    username: 'admin',
+    avatar_url: null,
+    email: null,
+    oauth_provider: 'admin',
+  } : null);
+
+  if (!displayUser) return null;
+
   return (
     <div className="w-full max-w-2xl mx-auto py-8 space-y-8">
       {/* User Card */}
       <UserCard
-        user={user}
+        user={displayUser}
         favoritesCount={favorites.length}
         commentsCount={comments.length}
         onLogout={handleLogout}

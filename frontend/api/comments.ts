@@ -7,6 +7,7 @@ export type Comment = {
   user_id: number;
   username: string;
   avatar_url: string | null;
+  oauth_provider: string | null;
   content: string;
   parent_id: number | null;
   replies: Comment[];

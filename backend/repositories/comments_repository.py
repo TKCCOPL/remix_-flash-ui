@@ -34,7 +34,7 @@ def get_comments_by_post_id(conn, post_id: int, skip: int = 0, limit: int = 20):
     cursor.execute(
         """
         SELECT c.id, c.post_id, c.user_id, c.content, c.status, c.parent_id, c.created_at,
-               u.username, u.avatar_url
+               u.username, u.avatar_url, u.oauth_provider
         FROM comments c
         JOIN users u ON c.user_id = u.id
         WHERE c.post_id = ? AND c.status = 'approved'
