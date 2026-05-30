@@ -8,6 +8,11 @@ from repositories.users_repository import (
     count_users,
     get_user_active_days,
 )
+from services.admin_service import (
+    get_users_list,
+    get_user_detail,
+    delete_user,
+)
 
 
 @pytest.fixture
@@ -225,3 +230,37 @@ def test_get_user_active_days_same_day(db):
     # user 3 has one favorite on 2024-01-01 = 1 distinct day
     days = get_user_active_days(db, 3)
     assert days == 1
+
+
+def test_get_users_list(db):
+    result = get_users_list(db)
+    assert "users" in result
+    assert "total" in result
+    assert len(result["users"]) == 2
+    assert result["total"] == 2
+
+
+def test_get_user_detail(db):
+    detail = get_user_detail(db, 2)
+    assert "user" in detail
+    assert "stats" in detail
+    assert "recent_comments" in detail
+    assert detail["user"]["username"] == "张三"
+    assert detail["stats"]["comment_count"] == 3
+
+
+def test_get_user_detail_nonexistent(db):
+    with pytest.raises(ValueError, match="用户不存在"):
+        get_user_detail(db, 999)
+
+
+def test_delete_user_success(db):
+    result = delete_user(db, 2)
+    assert result["message"] == "用户已删除"
+    assert result["deleted_comments"] == 3
+    assert result["deleted_favorites"] == 1
+
+
+def test_delete_user_nonexistent(db):
+    with pytest.raises(ValueError, match="用户不存在"):
+        delete_user(db, 999)
