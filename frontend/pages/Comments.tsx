@@ -17,6 +17,40 @@ export default function Comments() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const commentsPerPage = 20;
 
+  // Single effect for data fetching with cancellation
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await adminCommentsApi.list({
+          skip: (currentPage - 1) * commentsPerPage,
+          limit: commentsPerPage,
+          status: statusFilter || undefined,
+          search: search || undefined,
+        });
+        if (!cancelled) {
+          setComments(res.comments);
+          setTotal(res.total);
+          setError('');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : '加载失败');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [statusFilter, search, currentPage]);
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, search]);
+
   const fetchComments = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -36,14 +70,6 @@ export default function Comments() {
       setLoading(false);
     }
   }, [currentPage, statusFilter, search]);
-
-  useEffect(() => {
-    void fetchComments();
-  }, [fetchComments]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, search]);
 
   const handleSearch = () => {
     void fetchComments();
@@ -302,22 +328,26 @@ export default function Comments() {
             >
               {t.admin.comments.filter.all === '全部' ? '上一页' : 'Previous'}
             </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const page = i + 1;
-              return (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === page
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            })}
+            {(() => {
+              const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+              const end = Math.min(start + 4, totalPages);
+              return Array.from({ length: end - start + 1 }, (_, i) => {
+                const page = start + i;
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-900'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              });
+            })()}
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
