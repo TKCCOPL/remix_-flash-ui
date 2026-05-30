@@ -220,7 +220,6 @@ export const translations = {
       deleteError: '删除失败',
     },
     userMenu: {
-      favorites: '我的收藏',
       logout: '退出登录',
     },
   },
@@ -423,7 +422,6 @@ export const translations = {
       deleteError: 'Failed to delete comment',
     },
     userMenu: {
-      favorites: 'My Favorites',
       logout: 'Logout',
     },
   },
