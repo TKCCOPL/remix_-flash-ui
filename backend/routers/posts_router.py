@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from database import get_db
 from schemas import PostCreate, PostOut, PostUpdate
 from services.auth_service import is_logged_in
+from repositories.posts_repository import increment_view_count, get_post_with_stats
 from services.posts_service import (
     create_post,
     delete_post,
@@ -59,7 +60,8 @@ def get_post_route(post_id: int, request: Request, conn=Depends(get_db)):
         raise HTTPException(status_code=404, detail="文章不存在")
     if post.get("status") == "draft" and not is_logged_in(request):
         raise HTTPException(status_code=404, detail="文章不存在")
-    return post
+    increment_view_count(conn, post_id)
+    return get_post_with_stats(conn, post_id)
 
 
 @router.put("/{post_id}", response_model=PostOut)

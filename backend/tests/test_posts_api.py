@@ -69,6 +69,24 @@ def test_get_single_post_endpoint():
     )
     ''')
     cursor.execute('''
+    CREATE TABLE comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER,
+        content TEXT NOT NULL,
+        status TEXT DEFAULT 'approved',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
     INSERT INTO posts (title, content, category)
     VALUES ('Typography Test', '# Hello World', 'Design')
     ''')
@@ -83,12 +101,12 @@ def test_get_single_post_endpoint():
     app.dependency_overrides[get_db] = override_get_db
 
     client = TestClient(app)
-    
+
     # 存在的情况
     response = client.get("/api/posts/1")
     assert response.status_code == 200
     assert response.json()["title"] == "Typography Test"
-    
+
     # 不存在的情况
     response_404 = client.get("/api/posts/999")
     assert response_404.status_code == 404
@@ -116,3 +134,124 @@ def test_post_out_has_stats_fields():
     assert post.view_count == 10
     assert post.comment_count == 5
     assert post.favorite_count == 3
+
+
+def test_get_post_increments_view_count():
+    """Test that getting a post increments view count."""
+    conn = sqlite3.connect(':memory:', check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT,
+        image_url TEXT,
+        status TEXT DEFAULT 'published',
+        view_count INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER,
+        content TEXT NOT NULL,
+        status TEXT DEFAULT 'approved',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    INSERT INTO posts (title, content, category)
+    VALUES ('Typography Test', '# Hello World', 'Design')
+    ''')
+    conn.commit()
+
+    def override_get_db():
+        try:
+            yield conn
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    client = TestClient(app)
+    client.get("/api/posts/1")
+    response = client.get("/api/posts/1")
+    data = response.json()
+    assert data["view_count"] == 2
+
+    app.dependency_overrides.clear()
+    conn.close()
+
+
+def test_get_post_returns_stats():
+    """Test that getting a post returns stats."""
+    conn = sqlite3.connect(':memory:', check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT,
+        image_url TEXT,
+        status TEXT DEFAULT 'published',
+        view_count INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER,
+        content TEXT NOT NULL,
+        status TEXT DEFAULT 'approved',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('''
+    INSERT INTO posts (title, content, category)
+    VALUES ('Typography Test', '# Hello World', 'Design')
+    ''')
+    conn.commit()
+
+    def override_get_db():
+        try:
+            yield conn
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    client = TestClient(app)
+    response = client.get("/api/posts/1")
+    data = response.json()
+    assert "view_count" in data
+    assert "comment_count" in data
+    assert "favorite_count" in data
+
+    app.dependency_overrides.clear()
+    conn.close()
