@@ -8,6 +8,8 @@ export type Comment = {
   username: string;
   avatar_url: string | null;
   content: string;
+  parent_id: number | null;
+  replies: Comment[];
   created_at: string;
 };
 
@@ -24,10 +26,10 @@ export const commentsApi = {
   // Blog post comments
   list: (postId: number | string, skip = 0, limit = 20) =>
     apiFetch<Comment[]>(`/api/posts/${postId}/comments?skip=${skip}&limit=${limit}`),
-  create: (postId: number | string, content: string) =>
+  create: (postId: number | string, content: string, parentId?: number) =>
     apiFetch<Comment>(`/api/posts/${postId}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, parent_id: parentId }),
     }),
   remove: (commentId: number | string) =>
     apiFetch<void>(`/api/posts/comments/${commentId}`, { method: 'DELETE' }),
