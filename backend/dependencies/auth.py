@@ -15,13 +15,12 @@ def get_current_user(request: Request) -> dict | None:
     Returns:
         dict with user_id, username, is_admin — or None if not logged in.
         For admin users, user_id is None (must be resolved via resolve_user_id).
-    """
-    session_token = request.cookies.get("session")
-    if session_token:
-        username = verify_session_token(session_token)
-        if username:
-            return {"user_id": None, "username": username, "is_admin": True}
 
+    Priority: guest_session first, then admin session.
+    This ensures guests can comment even when admin is logged in.
+    Admin dashboard uses is_logged_in() which only checks the session cookie.
+    """
+    # Check guest session first - guests should be able to comment
     guest_token = request.cookies.get(GUEST_COOKIE_NAME)
     if guest_token:
         payload = verify_guest_token(guest_token)
@@ -31,6 +30,13 @@ def get_current_user(request: Request) -> dict | None:
                 "username": payload["username"],
                 "is_admin": False,
             }
+
+    # Fall back to admin session
+    session_token = request.cookies.get("session")
+    if session_token:
+        username = verify_session_token(session_token)
+        if username:
+            return {"user_id": None, "username": username, "is_admin": True}
 
     return None
 

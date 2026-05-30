@@ -42,12 +42,8 @@ async def oauth_logout(request: Request):
     token = request.cookies.get(GUEST_COOKIE_NAME)
     if token:
         revoke_guest_token(token)
-    is_secure = _is_secure_request(request)
     response = Response(status_code=204)
-    response.delete_cookie(GUEST_COOKIE_NAME, secure=is_secure)
-    # Also clear admin session cookie on guest logout
-    response.delete_cookie("session", secure=is_secure)
-    response.delete_cookie("csrf_token", secure=is_secure)
+    response.delete_cookie(GUEST_COOKIE_NAME)
     return response
 
 
@@ -108,17 +104,13 @@ async def oauth_callback(
 
     token = create_guest_token(user_id=user["id"], username=user["username"])
     frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-    is_secure = _is_secure_request(request)
     redirect_response = RedirectResponse(url=frontend_url)
     redirect_response.set_cookie(
         GUEST_COOKIE_NAME,
         token,
         httponly=True,
-        secure=is_secure,
+        secure=_is_secure_request(request),
         samesite="lax",
         max_age=GUEST_TOKEN_EXPIRE_HOURS * 3600,
     )
-    # Clear admin session cookie to prevent identity conflict
-    redirect_response.delete_cookie("session", secure=is_secure)
-    redirect_response.delete_cookie("csrf_token", secure=is_secure)
     return redirect_response

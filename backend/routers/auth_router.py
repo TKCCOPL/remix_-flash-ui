@@ -21,17 +21,14 @@ def login(request: Request, response: Response, username: str = Form(...), passw
         raise HTTPException(status_code=401, detail="invalid credentials")
 
     token = create_session_token(username)
-    is_secure = _is_secure_request(request)
     response.set_cookie(
         "session",
         token,
         httponly=True,
-        secure=is_secure,
+        secure=_is_secure_request(request),
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,
     )
-    # Clear guest cookie to prevent identity conflict
-    response.delete_cookie(GUEST_COOKIE_NAME, secure=is_secure)
     return {"ok": True}
 
 
@@ -41,11 +38,8 @@ def logout(request: Request, response: Response):
     if token:
         revoke_session_token(token)
 
-    is_secure = _is_secure_request(request)
-    response.delete_cookie("session", secure=is_secure)
-    response.delete_cookie("csrf_token", secure=is_secure)
-    # Also clear guest cookie on admin logout
-    response.delete_cookie(GUEST_COOKIE_NAME, secure=is_secure)
+    response.delete_cookie("session")
+    response.delete_cookie("csrf_token")
     return {"ok": True}
 
 
