@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Form, HTTPException, Request, Response
 
 from limiter import limiter
+from middleware import _is_secure_request
 from services.auth_service import (
     ACCESS_TOKEN_EXPIRE_HOURS,
     create_session_token,
@@ -10,11 +11,6 @@ from services.auth_service import (
 )
 
 router = APIRouter()
-
-
-def _is_secure_request(request: Request) -> bool:
-    """Check if the request was made over HTTPS."""
-    return request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
 
 
 @router.post("/login")

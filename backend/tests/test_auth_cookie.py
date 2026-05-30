@@ -33,9 +33,10 @@ def test_login_cookie_secure_false_on_http(client):
         headers=_get_csrf_headers(client),
     )
     assert response.status_code == 200
-    cookies = response.cookies
-    session_cookie = cookies.get("session")
-    assert session_cookie is not None
+    set_cookie_headers = response.headers.get_list("set-cookie")
+    session_header = [h for h in set_cookie_headers if h.startswith("session=")]
+    assert len(session_header) == 1
+    assert "Secure" not in session_header[0]
 
 
 def test_login_cookie_has_secure_flag_on_https(https_client):
@@ -83,3 +84,17 @@ def test_logout_cookie_secure_matches_request_scheme(https_client):
     session_delete = [h for h in set_cookie_headers if "session=" in h and "Max-Age=0" in h]
     assert len(session_delete) == 1
     assert "Secure" in session_delete[0]
+
+
+def test_login_cookie_secure_on_forwarded_proto_https(client):
+    """Cookie SHOULD have secure=True when x-forwarded-proto is https."""
+    response = client.post(
+        "/api/auth/login",
+        data={"username": "admin", "password": "123456"},
+        headers={**_get_csrf_headers(client), "X-Forwarded-Proto": "https"},
+    )
+    assert response.status_code == 200
+    set_cookie_headers = response.headers.get_list("set-cookie")
+    session_header = [h for h in set_cookie_headers if h.startswith("session=")]
+    assert len(session_header) == 1
+    assert "Secure" in session_header[0]
