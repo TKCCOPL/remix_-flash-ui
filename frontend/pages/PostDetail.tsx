@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import Markdown from 'react-markdown';
@@ -67,6 +67,18 @@ export default function PostDetail() {
   const locale = locales[language];
   const formats = dateFormats[language];
 
+  // Refresh post data (for favorite/comment updates)
+  const refreshPost = useCallback(async () => {
+    if (!id) return;
+    try {
+      const response = await postsApi.get(id);
+      setPost(response);
+      setCache(`post_${id}`, response);
+    } catch {
+      // silently ignore
+    }
+  }, [id]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -79,6 +91,13 @@ export default function PostDetail() {
           setPost(response);
           setCache(`post_${id}`, response);
           setNotFound(false);
+
+          // Increment view count only once per session
+          const viewKey = `viewed_${id}`;
+          if (!sessionStorage.getItem(viewKey)) {
+            sessionStorage.setItem(viewKey, '1');
+            postsApi.incrementView(id).catch(() => {});
+          }
         }
       } catch (requestError) {
         if (!cancelled) {
@@ -225,7 +244,7 @@ export default function PostDetail() {
                 <span>⏱ {calculateReadingTime(post!.content)} min</span>
               </div>
               <div className="flex items-center gap-4 mt-4">
-                <FavoriteButton postId={post!.id} />
+                <FavoriteButton postId={post!.id} onToggle={refreshPost} />
               </div>
             </div>
           )}
@@ -268,7 +287,7 @@ export default function PostDetail() {
         )}
 
         <div id="comments">
-          {!loading && post && <CommentSection postId={post.id} />}
+          {!loading && post && <CommentSection postId={post.id} onComment={refreshPost} />}
         </div>
       </article>
 

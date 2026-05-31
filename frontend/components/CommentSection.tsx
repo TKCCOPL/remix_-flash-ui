@@ -10,9 +10,10 @@ import { normalizeDate } from '../utils/date';
 
 type CommentSectionProps = {
   postId: number;
+  onComment?: () => void;
 };
 
-export default function CommentSection({ postId }: CommentSectionProps) {
+export default function CommentSection({ postId, onComment }: CommentSectionProps) {
   const t = useI18n();
   const { language } = usePreferences();
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -76,6 +77,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       const newComment = await commentsApi.create(postId, trimmed);
       setComments((prev) => [newComment, ...prev]);
       setContent('');
+      onComment?.();
     } catch {
       setSubmitError(t.oauth.submitError);
     } finally {
@@ -91,6 +93,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     try {
       await commentsApi.remove(commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
+      onComment?.();
     } catch {
       setSubmitError(t.oauth.deleteError);
     } finally {

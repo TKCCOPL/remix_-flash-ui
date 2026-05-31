@@ -6,9 +6,10 @@ import { favoritesApi } from '../api/favorites';
 
 type Props = {
   postId: number | string;
+  onToggle?: () => void;
 };
 
-export default function FavoriteButton({ postId }: Props) {
+export default function FavoriteButton({ postId, onToggle }: Props) {
   const t = useI18n();
   const { user } = useAuth();
   const [favorited, setFavorited] = useState(false);
@@ -45,6 +46,7 @@ export default function FavoriteButton({ postId }: Props) {
     try {
       const data = await favoritesApi.toggle(postId);
       if (mountedRef.current) setFavorited(data.favorited);
+      onToggle?.();
     } catch {
       // silently ignore
     } finally {
@@ -53,7 +55,7 @@ export default function FavoriteButton({ postId }: Props) {
         if (mountedRef.current) setAnimating(false);
       }, 200);
     }
-  }, [loading, postId]);
+  }, [loading, postId, onToggle]);
 
   if (!user) return null;
 
