@@ -249,9 +249,13 @@ export default function Comments() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
-                          {comment.username?.[0]?.toUpperCase() || '?'}
-                        </div>
+                        {comment.avatar_url ? (
+                          <img src={comment.avatar_url} alt={comment.username} className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+                            {comment.username?.[0]?.toUpperCase() || '?'}
+                          </div>
+                        )}
                         <div>
                           <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
                             {comment.username}
