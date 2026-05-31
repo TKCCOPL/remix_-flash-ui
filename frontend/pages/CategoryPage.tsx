@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { format } from 'date-fns'
 import { categoriesApi, Category, Post } from '../api/categories'
 import { ApiError } from '../api/client'
 import { getCached, setCache } from '../api/cache'
 import SEO from '../components/SEO'
-import { useI18n } from '../context/Preferences'
+import { useI18n, usePreferences } from '../context/Preferences'
+import { locales, dateFormats } from '../i18n'
 
 export default function CategoryPage() {
   const t = useI18n()
+  const { language } = usePreferences()
+  const locale = locales[language]
+  const dateFormat = dateFormats[language].medium
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const [category, setCategory] = useState<Category | null>(() => getCached<Category>(`category_${slug}`))
@@ -165,7 +170,7 @@ export default function CategoryPage() {
                 {post.content.substring(0, 150).replace(/[#*`>]/g, '')}...
               </p>
               <div className="text-sm font-medium text-stone-400 dark:text-stone-500 mt-auto pt-2 z-10 relative">
-                {new Date(post.created_at).toLocaleDateString('zh-CN')}
+                {format(new Date(post.created_at), dateFormat, { locale })}
               </div>
               <Link to={`/post/${post.id}`} className="absolute inset-0 z-0" />
             </div>

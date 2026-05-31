@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useI18n } from '../context/Preferences';
+import { format } from 'date-fns';
+import { useI18n, usePreferences } from '../context/Preferences';
+import { locales, dateFormats } from '../i18n';
 import { MessageCircle } from 'lucide-react';
 import type { ApiComment } from '../api/comments';
 import EmptyState from './EmptyState';
@@ -12,6 +14,9 @@ type CommentsListProps = {
 export default function CommentsList({ comments, loading }: CommentsListProps) {
   const t = useI18n();
   const navigate = useNavigate();
+  const { language } = usePreferences();
+  const locale = locales[language];
+  const dateFormat = dateFormats[language].medium;
 
   if (loading) {
     return (
@@ -61,7 +66,7 @@ export default function CommentsList({ comments, loading }: CommentsListProps) {
             {comment.content}
           </p>
           <p className="text-xs text-stone-400 dark:text-stone-500 mt-2">
-            {new Date(comment.created_at).toLocaleDateString()}
+            {format(new Date(comment.created_at), dateFormat, { locale })}
           </p>
         </div>
       ))}

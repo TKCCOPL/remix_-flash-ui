@@ -81,3 +81,11 @@ class CommentResponse(BaseModel):
     parent_id: Optional[int] = None
     replies: List['CommentResponse'] = []
     created_at: str
+
+
+from typing import Literal
+
+class FilterCreate(BaseModel):
+    filter_type: Literal["keyword", "regex", "url"]
+    pattern: str = Field(..., min_length=1, max_length=500)
+    action: str = Field(default="pending", pattern="^(pending|approve|reject)$")

@@ -81,7 +81,7 @@ def test_logout_cookie_secure_matches_request_scheme(https_client):
     )
     assert response.status_code == 200
     set_cookie_headers = response.headers.get_list("set-cookie")
-    session_delete = [h for h in set_cookie_headers if "session=" in h and "Max-Age=0" in h]
+    session_delete = [h for h in set_cookie_headers if h.startswith("session=") and "Max-Age=0" in h]
     assert len(session_delete) == 1
     assert "Secure" in session_delete[0]
 

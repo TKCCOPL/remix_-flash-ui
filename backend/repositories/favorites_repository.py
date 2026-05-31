@@ -53,3 +53,22 @@ def get_favorites_by_user(
         (user_id, limit, skip),
     )
     return [dict(row) for row in cursor.fetchall()]
+
+
+def toggle_favorite_atomic(conn: sqlite3.Connection, post_id: int, user_id: int) -> bool:
+    """Atomically toggle favorite status. Returns True if now favorited, False if unfavorited."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO favorites (post_id, user_id) VALUES (?, ?)",
+            (post_id, user_id),
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        cursor.execute(
+            "DELETE FROM favorites WHERE post_id = ? AND user_id = ?",
+            (post_id, user_id),
+        )
+        conn.commit()
+        return False

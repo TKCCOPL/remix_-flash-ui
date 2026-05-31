@@ -1,7 +1,8 @@
 import sqlite3
 import os
+from pathlib import Path
 
-DB_FILE = 'data/blog.sqlite3'
+DB_FILE = str(Path(__file__).parent / 'data' / 'blog.sqlite3')
 
 def seed_database():
     """Seed database with test data if empty."""
@@ -122,6 +123,16 @@ def init_db():
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS revoked_tokens (
+        jti TEXT PRIMARY KEY,
+        token_type TEXT NOT NULL DEFAULT 'admin',
+        revoked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME NOT NULL
+    )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_revoked_tokens_expires ON revoked_tokens(expires_at)')
 
     # Add missing database indexes after column backfill
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_posts_status ON posts (status)')

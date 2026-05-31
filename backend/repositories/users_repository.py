@@ -1,5 +1,7 @@
 import sqlite3
 
+from utils import escape_like
+
 
 def create_or_update_user(
     conn: sqlite3.Connection,
@@ -79,8 +81,8 @@ def get_users_with_stats(
     """
     params = []
     if search:
-        query += " AND (u.username LIKE ? OR u.email LIKE ?)"
-        search_pattern = f"%{search}%"
+        query += " AND (u.username LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\')"
+        search_pattern = f"%{escape_like(search)}%"
         params.extend([search_pattern, search_pattern])
     if provider:
         query += " AND u.oauth_provider = ?"
@@ -100,8 +102,8 @@ def count_users(
     query = "SELECT COUNT(*) FROM users WHERE oauth_provider != 'admin'"
     params = []
     if search:
-        query += " AND (username LIKE ? OR email LIKE ?)"
-        search_pattern = f"%{search}%"
+        query += " AND (username LIKE ? ESCAPE '\\' OR email LIKE ? ESCAPE '\\')"
+        search_pattern = f"%{escape_like(search)}%"
         params.extend([search_pattern, search_pattern])
     if provider:
         query += " AND oauth_provider = ?"

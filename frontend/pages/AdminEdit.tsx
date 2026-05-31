@@ -217,7 +217,7 @@ export default function AdminEdit() {
         <AnimatePresence>
           {isSettingsOpen && (
             <motion.aside
-              ref={settingsSidebarRef as any}
+              ref={settingsSidebarRef}
               initial={{ x: '100%', opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
@@ -225,7 +225,7 @@ export default function AdminEdit() {
               className="fixed top-6 right-6 bottom-[100px] z-[70] w-full max-w-[320px] bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-2xl flex flex-col border border-stone-200/50 dark:border-stone-800/50 rounded-3xl overflow-hidden"
             >
                 <div className="flex items-center justify-between p-6 border-b border-stone-100 dark:border-stone-800">
-                  <h2 className="font-semibold text-lg text-stone-900 dark:text-stone-100">文章设置</h2>
+                  <h2 className="font-semibold text-lg text-stone-900 dark:text-stone-100">{t.admin.postSettings}</h2>
                   <button type="button" onClick={() => setIsSettingsOpen(false)} className="p-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors">
                     <X className="w-5 h-5" />
                   </button>
@@ -296,12 +296,12 @@ export default function AdminEdit() {
                         />
                         {isUploading ? (
                           <span className="flex items-center text-indigo-600 font-medium">
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 上传中...
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t.admin.uploading}
                           </span>
                         ) : (
                           <span className="flex items-center text-stone-600 dark:text-stone-300 font-medium text-sm">
-                            <UploadCloud className="w-4 h-4 mr-2" /> 
-                            {imageUrl ? '更换图片' : '上传本地图片'}
+                            <UploadCloud className="w-4 h-4 mr-2" />
+                            {imageUrl ? t.admin.replaceImage : t.admin.uploadLocal}
                           </span>
                         )}
                       </label>
@@ -378,7 +378,7 @@ export default function AdminEdit() {
                       ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner' 
                       : 'bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
                   }`}
-                  title={viewMode === 'edit' ? '切换到预览' : '继续编辑'}
+                  title={viewMode === 'edit' ? t.admin.switchToPreview : t.admin.continueEditing}
                 >
                   {viewMode === 'preview' ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -391,7 +391,7 @@ export default function AdminEdit() {
                       ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner'
                       : 'bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
                   }`}
-                  title="文章设置"
+                  title={t.admin.postSettings}
                 >
                   <Settings className="w-4 h-4" />
                 </button>
@@ -408,7 +408,7 @@ export default function AdminEdit() {
                 disabled={saving}
                 className="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-5 py-2.5 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-sm"
               >
-                存草稿
+                {t.admin.saveDraft}
               </button>
               <button
                 type="button"

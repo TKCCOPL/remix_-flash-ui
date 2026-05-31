@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useI18n } from '../context/Preferences';
+import { format } from 'date-fns';
+import { useI18n, usePreferences } from '../context/Preferences';
+import { locales, dateFormats } from '../i18n';
 import { Bookmark } from 'lucide-react';
 import type { ApiFavorite } from '../api/favorites';
 import EmptyState from './EmptyState';
@@ -12,6 +14,9 @@ type FavoritesListProps = {
 export default function FavoritesList({ favorites, loading }: FavoritesListProps) {
   const t = useI18n();
   const navigate = useNavigate();
+  const { language } = usePreferences();
+  const locale = locales[language];
+  const dateFormat = dateFormats[language].medium;
 
   if (loading) {
     return (
@@ -71,7 +76,7 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
               {fav.category}
             </p>
             <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">
-              {new Date(fav.created_at).toLocaleDateString()}
+              {format(new Date(fav.created_at), dateFormat, { locale })}
             </p>
           </div>
         </div>

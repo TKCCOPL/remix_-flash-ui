@@ -1,4 +1,4 @@
-import { Mail, Globe, ExternalLink, Link2 } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import SEO from '../components/SEO';
 

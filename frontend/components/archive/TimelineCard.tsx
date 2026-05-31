@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { usePreferences } from '../../context/Preferences';
+import { locales, dateFormats } from '../../i18n';
 import type { ArchivePost } from '../../api/posts';
 
 interface TimelineCardProps {
@@ -8,8 +11,10 @@ interface TimelineCardProps {
 // 用 CSS animate-slide-in-left 替代 framer-motion 的 initial/animate
 // 更轻量，且自动遵循 prefers-reduced-motion
 export default function TimelineCard({ post }: TimelineCardProps) {
+  const { language } = usePreferences();
+  const locale = locales[language];
   const date = new Date(post.created_at);
-  const monthDay = `${date.getMonth() + 1}月${date.getDate()}日`;
+  const monthDay = format(date, dateFormats[language].short, { locale });
 
   return (
     <div

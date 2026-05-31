@@ -271,7 +271,7 @@ def test_delete_user_nonexistent(db):
 
 from fastapi.testclient import TestClient
 from main import app
-from dependencies.auth import require_login
+from dependencies.auth import require_login, require_admin
 from database import get_db
 
 
@@ -355,6 +355,10 @@ def override_require_login():
     return True
 
 
+def override_require_admin():
+    return {"user_id": None, "username": "admin", "is_admin": True}
+
+
 def override_get_db():
     conn = sqlite3.connect(_api_db_file)
     conn.row_factory = sqlite3.Row
@@ -364,8 +368,6 @@ def override_get_db():
         conn.close()
 
 
-app.dependency_overrides[require_login] = override_require_login
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app, base_url="https://testserver")
 
 
@@ -377,6 +379,16 @@ def _get_csrf_headers(c: TestClient) -> dict:
         return {}
     csrf_token = csrf_signed.rsplit(".", 1)[0] if "." in csrf_signed else csrf_signed
     return {"X-CSRF-Token": csrf_token}
+
+
+@pytest.fixture(autouse=True)
+def _setup_api_overrides():
+    """Set up dependency overrides for API tests."""
+    app.dependency_overrides[require_login] = override_require_login
+    app.dependency_overrides[require_admin] = override_require_admin
+    app.dependency_overrides[get_db] = override_get_db
+    yield
+    app.dependency_overrides.clear()
 
 
 def test_api_get_users():

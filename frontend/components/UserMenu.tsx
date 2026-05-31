@@ -60,7 +60,7 @@ export default function UserMenu() {
                 {displayName}
                 {isAdmin && (
                   <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded">
-                    管理员
+                    {t.admin.badge}
                   </span>
                 )}
               </p>

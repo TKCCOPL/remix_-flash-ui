@@ -326,7 +326,7 @@ export default function PostDetail() {
                 <div className="pt-2 flex flex-col overflow-hidden">
                   <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2 shrink-0">
                     <List className="w-4 h-4 text-stone-500" />
-                    目录
+                    {t.post.tableOfContents}
                   </h3>
                   <ul className="space-y-2.5 text-sm overflow-y-auto pr-2 pb-2">
                     {toc.map((item) => {
@@ -376,7 +376,7 @@ export default function PostDetail() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm font-medium"
               >
                 <MessageSquare className="w-4 h-4" />
-                写评论
+                {t.post.writeComment}
               </button>
             </div>
           </div>

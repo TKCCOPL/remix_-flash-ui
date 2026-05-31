@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Search, Check, X, Trash2 } from 'lucide-react';
-import { useI18n } from '../context/Preferences';
+import { format } from 'date-fns';
+import { useI18n, usePreferences } from '../context/Preferences';
+import { locales, dateFormats } from '../i18n';
 import { adminCommentsApi, AdminComment } from '../api/admin';
 
 export default function Comments() {
   const t = useI18n();
+  const { language } = usePreferences();
+  const locale = locales[language];
+  const dateFormat = dateFormats[language].medium;
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -283,7 +288,7 @@ export default function Comments() {
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-xs text-stone-500 dark:text-stone-400">
-                        {new Date(comment.created_at).toLocaleDateString()}
+                        {format(new Date(comment.created_at), dateFormat, { locale })}
                       </p>
                     </td>
                     <td className="px-4 py-3">

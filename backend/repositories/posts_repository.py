@@ -79,7 +79,7 @@ def delete_post(conn, post_id: int):
 def get_posts_for_archive(conn, include_drafts: bool = False):
     cursor = conn.cursor()
     query = '''
-        SELECT id, title, content, created_at
+        SELECT id, title, SUBSTR(content, 1, 100) as summary, created_at
         FROM posts
     '''
     if not include_drafts:
@@ -99,8 +99,9 @@ def get_posts_for_archive(conn, include_drafts: bool = False):
         if month not in archive[year]:
             archive[year][month] = []
 
-        content = post['content']
-        summary = content[:100] + '...' if len(content) > 100 else content
+        summary = post['summary'] or ''
+        if len(summary) >= 100:
+            summary = summary + '...'
 
         archive[year][month].append({
             'id': post['id'],
@@ -122,9 +123,7 @@ def get_posts_for_archive(conn, include_drafts: bool = False):
 
 
 
-def _escape_like(val: str) -> str:
-    """Escape special LIKE characters % _ and \\ for SQLite."""
-    return val.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+from utils import escape_like as _escape_like
 
 def search_posts(conn, query: str, include_drafts: bool = False):
     cursor = conn.cursor()
@@ -174,8 +173,14 @@ def increment_view_count(conn, post_id: int):
     conn.commit()
 
 
-def get_post_with_stats(conn, post_id: int):
+def get_post_with_stats(conn, post_id: int, increment_view: bool = False):
     cursor = conn.cursor()
+    if increment_view:
+        cursor.execute(
+            "UPDATE posts SET view_count = view_count + 1 WHERE id = ?",
+            (post_id,),
+        )
+        conn.commit()
     cursor.execute(
         """
         SELECT p.id, p.title, p.content, p.category, p.image_url, p.status,

@@ -1,13 +1,26 @@
+import logging
+import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from jose import jwt, JWTError
 
 from config import GUEST_JWT_SECRET, GUEST_JWT_ALGORITHM, GUEST_TOKEN_EXPIRE_HOURS
 
+logger = logging.getLogger(__name__)
+
 # In-memory blacklist for revoked guest tokens (jti -> expiry timestamp)
 # Tokens are removed from the blacklist once they expire naturally.
 GUEST_BLACKLISTED_TOKENS: dict[str, int] = {}
+
+
+def _get_db() -> sqlite3.Connection:
+    """Get a database connection for token blacklist operations."""
+    DB_FILE = str(Path(__file__).parent.parent / 'data' / 'blog.sqlite3')
+    conn = sqlite3.connect(DB_FILE, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def _prune_blacklist(now: int | None = None) -> None:
@@ -43,6 +56,19 @@ def verify_guest_token(token: str) -> dict | None:
         jti = payload.get("jti")
         if jti and jti in GUEST_BLACKLISTED_TOKENS:
             return None
+        # Check database for persisted blacklist
+        if jti:
+            try:
+                from repositories.token_repository import is_token_revoked
+                conn = _get_db()
+                try:
+                    if is_token_revoked(conn, jti):
+                        GUEST_BLACKLISTED_TOKENS[jti] = payload.get("exp", 0)
+                        return None
+                finally:
+                    conn.close()
+            except Exception:
+                pass
         return payload
     except JWTError:
         return None
@@ -55,12 +81,19 @@ def revoke_guest_token(token: str) -> bool:
         jti = payload.get("jti")
         exp = payload.get("exp")
         if jti:
-            if isinstance(exp, (int, float)):
-                GUEST_BLACKLISTED_TOKENS[jti] = int(exp)
-            else:
-                fallback_exp = datetime.now(timezone.utc) + timedelta(hours=GUEST_TOKEN_EXPIRE_HOURS)
-                GUEST_BLACKLISTED_TOKENS[jti] = int(fallback_exp.timestamp())
+            exp_ts = int(exp) if isinstance(exp, (int, float)) else int((datetime.now(timezone.utc) + timedelta(hours=GUEST_TOKEN_EXPIRE_HOURS)).timestamp())
+            GUEST_BLACKLISTED_TOKENS[jti] = exp_ts
             _prune_blacklist()
+            # Persist to database
+            try:
+                from repositories.token_repository import add_revoked_token
+                conn = _get_db()
+                try:
+                    add_revoked_token(conn, jti, "guest", exp_ts)
+                finally:
+                    conn.close()
+            except Exception as e:
+                logger.warning(f"Failed to persist revoked guest token to database: {e}")
         return True
     except JWTError:
         return False

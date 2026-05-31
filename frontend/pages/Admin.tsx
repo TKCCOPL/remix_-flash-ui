@@ -271,11 +271,11 @@ export default function Admin() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">{t.admin.title}</h1>
           <div className="text-sm font-medium text-stone-500 dark:text-stone-400 mt-2 flex items-center gap-2.5">
-            <span>{stats.total} 篇文章</span>
+            <span>{t.admin.articleCount(stats.total)}</span>
             <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-            <span>{stats.categories} 个分类</span>
+            <span>{t.admin.categoryCount(stats.categories)}</span>
             <span className="w-1 h-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-            <span>本月新增 {stats.monthly} 篇</span>
+            <span>{t.admin.monthlyNew(stats.monthly)}</span>
           </div>
         </div>
         <Link
@@ -482,7 +482,7 @@ export default function Admin() {
                       {post.title}
                       {post.status === 'draft' && (
                         <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 rounded">
-                          草稿
+                          {t.admin.statusDraft}
                         </span>
                       )}
                     </td>

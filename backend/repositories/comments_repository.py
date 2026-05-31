@@ -29,32 +29,63 @@ def get_comment_by_id(conn, comment_id: int):
 
 
 def get_comments_by_post_id(conn, post_id: int, skip: int = 0, limit: int = 20):
+    """Get comments for a post with SQL-level pagination on top-level comments."""
     cursor = conn.cursor()
 
+    # Step 1: Get paginated top-level comment IDs
     cursor.execute(
         """
+        SELECT c.id
+        FROM comments c
+        WHERE c.post_id = ? AND c.status = 'approved' AND c.parent_id IS NULL
+        ORDER BY c.created_at DESC
+        LIMIT ? OFFSET ?
+        """,
+        (post_id, limit, skip),
+    )
+    top_level_ids = [row["id"] for row in cursor.fetchall()]
+
+    if not top_level_ids:
+        return []
+
+    # Step 2: Fetch all top-level comments with user info
+    placeholders = ",".join("?" * len(top_level_ids))
+    cursor.execute(
+        f"""
         SELECT c.id, c.post_id, c.user_id, c.content, c.status, c.parent_id, c.created_at,
                u.username, u.avatar_url, u.oauth_provider
         FROM comments c
         JOIN users u ON c.user_id = u.id
-        WHERE c.post_id = ? AND c.status = 'approved'
+        WHERE c.id IN ({placeholders})
         ORDER BY c.created_at DESC
         """,
-        (post_id,),
+        top_level_ids,
     )
-    all_comments = [dict(row) for row in cursor.fetchall()]
+    top_level_comments = [dict(row) for row in cursor.fetchall()]
 
-    comment_map = {c["id"]: {**c, "replies": []} for c in all_comments}
-    top_level = []
+    # Step 3: Fetch all replies for these top-level comments
+    cursor.execute(
+        f"""
+        SELECT c.id, c.post_id, c.user_id, c.content, c.status, c.parent_id, c.created_at,
+               u.username, u.avatar_url, u.oauth_provider
+        FROM comments c
+        JOIN users u ON c.user_id = u.id
+        WHERE c.parent_id IN ({placeholders})
+        ORDER BY c.created_at ASC
+        """,
+        top_level_ids,
+    )
+    all_replies = [dict(row) for row in cursor.fetchall()]
 
-    for comment in all_comments:
-        comment_with_replies = comment_map[comment["id"]]
-        if comment["parent_id"] and comment["parent_id"] in comment_map:
-            comment_map[comment["parent_id"]]["replies"].append(comment_with_replies)
-        else:
-            top_level.append(comment_with_replies)
+    # Step 4: Build nested structure
+    comment_map = {c["id"]: {**c, "replies": []} for c in top_level_comments}
+    for reply in all_replies:
+        parent_id = reply["parent_id"]
+        if parent_id in comment_map:
+            comment_map[parent_id]["replies"].append(reply)
 
-    return top_level[skip:skip + limit]
+    # Preserve the DESC order from the SQL query
+    return [comment_map[cid] for cid in top_level_ids if cid in comment_map]
 
 
 def delete_comment_record(conn, comment_id: int):

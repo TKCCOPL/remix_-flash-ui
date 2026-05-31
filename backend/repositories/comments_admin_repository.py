@@ -1,9 +1,6 @@
 import sqlite3
 
-
-def _escape_like(val: str) -> str:
-    """Escape special LIKE characters % _ and \\ for SQLite."""
-    return val.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+from utils import escape_like as _escape_like
 
 
 def get_comments_with_filter(

@@ -133,6 +133,7 @@ def client():
     from middleware import CSRFMiddleware
 
     # Remove CSRF middleware for test simplicity
+    original_middleware = list(app.user_middleware)
     app.user_middleware = [
         m for m in app.user_middleware
         if m.cls != CSRFMiddleware
@@ -142,6 +143,10 @@ def client():
 
     with TestClient(app, raise_server_exceptions=False) as c:
         yield c
+
+    # Restore original middleware
+    app.user_middleware = original_middleware
+    app.middleware_stack = None
 
 
 @pytest.fixture

@@ -2,35 +2,19 @@ import sqlite3
 
 
 def get_overview(conn: sqlite3.Connection) -> dict:
-    """Get overview statistics."""
+    """Get overview statistics in a single query."""
     cursor = conn.cursor()
-
-    cursor.execute("SELECT COUNT(*) FROM posts WHERE status = 'published'")
-    post_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM users")
-    user_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM comments")
-    comment_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM categories")
-    category_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COALESCE(SUM(view_count), 0) FROM posts WHERE status = 'published'")
-    total_views = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM favorites")
-    total_favorites = cursor.fetchone()[0]
-
-    return {
-        "post_count": post_count,
-        "user_count": user_count,
-        "comment_count": comment_count,
-        "category_count": category_count,
-        "total_views": total_views,
-        "total_favorites": total_favorites,
-    }
+    cursor.execute("""
+        SELECT
+            (SELECT COUNT(*) FROM posts WHERE status = 'published') as post_count,
+            (SELECT COUNT(*) FROM users) as user_count,
+            (SELECT COUNT(*) FROM comments) as comment_count,
+            (SELECT COUNT(*) FROM categories) as category_count,
+            (SELECT COALESCE(SUM(view_count), 0) FROM posts WHERE status = 'published') as total_views,
+            (SELECT COUNT(*) FROM favorites) as total_favorites
+    """)
+    row = cursor.fetchone()
+    return dict(row)
 
 
 def get_comments_trend(conn: sqlite3.Connection) -> list[dict]:

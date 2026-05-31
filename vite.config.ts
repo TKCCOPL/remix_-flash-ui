@@ -22,17 +22,18 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      // Code splitting optimization
       rollupOptions: {
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'framer-motion': ['framer-motion'],
-            'router': ['react-router-dom'],
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react-dom')) return 'vendor-react';
+              if (id.includes('react-router')) return 'vendor-router';
+              if (id.includes('framer-motion')) return 'vendor-motion';
+              return 'vendor-misc';
+            }
           },
         },
       },
-      // Resource optimization
       chunkSizeWarningLimit: 1000,
     },
     publicDir: path.resolve(__dirname, 'frontend/public'),

@@ -5,15 +5,12 @@ from repositories.favorites_repository import (
     remove_favorite,
     check_is_favorited,
     get_favorites_by_user,
+    toggle_favorite_atomic,
 )
 
 
 def toggle_favorite(conn: sqlite3.Connection, post_id: int, user_id: int) -> bool:
-    if check_is_favorited(conn, post_id, user_id):
-        remove_favorite(conn, post_id, user_id)
-        return False
-    add_favorite(conn, post_id, user_id)
-    return True
+    return toggle_favorite_atomic(conn, post_id, user_id)
 
 
 def is_favorited(conn: sqlite3.Connection, post_id: int, user_id: int) -> bool:

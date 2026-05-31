@@ -163,7 +163,7 @@ export default function Layout() {
                   >
                   {isSearching ? (
                     <div className="p-4 text-center text-sm text-stone-500 dark:text-stone-400">
-                      搜索中...
+                      {t.search.searching}
                     </div>
                   ) : searchResults.length > 0 ? (
                     <div className="p-2">
@@ -186,7 +186,7 @@ export default function Layout() {
                     </div>
                   ) : (
                     <div className="p-4 text-center text-sm text-stone-500 dark:text-stone-400">
-                      未找到相关文章
+                      {t.search.noResults}
                     </div>
                   )}
                   </motion.div>

@@ -36,6 +36,8 @@ export const translations = {
     },
     search: {
       placeholder: '输入关键词搜索...',
+      searching: '搜索中...',
+      noResults: '未找到相关文章',
     },
     archive: {
       title: '文章归档',
@@ -87,6 +89,8 @@ export const translations = {
       returnHome: '返回首页',
       backToPosts: '返回列表',
       general: '通用',
+      tableOfContents: '目录',
+      writeComment: '写评论',
     },
     profile: {
       title: 'XiaoC Dev',
@@ -113,6 +117,18 @@ export const translations = {
       title: '管理后台',
       subtitle: '管理内容并跟踪表现。',
       badge: '管理员',
+      loading: '加载中...',
+      backToHome: '返回首页',
+      articleCount: (count: number) => `${count} 篇文章`,
+      categoryCount: (count: number) => `${count} 个分类`,
+      monthlyNew: (count: number) => `本月新增 ${count} 篇`,
+      postSettings: '文章设置',
+      uploading: '上传中...',
+      replaceImage: '更换图片',
+      uploadLocal: '上传本地图片',
+      switchToPreview: '切换到预览',
+      continueEditing: '继续编辑',
+      saveDraft: '存草稿',
       newPost: '新建文章',
       logout: '退出登录',
       stats: {
@@ -333,6 +349,8 @@ export const translations = {
     },
     search: {
       placeholder: 'Type to search...',
+      searching: 'Searching...',
+      noResults: 'No articles found',
     },
     archive: {
       title: 'Archive',
@@ -384,6 +402,8 @@ export const translations = {
       returnHome: 'Return home',
       backToPosts: 'Back to posts',
       general: 'General',
+      tableOfContents: 'Contents',
+      writeComment: 'Write Comment',
     },
     profile: {
       title: 'XiaoC Dev',
@@ -410,6 +430,18 @@ export const translations = {
       title: 'Admin Dashboard',
       subtitle: 'Manage your content and track performance.',
       badge: 'Admin',
+      loading: 'Loading...',
+      backToHome: 'Back to Home',
+      articleCount: (count: number) => `${count} articles`,
+      categoryCount: (count: number) => `${count} categories`,
+      monthlyNew: (count: number) => `${count} new this month`,
+      postSettings: 'Post Settings',
+      uploading: 'Uploading...',
+      replaceImage: 'Replace Image',
+      uploadLocal: 'Upload Image',
+      switchToPreview: 'Switch to Preview',
+      continueEditing: 'Continue Editing',
+      saveDraft: 'Save Draft',
       newPost: 'New Post',
       logout: 'Logout',
       stats: {

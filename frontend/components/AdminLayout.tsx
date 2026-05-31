@@ -74,7 +74,7 @@ export default function AdminLayout() {
   if (authenticated === null) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center">
-        <div className="text-stone-400 animate-pulse">Loading...</div>
+        <div className="text-stone-400 animate-pulse">{t.admin.loading}</div>
       </div>
     );
   }
@@ -95,14 +95,14 @@ export default function AdminLayout() {
           <Link 
             to="/" 
             className="group relative flex flex-col items-center justify-center h-12 w-full text-lg font-bold text-stone-900 dark:text-stone-100 truncate rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors mb-2 overflow-hidden"
-            title="返回首页"
+            title={t.admin.backToHome}
           >
             <div className="absolute inset-0 flex items-center justify-center gap-1 transition-all duration-200 group-hover:-translate-y-8 group-hover:opacity-0">
               {t.brand.name}<span className="text-indigo-500">{t.brand.suffix}</span>
             </div>
             <div className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
               <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
-              <span>返回首页</span>
+              <span>{t.admin.backToHome}</span>
             </div>
           </Link>
         )}

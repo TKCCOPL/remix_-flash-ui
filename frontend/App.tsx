@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -5,17 +6,27 @@ import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
-import Profile from './pages/Profile';
-import About from './pages/About';
-import ArchivePage from './pages/ArchivePage';
-import CategoriesPage from './pages/CategoriesPage';
-import CategoryPage from './pages/CategoryPage';
-import Admin from './pages/Admin';
-import AdminEdit from './pages/AdminEdit';
-import Comments from './pages/Comments';
-import Stats from './pages/Stats';
-import Users from './pages/Users';
 import Login from './pages/Login';
+
+// Lazy-loaded pages
+const Profile = lazy(() => import('./pages/Profile'));
+const About = lazy(() => import('./pages/About'));
+const ArchivePage = lazy(() => import('./pages/ArchivePage'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const Admin = lazy(() => import('./pages/Admin'));
+const AdminEdit = lazy(() => import('./pages/AdminEdit'));
+const Comments = lazy(() => import('./pages/Comments'));
+const Stats = lazy(() => import('./pages/Stats'));
+const Users = lazy(() => import('./pages/Users'));
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-neutral-900 dark:border-neutral-100" />
+    </div>
+  );
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -42,11 +53,11 @@ function AnimatedRoutes() {
         }>
           <Route index element={<Home />} />
           <Route path="post/:id" element={<PostDetail />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="about" element={<About />} />
-          <Route path="archive" element={<ArchivePage />} />
-          <Route path="categories" element={<CategoriesPage />} />
-          <Route path="categories/:slug" element={<CategoryPage />} />
+          <Route path="profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
+          <Route path="about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
+          <Route path="archive" element={<Suspense fallback={<PageLoader />}><ArchivePage /></Suspense>} />
+          <Route path="categories" element={<Suspense fallback={<PageLoader />}><CategoriesPage /></Suspense>} />
+          <Route path="categories/:slug" element={<Suspense fallback={<PageLoader />}><CategoryPage /></Suspense>} />
         </Route>
 
         <Route path="/login" element={
@@ -72,12 +83,12 @@ function AnimatedRoutes() {
             <AdminLayout />
           </motion.div>
         }>
-          <Route index element={<Admin />} />
-          <Route path="comments" element={<Comments />} />
-          <Route path="stats" element={<Stats />} />
-          <Route path="users" element={<Users />} />
-          <Route path="edit" element={<AdminEdit />} />
-          <Route path="edit/:id" element={<AdminEdit />} />
+          <Route index element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
+          <Route path="comments" element={<Suspense fallback={<PageLoader />}><Comments /></Suspense>} />
+          <Route path="stats" element={<Suspense fallback={<PageLoader />}><Stats /></Suspense>} />
+          <Route path="users" element={<Suspense fallback={<PageLoader />}><Users /></Suspense>} />
+          <Route path="edit" element={<Suspense fallback={<PageLoader />}><AdminEdit /></Suspense>} />
+          <Route path="edit/:id" element={<Suspense fallback={<PageLoader />}><AdminEdit /></Suspense>} />
         </Route>
       </Routes>
     </AnimatePresence>

@@ -43,9 +43,11 @@ def db():
             user_id INTEGER NOT NULL,
             content TEXT NOT NULL,
             status TEXT DEFAULT 'approved',
+            parent_id INTEGER,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (post_id) REFERENCES posts(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (parent_id) REFERENCES comments(id)
         )
     """)
     cursor.execute("""
