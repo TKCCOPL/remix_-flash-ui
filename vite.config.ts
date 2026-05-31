@@ -21,6 +21,20 @@ export default defineConfig(({ mode }) => {
         ignored: ['**/backend/**', '**/dist/**', '**/docs/**'],
       },
     },
+    build: {
+      // Code splitting optimization
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
+            'framer-motion': ['framer-motion'],
+            'router': ['react-router-dom'],
+          },
+        },
+      },
+      // Resource optimization
+      chunkSizeWarningLimit: 1000,
+    },
     publicDir: path.resolve(__dirname, 'frontend/public'),
     plugins: [
       react(),
