@@ -8,6 +8,7 @@ import { dateFormats, locales, pageIndicator } from '../i18n';
 import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import HeroCanvas from '../components/HeroCanvas';
+import SEO from '../components/SEO';
 import { normalizeDate } from '../utils/date';
 
 function formatPostDate(value: string, pattern: string, locale: Locale): string {
@@ -75,6 +76,11 @@ export default function Home() {
 
   return (
     <div className="w-full space-y-24">
+      <SEO
+        title="首页"
+        description="XiaoC 的个人博客，分享软件工程和界面设计的探索"
+        type="website"
+      />
       <HeroCanvas title={t.home.heroTitle} subtitle={t.home.heroSubtitle} titleLine2={t.home.heroTitleLine2} />
 
       {featuredPost && (

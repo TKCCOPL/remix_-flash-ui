@@ -1,5 +1,6 @@
 import { Mail, Globe, ExternalLink, Link2 } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
+import SEO from '../components/SEO';
 
 // About page - blog author's bio page with introduction, interests, and social links
 export default function About() {
@@ -7,6 +8,11 @@ export default function About() {
 
   return (
     <div className="w-full max-w-3xl mx-auto py-8">
+      <SEO
+        title="关于"
+        description="关于 XiaoC - 软件工程师和设计师"
+        type="website"
+      />
       <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
         {/* Avatar */}
         <div className="w-40 h-40 shrink-0 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden shadow-inner border-4 border-white dark:border-stone-900 mb-4 md:mb-0 animate-fade-in-scale">

@@ -16,6 +16,7 @@ import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import CommentSection from '../components/CommentSection';
 import FavoriteButton from '../components/FavoriteButton';
+import SEO from '../components/SEO';
 import { normalizeDate } from '../utils/date';
 
 interface TocItem {
@@ -175,6 +176,16 @@ export default function PostDetail() {
 
   return (
     <div className="w-full xl:grid xl:grid-cols-[1fr_250px] xl:gap-12 items-start relative">
+      {post && (
+        <SEO
+          title={post.title}
+          description={post.content.slice(0, 160).replace(/[#*`]/g, '')}
+          image={post.image_url}
+          type="article"
+          publishedTime={post.created_at}
+          modifiedTime={post.updated_at}
+        />
+      )}
       <article className="w-full max-w-3xl mx-auto xl:mx-0">
         <header className="mb-20">
 

@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { categoriesApi, Category, Post } from '../api/categories'
 import { ApiError } from '../api/client'
 import { getCached, setCache } from '../api/cache'
+import SEO from '../components/SEO'
 import { useI18n } from '../context/Preferences'
 
 export default function CategoryPage() {
@@ -89,6 +90,13 @@ export default function CategoryPage() {
 
   return (
     <article className="w-full max-w-3xl mx-auto">
+      {category && (
+        <SEO
+          title={category.name}
+          description={`${category.name} 分类下的所有文章`}
+          type="website"
+        />
+      )}
       <header className="mb-14">
         <Link
           to="/categories"

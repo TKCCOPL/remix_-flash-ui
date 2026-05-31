@@ -3,6 +3,7 @@ import { postsApi } from '../api/posts';
 import type { ArchiveData } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import YearSection from '../components/archive/YearSection';
+import SEO from '../components/SEO';
 import { useI18n } from '../context/Preferences';
 
 export default function ArchivePage() {
@@ -49,6 +50,11 @@ export default function ArchivePage() {
 
   return (
     <div className="w-full">
+      <SEO
+        title="归档"
+        description="所有文章的归档列表"
+        type="website"
+      />
       {/* 标题：始终显示，不受 loading 影响 */}
       <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8">
         {t.archive.title}

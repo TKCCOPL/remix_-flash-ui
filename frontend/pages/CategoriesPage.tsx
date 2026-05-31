@@ -3,6 +3,7 @@ import { categoriesApi } from '../api/categories';
 import type { Category } from '../api/categories';
 import { getCached, setCache } from '../api/cache';
 import TagCloud from '../components/categories/TagCloud';
+import SEO from '../components/SEO';
 import { useI18n } from '../context/Preferences';
 
 export default function CategoriesPage() {
@@ -47,6 +48,11 @@ export default function CategoriesPage() {
 
   return (
     <div className="w-full">
+      <SEO
+        title="分类"
+        description="文章分类列表"
+        type="website"
+      />
       {/* 标题和描述：始终显示，不受 loading 影响 */}
       <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8">
         {t.categories.title}

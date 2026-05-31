@@ -5,7 +5,7 @@ interface SEOProps {
   description: string;
   image?: string;
   url?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'profile';
   publishedTime?: string;
   modifiedTime?: string;
 }
@@ -46,7 +46,7 @@ export default function SEO({
     // JSON-LD 结构化数据
     const jsonLd = {
       '@context': 'https://schema.org',
-      '@type': type === 'article' ? 'Article' : 'WebSite',
+      '@type': type === 'article' ? 'Article' : type === 'profile' ? 'Person' : 'WebSite',
       name: title,
       description,
       url: url || window.location.href,
@@ -58,6 +58,9 @@ export default function SEO({
           '@type': 'Person',
           name: 'XiaoC',
         },
+      }),
+      ...(type === 'profile' && {
+        jobTitle: 'Software Engineer & Designer',
       }),
     };
 

@@ -8,6 +8,7 @@ import UserCard from '../components/UserCard';
 import ProfileTabs from '../components/ProfileTabs';
 import FavoritesList from '../components/FavoritesList';
 import CommentsList from '../components/CommentsList';
+import SEO from '../components/SEO';
 
 export default function Profile() {
   const t = useI18n();
@@ -96,6 +97,11 @@ export default function Profile() {
 
   return (
     <div className="w-full max-w-2xl mx-auto py-8 space-y-8">
+      <SEO
+        title="个人主页"
+        description="用户个人主页"
+        type="profile"
+      />
       {/* User Card */}
       <UserCard
         user={user}
