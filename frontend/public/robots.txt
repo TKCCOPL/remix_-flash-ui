@@ -1,0 +1,10 @@
+# frontend/public/robots.txt
+User-agent: *
+Allow: /
+
+# 禁止爬取管理页面
+Disallow: /admin
+Disallow: /login
+
+# Sitemap 位置
+Sitemap: https://yourdomain.com/sitemap.xml
