@@ -28,14 +28,14 @@ export default function SEO({
     setMeta('og:description', description);
     setMeta('og:type', type);
     setMeta('og:url', url || window.location.href);
-    setMeta('og:image', image || '/og-default.png');
+    setMeta('og:image', image || '/og-default.svg');
     setMeta('og:site_name', "XiaoC'blog");
 
     // Twitter Card 标签
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', title);
     setMeta('twitter:description', description);
-    setMeta('twitter:image', image || '/og-default.png');
+    setMeta('twitter:image', image || '/og-default.svg');
 
     // 文章特定标签
     if (type === 'article') {
@@ -50,7 +50,7 @@ export default function SEO({
       name: title,
       description,
       url: url || window.location.href,
-      image: image || '/og-default.png',
+      image: image || '/og-default.svg',
       ...(type === 'article' && {
         datePublished: publishedTime,
         dateModified: modifiedTime,

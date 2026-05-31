@@ -2,7 +2,7 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const SITE_URL = process.env.SITE_URL || 'https://yourdomain.com';
+const SITE_URL = process.env.SITE_URL || 'https://blog.xiaocc.dev';
 const API_URL = process.env.API_URL || 'http://127.0.0.1:8001';
 
 interface Post {

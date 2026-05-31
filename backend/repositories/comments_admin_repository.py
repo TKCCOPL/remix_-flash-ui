@@ -66,10 +66,20 @@ def update_comment_status(conn: sqlite3.Connection, comment_id: int, status: str
 
 
 def delete_comment_by_id(conn: sqlite3.Connection, comment_id: int) -> bool:
+    """Delete a comment and its child comments.
+
+    Uses explicit transaction for atomicity.
+    """
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
-    conn.commit()
-    return cursor.rowcount > 0
+    try:
+        # Delete child comments first, then the parent
+        cursor.execute("DELETE FROM comments WHERE parent_id = ?", (comment_id,))
+        cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def batch_delete_comments(conn: sqlite3.Connection, comment_ids: list[int]) -> int:

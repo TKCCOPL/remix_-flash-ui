@@ -7,4 +7,4 @@ Disallow: /admin
 Disallow: /login
 
 # Sitemap 位置
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://blog.xiaocc.dev/sitemap.xml

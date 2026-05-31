@@ -28,7 +28,7 @@ def seed_database():
 
     print("Seeding database with test data...")
 
-    # Insert categories
+    # Insert categories (use INSERT OR IGNORE to avoid conflicts)
     categories = [
         ('Technology', 'technology', 'Tech articles and tutorials'),
         ('Programming', 'programming', 'Programming tips and tricks'),
@@ -36,7 +36,7 @@ def seed_database():
         ('AI & ML', 'ai-ml', 'Artificial Intelligence and Machine Learning'),
     ]
     cursor.executemany(
-        'INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)',
+        'INSERT OR IGNORE INTO categories (name, slug, description) VALUES (?, ?, ?)',
         categories
     )
 

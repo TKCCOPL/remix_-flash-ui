@@ -1,375 +1,401 @@
 # 安全审查报告
 
-> 审查日期：2026-05-24
-> 审查范围：全栈代码（FastAPI 后端 + React 前端）
-> 审查状态：**已修复 ✅**
-> 审查结论：之前的安全问题已全部通过修复计划处理完毕，系统当前已具备安全部署条件
+**审查日期**: 2026-05-31 (更新)
+**审查范围**: `main...HEAD` (104个文件, +9107/-1286 行)
+**审查模式**: 最大努力级别 (recall-focused)
+**分支**: feature/favorite-button-style
+**审查状态**: ⚠️ 需要修复
+
 ---
 
-## 严重问题 (Critical)
+## 发现汇总
 
-### 1. 硬编码弱密码
+| 严重程度 | 数量 | 关键问题 |
+|---------|------|----------|
+| 严重 | 4 | 权限绕过、事务缺失、外键约束、测试失败 |
+| 中等 | 3 | 竞态条件、子评论级联、权限检查 |
+| 轻微 | 3 | Token 黑名单、外键启用、日志事务 |
 
-**位置**: `backend/services/auth_service.py:3-4`
+---
 
-```python
-ADMIN_USER = "admin"
-ADMIN_PASS = "123456"
-```
+## 严重问题 (4个)
+
+### 1. admin 路由缺少 is_admin 权限检查
+
+**文件**: `backend/dependencies/auth.py:44`
+**风险等级**: 🔴 严重
 
 **问题描述**:
-- 使用全球 Top 1 最常用密码 `123456`
-- 凭证直接硬编码在源代码中，会被提交到 Git 仓库
-- 无登录失败限制，可被暴力破解
+`require_login()` 函数仅检查用户是否为非 None，不检查 `is_admin` 标志。任何通过 GitHub/Gitee OAuth 登录的访客用户都可访问所有管理端点。
+
+**攻击路径**:
+1. 访客通过 GitHub/Gitee OAuth 登录
+2. 请求携带 `guest_session` cookie
+3. `get_current_user()` 优先匹配 guest session，返回 `{"is_admin": False}`
+4. `require_login()` 仅检查用户是否为非 None，通过鉴权
+5. 访客用户可执行管理操作（查看/删除用户、管理评论、查看统计数据）
+
+**受影响端点**:
+- `GET /api/admin/users` - 列出所有用户
+- `GET /api/admin/users/{user_id}` - 查看用户详情
+- `DELETE /api/admin/users/{user_id}` - 删除用户账号
+- `GET /api/admin/comments` - 列出所有评论
+- `PUT /api/admin/comments/{comment_id}/status` - 修改评论状态
+- `DELETE /api/admin/comments/{comment_id}` - 删除评论
+- `POST /api/admin/comments/batch-delete` - 批量删除评论
+- `GET /api/admin/stats/*` - 查看统计数据
 
 **修复建议**:
-
 ```python
-import os
-
-ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
-ADMIN_PASS = os.environ.get("ADMIN_PASS")  # 必须从环境变量读取，无默认值
+# backend/dependencies/auth.py
+def require_admin(request: Request) -> dict:
+    """Return current admin user or raise 403."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    if not user["is_admin"]:
+        raise HTTPException(status_code=403, detail="admin access required")
+    return user
 ```
+
+然后将 admin 路由中的 `Depends(require_login)` 替换为 `Depends(require_admin)`。
 
 ---
 
-### 2. Session Cookie 可伪造
+### 2. delete_post() 多步删除操作无事务包装
 
-**位置**: `backend/routers/auth_router.py:12-17`
-
-```python
-response.set_cookie(
-    "session",
-    "admin_logged_in",  # 固定字符串，任何人知道这个值都能伪造
-    httponly=True,
-    samesite="lax",
-)
-```
+**文件**: `backend/repositories/posts_repository.py:61`
+**风险等级**: 🔴 严重
 
 **问题描述**:
-- Cookie 值是固定字符串 `admin_logged_in`
-- 无签名验证，攻击者可直接伪造
-- 无过期时间，session 永久有效
-- 缺少 `secure=True` 标记，未强制 HTTPS
+删除帖子时先删 comments，再删 favorites，最后删 posts。三个 DELETE 操作后才调用一次 `conn.commit()`，中间无回滚点。
+
+**当前代码**:
+```python
+def delete_post(conn, post_id: int):
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM comments WHERE post_id = ?", (post_id,))
+    cursor.execute("DELETE FROM favorites WHERE post_id = ?", (post_id,))
+    cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+    conn.commit()
+    return cursor.rowcount > 0
+```
+
+**失败场景**:
+如果程序在删除过程中崩溃（如 comments 已删但 posts 未删），会导致数据不一致。
 
 **修复建议**:
-
 ```python
-import secrets
-import jwt
-from datetime import datetime, timedelta
-
-SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
-
-@router.post("/login")
-def login(response: Response, username: str = Form(...), password: str = Form(...)):
-    if not login_ok(username, password):
-        raise HTTPException(status_code=401, detail="invalid credentials")
-
-    token = jwt.encode(
-        {"exp": datetime.utcnow() + timedelta(hours=24), "user": "admin"},
-        SECRET_KEY,
-        algorithm="HS256"
-    )
-    response.set_cookie(
-        "session",
-        token,
-        httponly=True,
-        secure=True,      # 仅 HTTPS
-        samesite="lax",
-        max_age=86400     # 24 小时过期
-    )
-    return {"ok": True}
+def delete_post(conn, post_id: int):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM comments WHERE post_id = ?", (post_id,))
+        cursor.execute("DELETE FROM favorites WHERE post_id = ?", (post_id,))
+        cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    except Exception:
+        conn.rollback()
+        raise
 ```
 
 ---
 
-## 高风险问题 (High)
+### 3. 数据库外键缺少 ON DELETE CASCADE 约束
 
-### 3. 文件上传无大小限制
+**文件**: `backend/database.py:86`
+**风险等级**: 🔴 严重
 
-**位置**: `backend/routers/upload_router.py:16-30`
+**问题描述**:
+comments 和 favorites 表的外键定义缺少 `ON DELETE CASCADE`，依赖手动级联删除。
 
-```python
-@router.post("")
-async def upload_image(request: Request, file: UploadFile = File(...)):
-    # 无文件大小检查
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+**当前 Schema**:
+```sql
+CREATE TABLE comments (
+    ...
+    FOREIGN KEY (post_id) REFERENCES posts(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE favorites (
+    ...
+    FOREIGN KEY (post_id) REFERENCES posts(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 ```
 
-**问题描述**: 可上传任意大小文件，导致服务器磁盘耗尽（DoS 攻击向量）
+**失败场景**:
+当使用 DELETE FROM 直接删除帖子时，不会自动删除关联的评论和收藏，导致孤立数据。
 
 **修复建议**:
+```sql
+CREATE TABLE comments (
+    ...
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
-```python
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-
-@router.post("")
-async def upload_image(request: Request, file: UploadFile = File(...)):
-    _require_login(request)
-
-    contents = await file.read()
-    if len(contents) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
-
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Only image files are allowed")
-
-    # ... 继续处理
+CREATE TABLE favorites (
+    ...
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 ```
+
+**注意**: 需要同时执行 `PRAGMA foreign_keys = ON` 才能生效。
 
 ---
 
-### 4. 文件类型验证不严格
+### 4. Layout 测试缺少 AuthProvider 包裹
 
-**位置**: `backend/routers/upload_router.py:20`
+**文件**: `frontend/components/__tests__/Layout.test.tsx:8`
+**风险等级**: 🔴 严重 (测试失败)
 
-```python
-if not file.content_type.startswith("image/"):
+**问题描述**:
+Layout 组件内部调用 `useAuth()`，但测试未包裹 `AuthProvider`。
+
+**失败信息**:
+```
+useAuth must be used within AuthProvider
 ```
 
-**问题描述**: `Content-Type` 头由客户端提供，可被伪造。攻击者可上传恶意文件（如 HTML、SVG）实现 XSS。
+**当前代码**:
+```tsx
+render(
+  <BrowserRouter>
+    <PreferencesProvider>
+      <Layout />
+    </PreferencesProvider>
+  </BrowserRouter>
+);
+```
 
 **修复建议**:
+```tsx
+import { AuthProvider } from '../../context/AuthContext';
 
-```python
-import imghdr
-
-def validate_image(contents: bytes) -> bool:
-    """通过文件魔数验证是否为真实图片"""
-    return imghdr.what(None, h=contents) is not None
-
-# 在上传处理中使用
-if not validate_image(contents):
-    raise HTTPException(status_code=400, detail="Invalid image file")
-
-# 限制允许的扩展名
-ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
-ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'png'
-if ext not in ALLOWED_EXTENSIONS:
-    raise HTTPException(status_code=400, detail="File type not allowed")
+render(
+  <BrowserRouter>
+    <AuthProvider>
+      <PreferencesProvider>
+        <Layout />
+      </PreferencesProvider>
+    </AuthProvider>
+  </BrowserRouter>
+);
 ```
+
+**违反经验**: `lessons-learned.md` 中明确指出"使用 useAuth 的组件在测试中必须包裹 AuthProvider"
 
 ---
 
-### 5. 缺少 CORS 配置
+## 中等问题 (3个)
 
-**位置**: `backend/main.py`
+### 5. CommentSection 缺少竞态条件防护
 
-**问题描述**: 未配置 CORS 策略，无法防御跨站请求伪造攻击。
+**文件**: `frontend/components/CommentSection.tsx:34`
+**风险等级**: 🟡 中等
+
+**问题描述**:
+`loadComments` 函数没有 cleanup 机制，组件卸载后仍可能调用 `setState`。
+
+**对比**:
+- `CategoryPage.tsx` 和 `PostDetail.tsx` 都有 `cancelled` flag
+- `CommentSection.tsx` 缺少此防护
+
+**失败场景**:
+用户快速切换文章或离开页面时，组件可能已卸载但异步请求仍会返回并调用 `setComments`，导致内存泄漏警告。
 
 **修复建议**:
-
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
-```
-
----
-
-## 中风险问题 (Medium)
-
-### 6. 搜索日志记录用户 IP
-
-**位置**: `backend/routers/posts_router.py:44-48`
-
-```python
-user_ip = request.client.host if request and request.client else None
-results = search_posts_by_query(conn, q, user_ip, include_drafts=actual_include)
-```
-
-**问题描述**: 记录用户 IP 可能违反隐私法规（如 GDPR、个人信息保护法）
-
-**修复建议**: 移除 IP 记录，或对 IP 进行哈希处理
-
-```python
-import hashlib
-
-def hash_ip(ip: str) -> str:
-    return hashlib.sha256(ip.encode()).hexdigest()[:16]
-```
-
----
-
-### 7. 前端无效的 Bearer Token 逻辑
-
-**位置**: `frontend/api/upload.ts:6-10`
-
 ```typescript
-const token = localStorage.getItem('token');
-const headers: Record<string, string> = {};
-if (token) {
-  headers['Authorization'] = `Bearer ${token}`;
-}
-```
-
-**问题描述**: 后端不支持 Bearer Token 认证，此代码无效且造成混淆
-
-**修复建议**: 删除这段代码，统一使用 cookie 认证
-
-```typescript
-export const uploadApi = {
-  uploadImage: async (file: File): Promise<{ url: string }> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include'  // 包含 cookie
-    });
-
-    if (!response.ok) {
-      let errorMessage = 'Upload failed';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorMessage;
-      } catch (e) {
-        // ignore
-      }
-      throw new Error(errorMessage);
+useEffect(() => {
+  let cancelled = false;
+  const load = async () => {
+    try {
+      const data = await commentsApi.list(postId);
+      if (!cancelled) setComments(data);
+    } catch {
+      if (!cancelled) setError('Failed to load comments');
+    } finally {
+      if (!cancelled) setLoading(false);
     }
-
-    return response.json();
-  }
-};
+  };
+  void load();
+  return () => { cancelled = true; };
+}, [postId]);
 ```
 
 ---
 
-### 8. 缺少请求频率限制
+### 6. delete_comment_by_id 未处理子评论级联删除
 
-**问题描述**: 所有 API 端点无 rate limiting，易受暴力破解和 DoS 攻击
+**文件**: `backend/repositories/comments_admin_repository.py:68`
+**风险等级**: 🟡 中等
+
+**问题描述**:
+管理员删除父评论时，`delete_comment_by_id()` 只删除指定评论，不删除子评论。
+
+**对比**:
+- `comments_repository.py` 的 `delete_comment_record()` 会先删子评论
+- `comments_admin_repository.py` 的 `delete_comment_by_id()` 不处理子评论
+
+**失败场景**:
+管理员批量删除时可能产生孤立子评论（`parent_id` 指向已删除的评论）。
 
 **修复建议**:
-
 ```python
-# 安装 slowapi: pip install slowapi
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+def delete_comment_by_id(conn, comment_id: int):
+    cursor = conn.cursor()
+    # 先删除子评论
+    cursor.execute("DELETE FROM comments WHERE parent_id = ?", (comment_id,))
+    # 再删除父评论
+    cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
+    conn.commit()
+    return cursor.rowcount > 0
+```
 
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
+---
 
-@router.post("/login")
-@limiter.limit("5/minute")  # 每分钟最多 5 次登录尝试
-def login(response: Response, username: str = Form(...), password: str = Form(...)):
+### 7. admin 路由使用 require_login 而非 require_admin
+
+**文件**: `backend/routers/admin_router.py:18`
+**风险等级**: 🟡 中等
+
+**问题描述**:
+所有 admin 端点均使用 `Depends(require_login)`，但 `require_login` 不检查 `is_admin` 标志。
+
+**受影响端点**:
+- `backend/routers/admin_router.py`
+- `backend/routers/admin_comments_router.py`
+- `backend/routers/admin_stats_router.py`
+
+**修复建议**:
+修复 #1 后，将所有 admin 路由中的 `Depends(require_login)` 替换为 `Depends(require_admin)`。
+
+---
+
+## 轻微问题 (3个)
+
+### 8. Token 黑名单使用内存存储
+
+**文件**: `backend/services/oauth_service.py:1`
+**风险等级**: 🟢 轻微
+
+**问题描述**:
+`GUEST_BLACKLISTED_TOKENS` 和 `BLACKLISTED_TOKENS` 均为进程内字典。服务重启后黑名单清空，已撤销的 token 在过期前可再次使用。
+
+**影响范围**:
+对于个人博客项目可接受，但应在文档中说明此行为。
+
+**建议**:
+在 README 或 CLAUDE.md 中说明此限制。
+
+---
+
+### 9. init_db() 未启用 PRAGMA foreign_keys = ON
+
+**文件**: `backend/database.py:20`
+**风险等级**: 🟢 轻微
+
+**问题描述**:
+`init_db()` 函数未执行 `PRAGMA foreign_keys = ON`，而 `get_db()` 中有启用。
+
+**影响范围**:
+数据库迁移时外键约束不生效，可能导致孤立数据。
+
+**修复建议**:
+```python
+def init_db():
+    os.makedirs('data', exist_ok=True)
+    conn = sqlite3.connect(DB_FILE)
+    conn.execute("PRAGMA foreign_keys = ON")  # 添加此行
+    cursor = conn.cursor()
     # ...
 ```
 
 ---
 
-## 低风险问题 (Low)
+### 10. 搜索日志记录无事务保护
 
-### 9. 密码暴露在文档中
+**文件**: `backend/repositories/posts_repository.py:150`
+**风险等级**: 🟢 轻微
 
-**位置**: `CLAUDE.md`
+**问题描述**:
+`log_search()` 独立 commit，搜索结果返回和日志记录不是原子操作。
 
-```
-Credentials: admin / 123456
-```
-
-**修复建议**: 从文档中移除密码，改为说明需要设置环境变量
-
----
-
-### 10. 数据库文件权限
-
-**问题描述**: SQLite 数据库文件可能被其他用户读取
-
-**修复建议**:
-
-```bash
-chmod 600 backend/data/blog.sqlite3
-```
+**影响范围**:
+日志丢失不影响核心功能，但可能导致搜索统计不准确。
 
 ---
 
-## 部署检查清单
+## 代码质量亮点
 
-### VPS 部署前必做
+以下安全实践值得肯定：
 
-| 步骤 | 任务 | 优先级 |
-|------|------|--------|
-| 1 | 设置环境变量（ADMIN_PASS、SECRET_KEY） | 必须 |
-| 2 | 配置 Nginx 反向代理 + HTTPS | 必须 |
-| 3 | 修复认证机制漏洞 | 必须 |
-| 4 | 添加文件上传大小限制 | 必须 |
-| 5 | 配置 CORS 策略 | 必须 |
-| 6 | 配置防火墙（仅开放 80/443） | 必须 |
-| 7 | 设置数据库定期备份 | 强烈建议 |
-| 8 | 添加请求频率限制 | 强烈建议 |
-| 9 | 配置日志轮转 | 建议 |
-| 10 | 移除搜索日志中的 IP 记录 | 建议 |
-
-### 环境变量配置示例
-
-```bash
-# .env 文件（不要提交到 Git）
-ADMIN_USER=admin
-ADMIN_PASS=your_strong_password_here
-SECRET_KEY=your_random_64_char_string_here
-ALLOWED_ORIGINS=https://yourdomain.com
-```
-
-### Nginx 配置示例
-
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com;
-
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-
-    # 前端静态文件
-    location / {
-        root /path/to/dist;
-        try_files $uri $uri/ /index.html;
-    }
-
-    # API 代理
-    location /api/ {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # 上传文件
-    location /api/uploads/ {
-        proxy_pass http://127.0.0.1:8000;
-        client_max_body_size 5M;
-    }
-}
-```
+- **恒定时间比较**: `auth_service.py` 使用 `secrets.compare_digest` 防止时序攻击
+- **fail-closed 设计**: `ADMIN_PASS` 未设置时拒绝所有登录，而非使用默认密码
+- **OAuth state 参数**: 使用 `secrets.token_urlsafe(32)` 生成高熵 state，数据库存储并验证，10 分钟过期清理
+- **LIKE 转义**: `posts_repository.py` 中的 `_escape_like` 函数正确转义 `%`、`_`、`\` 特殊字符
+- **GDPR 合规**: 搜索日志对 IP 进行 SHA-256 单向哈希处理
+- **文件上传安全**: 大小限制、扩展名白名单、魔数验证、UUID 文件名
+- **Pydantic 输入验证**: 所有请求体使用 Pydantic 模型，有字段长度和格式约束
+- **CSRF 保护**: 双重提交 Cookie 模式实现正确，前端 apiFetch 自动处理
+- **安全响应头**: 完整的 CSP/HSTS/X-Frame-Options 等
 
 ---
 
-## 总结
+## 修复优先级
 
-| 风险等级 | 数量 | 是否阻塞部署 |
-|---------|------|------------|
-| Critical | 2 | 0（全修复） |
-| High | 3 | 0（全修复） |
-| Medium | 3 | 0（全修复） |
-| Low | 2 | 0（全修复） |
+| 优先级 | 问题 | 预计工作量 |
+|--------|------|-----------|
+| P0 - 立即修复 | #1 admin 权限绕过 | 30 分钟 |
+| P0 - 立即修复 | #2 事务包装 | 30 分钟 |
+| P1 - 高优先级 | #3 ON DELETE CASCADE | 1 小时 |
+| P1 - 高优先级 | #4 测试修复 | 15 分钟 |
+| P2 - 中优先级 | #5 竞态条件 | 15 分钟 |
+| P2 - 中优先级 | #6 子评论级联 | 15 分钟 |
+| P2 - 中优先级 | #7 require_admin | 30 分钟 |
+| P3 - 低优先级 | #8-#10 轻微问题 | 30 分钟 |
 
-**最终建议**: 本报告中列举的 10 项安全隐患已由自动化助手全部处理完毕。后续请配置正确的生产环境变量（参看 `backend/.env.example`）并依照部署检查清单执行上线，即可安全进入生产环境。
+---
+
+## 审查结论
+
+**整体评估**: ⚠️ 需要修复
+
+代码在 CSRF 保护、SQL 注入防护、OAuth 流程等方面的安全实现质量较高。但存在一个严重的授权漏洞：admin 管理路由缺少 `is_admin` 权限检查，导致任何 OAuth 登录的访客用户都可以执行管理操作。
+
+**建议**:
+1. **立即修复** admin 权限绕过问题
+2. **尽快修复** 事务和级联删除问题
+3. **安排时间** 修复竞态条件和测试问题
+
+---
+
+## 历史审查记录
+
+### 2026-05-24 审查 (已完成)
+
+| 风险等级 | 数量 | 状态 |
+|---------|------|------|
+| Critical | 2 | ✅ 已修复 |
+| High | 3 | ✅ 已修复 |
+| Medium | 3 | ✅ 已修复 |
+| Low | 2 | ✅ 已修复 |
+
+**已修复问题**:
+1. 硬编码弱密码 → 环境变量配置
+2. Session Cookie 可伪造 → JWT 签名
+3. 文件上传无大小限制 → 5MB 限制
+4. 文件类型验证不严格 → 魔数验证
+5. 缺少 CORS 配置 → 白名单配置
+6. 搜索日志记录用户 IP → SHA-256 哈希
+7. 前端无效的 Bearer Token → 删除
+8. 缺少请求频率限制 → slowapi 限制
+9. 密码暴露在文档中 → 移除
+10. 数据库文件权限 → chmod 600
+
+---
+
+*报告生成时间: 2026-05-31*
+*审查工具: Claude Code (mimo-v2.5[1m])*

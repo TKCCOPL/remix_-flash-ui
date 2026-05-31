@@ -49,6 +49,20 @@ def require_login(request: Request) -> dict:
     return user
 
 
+def require_admin(request: Request) -> dict:
+    """Return current admin user or raise 401/403.
+
+    Best practice: hierarchical dependency injection pattern.
+    See: https://fastapi.tiangolo.com/tutorial/dependencies/
+    """
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    if not user["is_admin"]:
+        raise HTTPException(status_code=403, detail="admin access required")
+    return user
+
+
 def resolve_user_id(user: dict, conn: sqlite3.Connection) -> int:
     """Resolve a user dict to a database user_id.
 

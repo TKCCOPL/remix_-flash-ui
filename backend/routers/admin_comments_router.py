@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import sqlite3
 
 from database import get_db
-from dependencies.auth import require_login
+from dependencies.auth import require_admin
 from repositories.comments_admin_repository import (
     get_comments_with_filter,
     count_comments,
@@ -41,7 +41,7 @@ def list_comments_route(
     status: str = None,
     search: str = None,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     comments = get_comments_with_filter(conn, status=status, search=search, skip=skip, limit=limit)
     total = count_comments(conn, status=status, search=search)
@@ -53,7 +53,7 @@ def update_status_route(
     comment_id: int,
     body: CommentStatusUpdate,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     if body.status not in ("approved", "rejected", "pending"):
         raise HTTPException(status_code=400, detail="Invalid status")
@@ -67,7 +67,7 @@ def delete_comment_route(
     comment_id: int,
     request: Request,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     if not delete_comment_by_id(conn, comment_id):
         raise HTTPException(status_code=404, detail="Comment not found")
@@ -78,7 +78,7 @@ def delete_comment_route(
 def batch_delete_route(
     body: BatchDeleteRequest,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     if not body.ids:
         raise HTTPException(status_code=400, detail="No IDs provided")
@@ -90,7 +90,7 @@ def batch_delete_route(
 def list_filters_route(
     request: Request,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return get_filters(conn)
 
@@ -99,7 +99,7 @@ def list_filters_route(
 def add_filter_route(
     body: FilterCreate,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return add_filter(conn, body.filter_type, body.pattern, body.action)
 
@@ -109,7 +109,7 @@ def delete_filter_route(
     filter_id: int,
     request: Request,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     if not delete_filter(conn, filter_id):
         raise HTTPException(status_code=404, detail="Filter not found")

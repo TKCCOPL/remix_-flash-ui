@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from database import get_db
-from dependencies.auth import require_login
+from dependencies.auth import require_admin
 from services.admin_service import get_users_list, get_user_detail, delete_user
 
 router = APIRouter()
@@ -15,7 +15,7 @@ def list_users_route(
     search: str = None,
     provider: str = None,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return get_users_list(conn, skip=skip, limit=limit, search=search, provider=provider)
 
@@ -25,7 +25,7 @@ def get_user_route(
     user_id: int,
     request: Request,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     try:
         return get_user_detail(conn, user_id)
@@ -38,7 +38,7 @@ def delete_user_route(
     user_id: int,
     request: Request,
     conn=Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     try:
         return delete_user(conn, user_id)

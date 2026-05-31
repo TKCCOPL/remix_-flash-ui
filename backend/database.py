@@ -20,6 +20,9 @@ def get_db():
 def init_db():
     os.makedirs('data', exist_ok=True)
     conn = sqlite3.connect(DB_FILE)
+    # Enable foreign keys for this connection (must be per-connection)
+    # Best practice: https://www.sqlite.org/foreignkeys.html
+    conn.execute("PRAGMA foreign_keys = ON")
     cursor = conn.cursor()
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS posts (
@@ -90,9 +93,11 @@ def init_db():
         user_id INTEGER NOT NULL,
         content TEXT NOT NULL,
         status TEXT DEFAULT 'approved',
+        parent_id INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
     )
     ''')
 
@@ -102,8 +107,8 @@ def init_db():
         post_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(id),
-        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE(post_id, user_id)
     )
     ''')
@@ -126,9 +131,12 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, status, created_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id)')
 
+    # Check if parent_id column exists for migration (for existing databases)
     cursor.execute("PRAGMA table_info(comments)")
     comment_columns = {row[1] for row in cursor.fetchall()}
     if "parent_id" not in comment_columns:
+        # For existing databases, add parent_id without CASCADE (SQLite limitation)
+        # New databases will have ON DELETE CASCADE from CREATE TABLE
         cursor.execute("ALTER TABLE comments ADD COLUMN parent_id INTEGER REFERENCES comments(id)")
 
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id)')

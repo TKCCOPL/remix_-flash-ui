@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request
 import sqlite3
 
 from database import get_db
-from dependencies.auth import require_login
+from dependencies.auth import require_admin
 from services.stats_service import (
     get_overview,
     get_comments_trend,
@@ -17,7 +17,7 @@ router = APIRouter()
 def get_overview_route(
     request: Request,
     conn: sqlite3.Connection = Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return get_overview(conn)
 
@@ -26,7 +26,7 @@ def get_overview_route(
 def get_comments_trend_route(
     request: Request,
     conn: sqlite3.Connection = Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return {"trend": get_comments_trend(conn)}
 
@@ -35,7 +35,7 @@ def get_comments_trend_route(
 def get_popular_posts_route(
     request: Request,
     conn: sqlite3.Connection = Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return {"posts": get_popular_posts(conn)}
 
@@ -44,6 +44,6 @@ def get_popular_posts_route(
 def get_category_distribution_route(
     request: Request,
     conn: sqlite3.Connection = Depends(get_db),
-    _=Depends(require_login),
+    _=Depends(require_admin),
 ):
     return {"categories": get_category_distribution(conn)}

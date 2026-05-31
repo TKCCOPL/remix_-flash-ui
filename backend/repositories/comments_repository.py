@@ -58,12 +58,20 @@ def get_comments_by_post_id(conn, post_id: int, skip: int = 0, limit: int = 20):
 
 
 def delete_comment_record(conn, comment_id: int):
+    """Delete a comment and its child comments.
+
+    Uses explicit transaction for atomicity.
+    """
     cursor = conn.cursor()
-    # Delete child comments first, then the parent
-    cursor.execute("DELETE FROM comments WHERE parent_id = ?", (comment_id,))
-    cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
-    conn.commit()
-    return cursor.rowcount > 0
+    try:
+        # Delete child comments first, then the parent
+        cursor.execute("DELETE FROM comments WHERE parent_id = ?", (comment_id,))
+        cursor.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def get_comment_count_by_post(conn, post_id: int):

@@ -43,8 +43,28 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   }, [postId]);
 
   useEffect(() => {
-    void loadComments();
-  }, [loadComments]);
+    // Best practice: use cancelled flag to prevent race conditions
+    // https://react.dev/reference/react/useEffect#preventing-an-fetch-from-reconnecting
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const data = await commentsApi.list(postId);
+        if (!cancelled) {
+          setComments(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Failed to load comments');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [postId]);
 
   const handleSubmit = async () => {
     const trimmed = content.trim();

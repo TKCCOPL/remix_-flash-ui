@@ -153,15 +153,23 @@ def get_user_recent_comments(
 
 
 def delete_user_cascade(conn: sqlite3.Connection, user_id: int) -> bool:
+    """Delete a user and their associated comments and favorites.
+
+    Uses explicit transaction for atomicity.
+    """
     cursor = conn.cursor()
-    cursor.execute("SELECT oauth_provider FROM users WHERE id = ?", (user_id,))
-    row = cursor.fetchone()
-    if not row:
-        return False
-    if row["oauth_provider"] == "admin":
-        raise ValueError("Cannot delete admin account")
-    cursor.execute("DELETE FROM comments WHERE user_id = ?", (user_id,))
-    cursor.execute("DELETE FROM favorites WHERE user_id = ?", (user_id,))
-    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
-    conn.commit()
-    return True
+    try:
+        cursor.execute("SELECT oauth_provider FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+        if not row:
+            return False
+        if row["oauth_provider"] == "admin":
+            raise ValueError("Cannot delete admin account")
+        cursor.execute("DELETE FROM comments WHERE user_id = ?", (user_id,))
+        cursor.execute("DELETE FROM favorites WHERE user_id = ?", (user_id,))
+        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise

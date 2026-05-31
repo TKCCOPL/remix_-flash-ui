@@ -59,12 +59,21 @@ def update_post(conn, post_id: int, title: str | None, content: str | None, cate
 
 
 def delete_post(conn, post_id: int):
+    """Delete a post and its associated comments and favorites.
+
+    Uses explicit transaction for atomicity.
+    Best practice: https://www.sqlite.org/foreignkeys.html
+    """
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM comments WHERE post_id = ?", (post_id,))
-    cursor.execute("DELETE FROM favorites WHERE post_id = ?", (post_id,))
-    cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
-    conn.commit()
-    return cursor.rowcount > 0
+    try:
+        cursor.execute("DELETE FROM comments WHERE post_id = ?", (post_id,))
+        cursor.execute("DELETE FROM favorites WHERE post_id = ?", (post_id,))
+        cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def get_posts_for_archive(conn, include_drafts: bool = False):
