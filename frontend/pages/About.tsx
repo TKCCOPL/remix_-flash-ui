@@ -52,17 +52,8 @@ export default function About() {
           </div>
 
           <div className="mt-10 pt-10 border-t border-stone-100 dark:border-stone-800 flex gap-4">
-            <a href="#" title="GitHub" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">
+            <a href="https://github.com/TKCCOPL/remix_-flash-ui" target="_blank" rel="noopener noreferrer" title="GitHub" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">
               <Globe className="w-5 h-5" />
-            </a>
-            <a href="#" title="Twitter" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-[#1DA1F2] hover:text-white transition-colors">
-              <ExternalLink className="w-5 h-5" />
-            </a>
-            <a href="#" title="LinkedIn" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-[#0A66C2] hover:text-white transition-colors">
-              <Link2 className="w-5 h-5" />
-            </a>
-            <a href="#" title="Email" className="p-2 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-300 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">
-              <Mail className="w-5 h-5" />
             </a>
           </div>
         </div>

@@ -274,8 +274,7 @@ export default function Layout() {
             © {new Date().getFullYear()} {t.brand.name}{t.brand.suffix} {t.footer.rights}
           </p>
           <div className="mt-4 md:mt-0 space-x-4">
-            <a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{t.footer.twitter}</a>
-            <a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{t.footer.github}</a>
+            <a href="https://github.com/TKCCOPL/remix_-flash-ui" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{t.footer.github}</a>
           </div>
         </div>
       </footer>
