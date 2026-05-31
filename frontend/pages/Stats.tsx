@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Users, MessageCircle, Folder } from 'lucide-react';
+import { FileText, Users, MessageCircle, Folder, Eye, Heart } from 'lucide-react';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
@@ -72,6 +72,8 @@ export default function Stats() {
     { icon: FileText, label: t.admin.stats.overview.posts, value: overview?.post_count ?? 0, color: 'text-indigo-600 dark:text-indigo-400' },
     { icon: Users, label: t.admin.stats.overview.users, value: overview?.user_count ?? 0, color: 'text-green-600 dark:text-green-400' },
     { icon: MessageCircle, label: t.admin.stats.overview.comments, value: overview?.comment_count ?? 0, color: 'text-amber-600 dark:text-amber-400' },
+    { icon: Eye, label: t.admin.stats.overview.views, value: overview?.total_views ?? 0, color: 'text-cyan-600 dark:text-cyan-400' },
+    { icon: Heart, label: t.admin.stats.overview.favorites, value: overview?.total_favorites ?? 0, color: 'text-rose-600 dark:text-rose-400' },
     { icon: Folder, label: t.admin.stats.overview.categories, value: overview?.category_count ?? 0, color: 'text-purple-600 dark:text-purple-400' },
   ];
 
@@ -84,7 +86,7 @@ export default function Stats() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {statCards.map(({ icon: Icon, label, value, color }) => (
           <div key={label} className="bg-white dark:bg-stone-900 rounded-2xl p-5 border border-stone-200/50 dark:border-stone-800/50 shadow-sm">
             <div className="flex items-center gap-3 mb-3">

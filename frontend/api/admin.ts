@@ -102,6 +102,8 @@ export type StatsOverview = {
   user_count: number;
   comment_count: number;
   category_count: number;
+  total_views: number;
+  total_favorites: number;
 };
 
 export type CommentsTrend = {

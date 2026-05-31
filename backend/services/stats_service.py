@@ -8,7 +8,7 @@ def get_overview(conn: sqlite3.Connection) -> dict:
     cursor.execute("SELECT COUNT(*) FROM posts WHERE status = 'published'")
     post_count = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM users WHERE oauth_provider != 'admin'")
+    cursor.execute("SELECT COUNT(*) FROM users")
     user_count = cursor.fetchone()[0]
 
     cursor.execute("SELECT COUNT(*) FROM comments")
@@ -17,11 +17,19 @@ def get_overview(conn: sqlite3.Connection) -> dict:
     cursor.execute("SELECT COUNT(*) FROM categories")
     category_count = cursor.fetchone()[0]
 
+    cursor.execute("SELECT COALESCE(SUM(view_count), 0) FROM posts WHERE status = 'published'")
+    total_views = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM favorites")
+    total_favorites = cursor.fetchone()[0]
+
     return {
         "post_count": post_count,
         "user_count": user_count,
         "comment_count": comment_count,
         "category_count": category_count,
+        "total_views": total_views,
+        "total_favorites": total_favorites,
     }
 
 
