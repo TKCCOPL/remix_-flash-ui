@@ -94,10 +94,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 signed = _sign_token(token)
                 response.set_cookie(
                     CSRF_COOKIE_NAME, signed,
-                    httponly=False,  # JS needs to read it
+                    httponly=False,  # JS needs to read it for double-submit
                     secure=_is_secure_request(request),
                     samesite="lax",
                     max_age=86400,
+                    path="/",  # Explicit: cookie available on all paths
                 )
             return response
 

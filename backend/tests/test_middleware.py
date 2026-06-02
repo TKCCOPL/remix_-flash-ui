@@ -180,6 +180,25 @@ class TestCSRFMiddlewareUnsafeMethods:
         assert response.status_code == 403
 
 
+class TestCSRFCookieAttributes:
+    def test_cookie_has_explicit_attributes(self):
+        """CSRF cookie must have correct security attributes."""
+        client = TestClient(app)
+        response = client.get("/api/posts")
+        set_cookie = response.headers.get("set-cookie", "")
+        # Starlette defaults path=/ but we set it explicitly for clarity
+        assert CSRF_COOKIE_NAME in set_cookie
+        assert "samesite=lax" in set_cookie.lower()
+        assert "httponly" not in set_cookie.lower()
+
+    def test_cookie_secure_on_https(self):
+        """CSRF cookie must have Secure flag on HTTPS requests."""
+        client = TestClient(app, headers={"x-forwarded-proto": "https"})
+        response = client.get("/api/posts")
+        set_cookie = response.headers.get("set-cookie", "")
+        assert "secure" in set_cookie.lower()
+
+
 class TestSecurityHeadersMiddleware:
     def test_security_headers_on_non_secure_request(self):
         client = TestClient(app)
