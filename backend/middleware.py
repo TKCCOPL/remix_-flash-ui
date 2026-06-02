@@ -5,21 +5,44 @@ import hmac
 import logging
 import os
 import secrets
+import sys
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
+# ── CSRF Secret Loading ────────────────────────────────────────────────────
+# Primary secret signs new tokens. Fallbacks verify old tokens during rotation.
+# Rotation process:
+#   1. Deploy with CSRF_SECRET=<new>, CSRF_SECRET_FALLBACKS=<old>
+#   2. Wait grace period (e.g., 24h for max_age to expire old cookies)
+#   3. Deploy with CSRF_SECRET=<new>, CSRF_SECRET_FALLBACKS=<empty>
 CSRF_SECRET = os.environ.get("CSRF_SECRET")
+CSRF_SECRET_FALLBACKS = os.environ.get("CSRF_SECRET_FALLBACKS", "")
+
 if not CSRF_SECRET:
-    logger.critical(
-        "CSRF_SECRET environment variable is NOT set. "
-        "Generated a random secret for this process. "
+    logger.warning(
+        "CSRF_SECRET is NOT set. Generated a random secret for this process. "
         "All CSRF tokens will become invalid on restart. "
         "Set CSRF_SECRET in your .env or environment for production."
     )
     CSRF_SECRET = secrets.token_hex(32)
+
+if len(CSRF_SECRET) < 32:
+    logger.critical(
+        f"CSRF_SECRET is too short ({len(CSRF_SECRET)} chars, minimum 32). "
+        "NIST SP 800-57 requires >= 256 bits (32 bytes) for HMAC-SHA256. "
+        "Generate one: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+    sys.exit(1)
+
+# Build secrets list: [primary, fallback1, fallback2, ...]
+CSRF_SECRETS: list[str] = [CSRF_SECRET] + [
+    s.strip() for s in CSRF_SECRET_FALLBACKS.split(",") if s.strip()
+]
+
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_HEADER_NAME = "x-csrf-token"
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -38,18 +61,21 @@ def generate_csrf_token() -> str:
 
 
 def _sign_token(token: str) -> str:
-    """Sign a CSRF token so it can be validated."""
-    sig = hmac.new(CSRF_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()
+    """Sign a CSRF token with the PRIMARY secret (newest key)."""
+    sig = hmac.new(CSRF_SECRETS[0].encode(), token.encode(), hashlib.sha256).hexdigest()
     return f"{token}.{sig}"
 
 
 def _verify_token(signed: str) -> bool:
-    """Verify a signed CSRF token."""
+    """Verify a signed CSRF token against ALL secrets (primary + fallbacks)."""
     if "." not in signed:
         return False
     token, sig = signed.rsplit(".", 1)
-    expected = hmac.new(CSRF_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(sig, expected)
+    for secret in CSRF_SECRETS:
+        expected = hmac.new(secret.encode(), token.encode(), hashlib.sha256).hexdigest()
+        if hmac.compare_digest(sig, expected):
+            return True
+    return False
 
 
 class CSRFMiddleware(BaseHTTPMiddleware):
