@@ -1,3 +1,7 @@
+import hashlib
+import hmac
+import secrets
+
 from fastapi.testclient import TestClient
 from main import app
 from middleware import (
@@ -35,6 +39,48 @@ class TestCSRFTokenUtilities:
         parts = signed.split(".")
         tampered = generate_csrf_token() + "." + parts[1]
         assert _verify_token(tampered) is False
+
+
+class TestCSRFKeyRotation:
+    def test_sign_with_primary_verify_with_primary(self):
+        """Tokens signed with primary secret should always verify."""
+        token = generate_csrf_token()
+        signed = _sign_token(token)
+        assert _verify_token(signed) is True
+
+    def test_verify_with_fallback_secret(self):
+        """Tokens signed with an old (fallback) secret should still verify."""
+        import middleware
+        original = middleware.CSRF_SECRETS[:]
+        try:
+            # Simulate: primary is "new_key", fallback is the old primary
+            old_secret = secrets.token_hex(32)
+            middleware.CSRF_SECRETS = [secrets.token_hex(32), old_secret]
+            # Sign with old secret
+            token = generate_csrf_token()
+            sig = hmac.new(old_secret.encode(), token.encode(), hashlib.sha256).hexdigest()
+            signed = f"{token}.{sig}"
+            # Should still verify because old_secret is in fallbacks
+            assert _verify_token(signed) is True
+        finally:
+            middleware.CSRF_SECRETS = original
+
+    def test_sign_always_uses_primary(self):
+        """New tokens should always be signed with the primary (first) secret."""
+        import middleware
+        original = middleware.CSRF_SECRETS[:]
+        try:
+            primary = secrets.token_hex(32)
+            fallback = secrets.token_hex(32)
+            middleware.CSRF_SECRETS = [primary, fallback]
+            token = generate_csrf_token()
+            signed = _sign_token(token)
+            # Verify the signature was made with primary
+            raw, sig = signed.rsplit(".", 1)
+            expected = hmac.new(primary.encode(), token.encode(), hashlib.sha256).hexdigest()
+            assert hmac.compare_digest(sig, expected)
+        finally:
+            middleware.CSRF_SECRETS = original
 
 
 class TestCSRFMiddlewareSafeMethods:
@@ -132,6 +178,25 @@ class TestCSRFMiddlewareUnsafeMethods:
         client = TestClient(app)
         response = client.patch("/api/posts/1")
         assert response.status_code == 403
+
+
+class TestCSRFCookieAttributes:
+    def test_cookie_has_explicit_attributes(self):
+        """CSRF cookie must have correct security attributes."""
+        client = TestClient(app)
+        response = client.get("/api/posts")
+        set_cookie = response.headers.get("set-cookie", "")
+        # Starlette defaults path=/ but we set it explicitly for clarity
+        assert CSRF_COOKIE_NAME in set_cookie
+        assert "samesite=lax" in set_cookie.lower()
+        assert "httponly" not in set_cookie.lower()
+
+    def test_cookie_secure_on_https(self):
+        """CSRF cookie must have Secure flag on HTTPS requests."""
+        client = TestClient(app, headers={"x-forwarded-proto": "https"})
+        response = client.get("/api/posts")
+        set_cookie = response.headers.get("set-cookie", "")
+        assert "secure" in set_cookie.lower()
 
 
 class TestSecurityHeadersMiddleware:

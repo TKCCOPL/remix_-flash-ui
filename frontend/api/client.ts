@@ -41,19 +41,45 @@ function resolveApiUrl(path: string): string {
   return `${baseUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
 }
 
+/**
+ * Ensure the CSRF cookie is set by making a lightweight HEAD request.
+ * The backend middleware sets the cookie on any safe method response.
+ */
+async function ensureCsrfCookie(): Promise<void> {
+  if (getCookieValue(CSRF_COOKIE_NAME)) return;
+  try {
+    await fetch(resolveApiUrl('/api/posts'), {
+      method: 'HEAD',
+      credentials: 'include',
+      cache: 'no-store',
+    });
+  } catch {
+    // Best effort — if this fails, the main request will surface the error
+  }
+}
+
+/**
+ * Extract the raw token from a signed CSRF cookie value.
+ * Cookie format: "{raw_token}.{hmac_signature}"
+ */
+function extractRawCsrfToken(signedToken: string): string {
+  const lastDot = signedToken.lastIndexOf('.');
+  return lastDot > 0 ? signedToken.substring(0, lastDot) : signedToken;
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   const method = (init?.method ?? 'GET').toUpperCase();
   if (!headers.has('Content-Type') && shouldUseJsonContentType(init?.body)) {
     headers.set('Content-Type', 'application/json');
   }
+
+  // For unsafe methods, ensure CSRF cookie exists and inject header
   if (!SAFE_METHODS.has(method)) {
+    await ensureCsrfCookie();
     const csrfToken = getCookieValue(CSRF_COOKIE_NAME);
     if (csrfToken && !headers.has(CSRF_HEADER_NAME)) {
-      // The cookie value is signed as "token.signature" — extract the raw token
-      // portion to match what the backend CSRF middleware expects in the header.
-      const rawToken = csrfToken.includes('.') ? csrfToken.substring(0, csrfToken.lastIndexOf('.')) : csrfToken;
-      headers.set(CSRF_HEADER_NAME, rawToken);
+      headers.set(CSRF_HEADER_NAME, extractRawCsrfToken(csrfToken));
     }
   }
 
@@ -64,6 +90,42 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers,
   });
 
+  // Auto-retry on CSRF failure (token may have expired or rotated)
+  if (response.status === 403 && !SAFE_METHODS.has(method)) {
+    try {
+      const body = await response.clone().json().catch(() => null);
+      if (body?.detail?.includes('CSRF')) {
+        // Force-refresh: make a HEAD request to get a fresh CSRF cookie
+        await fetch(resolveApiUrl('/api/posts'), {
+          method: 'HEAD',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        // Re-read the (possibly refreshed) cookie and retry
+        const freshToken = getCookieValue(CSRF_COOKIE_NAME);
+        if (freshToken) {
+          headers.set(CSRF_HEADER_NAME, extractRawCsrfToken(freshToken));
+        }
+        // Retry once with fresh token
+        const retryResponse = await fetch(resolveApiUrl(path), {
+          credentials: 'include',
+          cache: 'no-store',
+          ...init,
+          headers,
+        });
+        if (retryResponse.ok) {
+          return handleResponse<T>(retryResponse);
+        }
+      }
+    } catch {
+      // Retry failed, fall through to normal error handling
+    }
+  }
+
+  return handleResponse<T>(response);
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type') ?? '';
 
   if (!response.ok) {
