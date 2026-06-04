@@ -67,8 +67,9 @@ def verify_guest_token(token: str) -> dict | None:
                         return None
                 finally:
                     conn.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Guest token blacklist DB check failed: {e}")
+                return None  # Fail-closed: DB unavailable = reject token
         return payload
     except JWTError:
         return None
