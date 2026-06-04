@@ -74,6 +74,12 @@ def init_db():
     )
     ''')
 
+    # ── OAuth PKCE migration ────────────────────────────────────────────────
+    cursor.execute("PRAGMA table_info(oauth_states)")
+    oauth_columns = {row[1] for row in cursor.fetchall()}
+    if "code_verifier" not in oauth_columns:
+        cursor.execute("ALTER TABLE oauth_states ADD COLUMN code_verifier TEXT")
+
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
