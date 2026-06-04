@@ -12,11 +12,16 @@ load_dotenv(env_path)
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", "")
 GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "")
-GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI", "http://localhost:8000/api/oauth/github/callback")
+GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI", "http://localhost:8001/api/oauth/github/callback")
 
 GITEE_CLIENT_ID = os.environ.get("GITEE_CLIENT_ID", "")
 GITEE_CLIENT_SECRET = os.environ.get("GITEE_CLIENT_SECRET", "")
-GITEE_REDIRECT_URI = os.environ.get("GITEE_REDIRECT_URI", "http://localhost:8000/api/oauth/gitee/callback")
+GITEE_REDIRECT_URI = os.environ.get("GITEE_REDIRECT_URI", "http://localhost:8001/api/oauth/gitee/callback")
+
+# Warn if OAuth credentials are not configured
+for _var in ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GITEE_CLIENT_ID", "GITEE_CLIENT_SECRET"]:
+    if not os.environ.get(_var):
+        logger.warning(f"{_var} is not set. OAuth login for this provider will fail.")
 
 GUEST_JWT_SECRET = os.environ.get("GUEST_JWT_SECRET", "")
 if not GUEST_JWT_SECRET:
