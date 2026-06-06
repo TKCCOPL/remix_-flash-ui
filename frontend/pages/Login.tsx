@@ -82,7 +82,6 @@ export default function Login() {
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <CodeCreatures
             isTyping={focusedField !== null}
-            focusedField={focusedField}
             showPassword={showPassword && focusedField === 'password'}
             submitting={submitting}
             passwordLength={password.length}

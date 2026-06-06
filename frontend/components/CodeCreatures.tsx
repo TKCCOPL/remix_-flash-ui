@@ -2,10 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 
 type CodeCreaturesProps = {
   isTyping?: boolean;
-  focusedField?: 'username' | 'password' | null;
   showPassword?: boolean;
   submitting?: boolean;
-  loginSuccess?: boolean;
   passwordLength?: number;
 };
 
@@ -56,6 +54,8 @@ function EyeBall({
   isBlinking = false,
   forceLookX,
   forceLookY,
+  mouseX,
+  mouseY,
 }: {
   size?: number;
   pupilSize?: number;
@@ -63,19 +63,10 @@ function EyeBall({
   isBlinking?: boolean;
   forceLookX?: number;
   forceLookY?: number;
+  mouseX: number;
+  mouseY: number;
 }) {
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
   const eyeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handle = (e: MouseEvent) => {
-      setMouseX(e.clientX);
-      setMouseY(e.clientY);
-    };
-    window.addEventListener('mousemove', handle);
-    return () => window.removeEventListener('mousemove', handle);
-  }, []);
 
   const calculatePupilPosition = () => {
     if (!eyeRef.current) return { x: 0, y: 0 };
@@ -104,7 +95,7 @@ function EyeBall({
   return (
     <div
       ref={eyeRef}
-      className="rounded-full flex items-center justify-center transition-all duration-150"
+      className="rounded-full flex items-center justify-center transition-all duration-150 shrink-0"
       style={{
         width: size,
         height: isBlinking ? 2 : size,
@@ -135,24 +126,17 @@ function Pupil({
   maxDistance = 5,
   forceLookX,
   forceLookY,
+  mouseX,
+  mouseY,
 }: {
   size?: number;
   maxDistance?: number;
   forceLookX?: number;
   forceLookY?: number;
+  mouseX: number;
+  mouseY: number;
 }) {
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
   const pupilRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handle = (e: MouseEvent) => {
-      setMouseX(e.clientX);
-      setMouseY(e.clientY);
-    };
-    window.addEventListener('mousemove', handle);
-    return () => window.removeEventListener('mousemove', handle);
-  }, []);
 
   const calculatePupilPosition = () => {
     if (!pupilRef.current) return { x: 0, y: 0 };
@@ -205,6 +189,8 @@ function Purple({
   bodySkew,
   faceX,
   faceY,
+  mouseX,
+  mouseY,
 }: {
   isTyping: boolean;
   showPassword: boolean;
@@ -215,6 +201,8 @@ function Purple({
   bodySkew: number;
   faceX: number;
   faceY: number;
+  mouseX: number;
+  mouseY: number;
 }) {
   const isHidingPassword = passwordLength > 0 && !showPassword;
   const isPasswordVisible = passwordLength > 0 && showPassword;
@@ -280,8 +268,8 @@ function Purple({
           transition: 'all 0.7s ease-in-out',
         }}
       >
-        <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
-        <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
+        <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
+        <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
       </div>
     </div>
   );
@@ -298,6 +286,8 @@ function Gray({
   bodySkew,
   faceX,
   faceY,
+  mouseX,
+  mouseY,
 }: {
   isTyping: boolean;
   showPassword: boolean;
@@ -307,6 +297,8 @@ function Gray({
   bodySkew: number;
   faceX: number;
   faceY: number;
+  mouseX: number;
+  mouseY: number;
 }) {
   const isPasswordVisible = passwordLength > 0 && showPassword;
   const isHidingPassword = passwordLength > 0 && !showPassword;
@@ -371,8 +363,8 @@ function Gray({
           transition: 'all 0.7s ease-in-out',
         }}
       >
-        <EyeBall size={16} pupilSize={6} maxDistance={4} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
-        <EyeBall size={16} pupilSize={6} maxDistance={4} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
+        <EyeBall size={16} pupilSize={6} maxDistance={4} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
+        <EyeBall size={16} pupilSize={6} maxDistance={4} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
       </div>
     </div>
   );
@@ -386,12 +378,16 @@ function Orange({
   bodySkew,
   faceX,
   faceY,
+  mouseX,
+  mouseY,
 }: {
   showPassword: boolean;
   passwordLength: number;
   bodySkew: number;
   faceX: number;
   faceY: number;
+  mouseX: number;
+  mouseY: number;
 }) {
   const isPasswordVisible = passwordLength > 0 && showPassword;
 
@@ -426,8 +422,8 @@ function Orange({
           transition: 'all 0.2s ease-out',
         }}
       >
-        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
-        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
+        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
+        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
       </div>
     </div>
   );
@@ -441,12 +437,16 @@ function Yellow({
   bodySkew,
   faceX,
   faceY,
+  mouseX,
+  mouseY,
 }: {
   showPassword: boolean;
   passwordLength: number;
   bodySkew: number;
   faceX: number;
   faceY: number;
+  mouseX: number;
+  mouseY: number;
 }) {
   const isPasswordVisible = passwordLength > 0 && showPassword;
 
@@ -485,8 +485,8 @@ function Yellow({
           transition: 'all 0.2s ease-out',
         }}
       >
-        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
-        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
+        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
+        <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} mouseX={mouseX} mouseY={mouseY} />
       </div>
       {/* Horizontal mouth line */}
       <div
@@ -504,14 +504,22 @@ function Yellow({
   );
 }
 
+// ── Shake keyframes (constant to avoid re-creating on every render) ──
+
+const SHAKE_KEYFRAMES = `
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px) rotate(-1deg); }
+    75% { transform: translateX(2px) rotate(1deg); }
+  }
+`;
+
 // ── Main component ──
 
 export default function CodeCreatures({
   isTyping = false,
-  focusedField = null,
   showPassword = false,
   submitting = false,
-  loginSuccess = false,
   passwordLength = 0,
 }: CodeCreaturesProps) {
   const [blink1, setBlink1] = useState(false);
@@ -595,13 +603,7 @@ export default function CodeCreatures({
 
   return (
     <>
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-2px) rotate(-1deg); }
-          75% { transform: translateX(2px) rotate(1deg); }
-        }
-      `}</style>
+      <style>{SHAKE_KEYFRAMES}</style>
 
       {/* Container: 260x190, characters grounded at bottom */}
       <div
@@ -624,6 +626,8 @@ export default function CodeCreatures({
             bodySkew={purplePos.bodySkew}
             faceX={purplePos.faceX}
             faceY={purplePos.faceY}
+            mouseX={mouseX}
+            mouseY={mouseY}
           />
         </div>
         {/* Gray — back-right (origin: left 240, width 120 → scaled 113, 57) */}
@@ -637,6 +641,8 @@ export default function CodeCreatures({
             bodySkew={grayPos.bodySkew}
             faceX={grayPos.faceX}
             faceY={grayPos.faceY}
+            mouseX={mouseX}
+            mouseY={mouseY}
           />
         </div>
         {/* Orange — front-left (origin: left 0, width 240 → scaled 0, 114) */}
@@ -647,6 +653,8 @@ export default function CodeCreatures({
             bodySkew={orangePos.bodySkew}
             faceX={orangePos.faceX}
             faceY={orangePos.faceY}
+            mouseX={mouseX}
+            mouseY={mouseY}
           />
         </div>
         {/* Yellow — front-right (origin: left 310, width 140 → scaled 147, 66) */}
@@ -657,6 +665,8 @@ export default function CodeCreatures({
             bodySkew={yellowPos.bodySkew}
             faceX={yellowPos.faceX}
             faceY={yellowPos.faceY}
+            mouseX={mouseX}
+            mouseY={mouseY}
           />
         </div>
       </div>
