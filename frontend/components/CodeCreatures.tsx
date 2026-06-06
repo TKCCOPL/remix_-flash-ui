@@ -9,10 +9,10 @@ type CodeCreaturesProps = {
 // ── Palette ──
 const C = {
   purple: '#6C3FF5',
-  gray: '#5A5A5A',       // lightened from #2D2D2D for dark bg visibility
-  orange: '#FF9B6B',
-  yellow: '#E8D754',
-  pupil: '#2D2D2D',
+  gray: '#A78BFA',         // violet-400, purple family
+  orange: '#78716C',       // stone-500, matches page UI
+  yellow: '#FCD34D',       // amber-300, warm accent
+  pupil: '#1C1917',        // stone-950, deeper
 };
 
 // ── Position calculation ──

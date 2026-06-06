@@ -17,7 +17,6 @@ export default function Login() {
   const t = useI18n();
   const { user, isAdmin, login: oauthLogin, refreshUser } = useAuth();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (isAdmin) {
       navigate('/admin');
@@ -57,17 +56,20 @@ export default function Login() {
     }
   };
 
+  // Shared input classes
+  const inputCls = 'w-full h-12 px-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/25 focus:border-purple-500 dark:focus:border-purple-400 transition-all outline-none text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600';
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* ── Left brand panel (always dark) ── */}
-      <div className="relative hidden lg:flex flex-col p-12 bg-stone-900 text-white overflow-hidden">
+      {/* ── Left brand panel (always dark, purple tint) ── */}
+      <div className="relative hidden lg:flex flex-col p-12 bg-gradient-to-br from-purple-950/80 via-stone-900 to-stone-950 text-white overflow-hidden">
         {/* Logo */}
         <Link to="/" className="relative z-10 flex items-center gap-2 text-xl font-bold">
           <span className="text-white">XiaoC'</span>
-          <span className="text-indigo-400">blog</span>
+          <span className="text-purple-400">blog</span>
         </Link>
 
-        {/* CodeCreatures animation — centered, main visual */}
+        {/* CodeCreatures animation — centered */}
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <CodeCreatures
             isTyping={focusedField !== null}
@@ -76,7 +78,7 @@ export default function Login() {
           />
         </div>
 
-        {/* Footer links */}
+        {/* Footer */}
         <div className="relative z-10 flex items-center gap-6 text-xs text-stone-500 mt-auto pt-6">
           <span>&copy; {new Date().getFullYear()} XiaoC'blog</span>
           <a href="https://github.com/TKCCOPL" target="_blank" rel="noopener" className="hover:text-stone-300 transition-colors">
@@ -84,19 +86,19 @@ export default function Login() {
           </a>
         </div>
 
-        {/* Decorative elements */}
+        {/* Decorative */}
         <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:24px_24px]" />
-        <div className="absolute top-1/4 right-1/4 size-64 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 left-1/4 size-48 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 right-1/4 size-64 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 left-1/4 size-48 bg-indigo-500/10 rounded-full blur-3xl" />
       </div>
 
-      {/* ── Right form panel (follows theme) ── */}
+      {/* ── Right form panel ── */}
       <div className="flex items-center justify-center p-8 bg-white dark:bg-stone-950">
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 text-lg font-bold mb-10">
             <span className="text-stone-900 dark:text-stone-100">XiaoC'</span>
-            <span className="text-indigo-600 dark:text-indigo-400">blog</span>
+            <span className="text-purple-500 dark:text-purple-400">blog</span>
           </div>
 
           {/* Title */}
@@ -109,7 +111,7 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Error message */}
+          {/* Error */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-100 dark:border-red-900/50">
               {error}
@@ -128,7 +130,8 @@ export default function Login() {
                 onChange={(e) => setUsername(e.target.value)}
                 onFocus={() => setFocusedField('username')}
                 onBlur={() => setFocusedField(null)}
-                className="w-full h-11 px-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
+                className={inputCls}
+                placeholder={t.login.username}
                 required
               />
             </div>
@@ -144,7 +147,8 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
-                  className="w-full h-11 px-4 pr-10 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
+                  className={inputCls + ' pr-10'}
+                  placeholder={t.login.password}
                   required
                 />
                 <button
@@ -165,7 +169,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-11 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 focus:ring-4 focus:ring-stone-500/20 transition-all disabled:opacity-50"
+              className="w-full h-12 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-medium rounded-xl focus:ring-4 focus:ring-purple-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100"
             >
               {submitting ? `${t.login.submit}...` : t.login.submit}
             </button>
@@ -184,7 +188,7 @@ export default function Login() {
           <div className="space-y-3">
             <button
               onClick={() => oauthLogin('github')}
-              className="w-full h-11 flex items-center justify-center gap-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 hover:scale-[1.02] transition-all"
+              className="w-full h-12 flex items-center justify-center gap-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 hover:scale-[1.02] transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -194,7 +198,7 @@ export default function Login() {
 
             <button
               onClick={() => oauthLogin('gitee')}
-              className="w-full h-11 flex items-center justify-center gap-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 hover:scale-[1.02] transition-all"
+              className="w-full h-12 flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-medium rounded-xl hover:scale-[1.02] transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M11.984 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.016 0zm6.09 5.333c.328 0 .593.266.592.593v1.482a.594.594 0 01-.593.592H9.777c-.982 0-1.778.796-1.778 1.778v5.63c0 .327.266.592.593.592h5.63c.982 0 1.778-.796 1.778-1.778v-.296a.593.593 0 00-.592-.593h-4.15a.592.592 0 01-.592-.592v-1.482a.593.593 0 01.593-.592h6.815c.327 0 .593.265.593.592v3.408a4 4 0 01-4 4H5.926a.593.593 0 01-.593-.593V9.778a4.444 4.444 0 014.445-4.444h8.296z" />
@@ -207,7 +211,7 @@ export default function Login() {
           <div className="text-center mt-8">
             <Link
               to="/"
-              className="text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+              className="text-sm text-stone-500 dark:text-stone-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
             >
               {t.login.backToHome}
             </Link>
