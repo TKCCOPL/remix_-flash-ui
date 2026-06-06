@@ -502,7 +502,7 @@ export default function CodeCreatures({
   return (
     <div
       ref={containerRef}
-      className="relative select-none"
+      className="relative select-none overflow-hidden"
       style={{ width: 550, height: 400 }}
     >
       {/* Purple — back-left */}
