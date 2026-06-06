@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from database import DB_FILE, get_db
 from middleware import _is_secure_request
-from oauth_providers import get_provider
+from oauth_providers import get_provider, generate_pkce_pair
 from services.oauth_service import create_guest_token, revoke_guest_token, verify_guest_token
 from repositories.users_repository import create_or_update_user, get_user_by_id
 from config import GUEST_COOKIE_NAME, GUEST_TOKEN_EXPIRE_HOURS
@@ -45,8 +45,7 @@ async def oauth_logout(request: Request):
     response = Response(status_code=204)
     secure = _is_secure_request(request)
     response.delete_cookie(GUEST_COOKIE_NAME, secure=secure)
-    # Also clear admin session if exists
-    response.delete_cookie("session", secure=secure)
+    # Note: admin session is cleared by /api/auth/logout, not here
     return response
 
 
@@ -57,12 +56,21 @@ async def oauth_login(provider: str, request: Request, conn: sqlite3.Connection 
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
 
+    # Generate PKCE pair if provider supports it
+    code_verifier = None
+    code_challenge = None
+    if oauth_provider.supports_pkce:
+        code_verifier, code_challenge = generate_pkce_pair()
+
     state = secrets.token_urlsafe(32)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO oauth_states (state, provider) VALUES (?, ?)", (state, provider))
+    cursor.execute(
+        "INSERT INTO oauth_states (state, provider, code_verifier) VALUES (?, ?, ?)",
+        (state, provider, code_verifier),
+    )
     conn.commit()
 
-    authorize_url = oauth_provider.get_authorize_url(state)
+    authorize_url = oauth_provider.get_authorize_url(state, code_challenge)
     return RedirectResponse(url=authorize_url)
 
 
@@ -73,10 +81,12 @@ async def oauth_callback(
 ):
     # Validate state from database
     cursor = conn.cursor()
-    cursor.execute("SELECT provider FROM oauth_states WHERE state = ?", (state,))
+    cursor.execute("SELECT provider, code_verifier FROM oauth_states WHERE state = ?", (state,))
     row = cursor.fetchone()
     if not row or row["provider"] != provider:
         raise HTTPException(status_code=400, detail="Invalid state parameter")
+
+    code_verifier = row["code_verifier"] if row else None
 
     # Delete used state and clean up expired states (>10 minutes)
     cursor.execute("DELETE FROM oauth_states WHERE state = ?", (state,))
@@ -88,9 +98,12 @@ async def oauth_callback(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
 
-    access_token = await oauth_provider.exchange_code_for_token(code)
+    access_token, error = await oauth_provider.exchange_code_for_token(code, code_verifier)
     if not access_token:
-        raise HTTPException(status_code=400, detail="Failed to get access token")
+        raise HTTPException(
+            status_code=400,
+            detail=f"OAuth token exchange failed: {error or 'unknown error'}",
+        )
 
     user_info = await oauth_provider.get_user_info(access_token)
     if not user_info:
