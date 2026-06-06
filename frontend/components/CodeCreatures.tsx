@@ -199,7 +199,7 @@ function Purple({
 }) {
   const isHidingPassword = passwordLength > 0 && !showPassword;
   const isPasswordVisible = passwordLength > 0 && showPassword;
-  const height = (isTyping || isHidingPassword) ? 440 : 400;
+  const height = (isTyping || isHidingPassword) ? 440 : 399;
 
   let eyeLeft = 45;
   let eyeTop = 40;
@@ -502,7 +502,7 @@ export default function CodeCreatures({
   return (
     <div
       ref={containerRef}
-      className="relative select-none overflow-hidden"
+      className="relative select-none"
       style={{ width: 550, height: 400 }}
     >
       {/* Purple — back-left */}
