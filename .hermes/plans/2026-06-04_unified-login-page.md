@@ -100,7 +100,7 @@ export default function Login() {
     authApi.me()
       .then(() => navigate('/admin'))
       .catch(() => {});
-  }, [user, isAdmin, navigate]);
+  }, [navigate]);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +149,7 @@ export default function Login() {
 
         {/* 底部链接 */}
         <div className="relative z-10 flex items-center gap-6 text-xs text-stone-500">
-          <span>© 2026 XiaoC'blog</span>
+          <span>&copy; {new Date().getFullYear()} XiaoC'blog</span>
           <a href="https://github.com/TKCCOPL" target="_blank" rel="noopener" className="hover:text-stone-300 transition-colors">
             GitHub
           </a>
