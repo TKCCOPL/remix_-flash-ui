@@ -166,13 +166,20 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Submit — outline, same style as OAuth */}
+            {/* Submit — outline with glow + press + spinner */}
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 border border-indigo-500 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 font-medium rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-all disabled:opacity-50"
+              className="group w-full h-12 border border-indigo-500 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 font-medium rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] dark:hover:shadow-[0_0_20px_rgba(129,140,248,0.1)] active:scale-[0.98] active:bg-indigo-100 dark:active:bg-indigo-950/60 transition-all duration-200 disabled:opacity-50 disabled:active:scale-100"
             >
-              {submitting ? `${t.login.submit}...` : t.login.submit}
+              {submitting ? (
+                <svg className="w-5 h-5 animate-spin mx-auto" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+              ) : (
+                t.login.submit
+              )}
             </button>
           </form>
 
