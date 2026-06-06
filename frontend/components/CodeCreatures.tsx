@@ -107,6 +107,7 @@ function EyeBall({
         justifyContent: 'center',
         overflow: 'hidden',
         transition: 'height 0.1s ease, transform 0.2s ease-out',
+        backfaceVisibility: 'hidden',
       }}
     >
       {!isBlinking && (
