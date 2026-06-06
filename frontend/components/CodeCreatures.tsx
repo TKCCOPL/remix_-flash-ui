@@ -199,7 +199,7 @@ function Purple({
 }) {
   const isHidingPassword = passwordLength > 0 && !showPassword;
   const isPasswordVisible = passwordLength > 0 && showPassword;
-  const height = (isTyping || isHidingPassword) ? 440 : 399;
+  const height = (isTyping || isHidingPassword) ? 440 : 400;
 
   let eyeLeft = 45;
   let eyeTop = 40;
@@ -228,7 +228,7 @@ function Purple({
         zIndex: 1,
         transformOrigin: 'bottom center',
         transform: `skewX(${bodySkew}deg)`,
-        transition: 'height 0.7s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       <div
