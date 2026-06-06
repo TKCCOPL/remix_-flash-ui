@@ -57,16 +57,16 @@ export default function Login() {
   };
 
   // Shared input classes
-  const inputCls = 'w-full h-12 px-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/25 focus:border-purple-500 dark:focus:border-purple-400 transition-all outline-none text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600';
+  const inputCls = 'w-full h-12 px-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500/40 dark:focus:ring-indigo-400/25 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600';
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* ── Left brand panel (always dark, purple tint) ── */}
-      <div className="relative hidden lg:flex flex-col p-12 bg-gradient-to-br from-purple-950/80 via-stone-900 to-stone-950 text-white overflow-hidden">
+      {/* ── Left brand panel (always dark, indigo tint) ── */}
+      <div className="relative hidden lg:flex flex-col p-12 bg-gradient-to-br from-indigo-950/80 via-stone-900 to-stone-950 text-white overflow-hidden">
         {/* Logo */}
         <Link to="/" className="relative z-10 flex items-center gap-2 text-xl font-bold">
           <span className="text-white">XiaoC'</span>
-          <span className="text-purple-400">blog</span>
+          <span className="text-indigo-400">blog</span>
         </Link>
 
         {/* CodeCreatures animation — centered */}
@@ -88,7 +88,7 @@ export default function Login() {
 
         {/* Decorative */}
         <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:24px_24px]" />
-        <div className="absolute top-1/4 right-1/4 size-64 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 right-1/4 size-64 bg-indigo-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/3 left-1/4 size-48 bg-indigo-500/10 rounded-full blur-3xl" />
       </div>
 
@@ -98,7 +98,7 @@ export default function Login() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 text-lg font-bold mb-10">
             <span className="text-stone-900 dark:text-stone-100">XiaoC'</span>
-            <span className="text-purple-500 dark:text-purple-400">blog</span>
+            <span className="text-indigo-500 dark:text-indigo-400">blog</span>
           </div>
 
           {/* Title */}
@@ -169,7 +169,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-medium rounded-xl focus:ring-4 focus:ring-purple-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100"
+              className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium rounded-xl focus:ring-4 focus:ring-indigo-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100"
             >
               {submitting ? `${t.login.submit}...` : t.login.submit}
             </button>
@@ -211,7 +211,7 @@ export default function Login() {
           <div className="text-center mt-8">
             <Link
               to="/"
-              className="text-sm text-stone-500 dark:text-stone-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+              className="text-sm text-stone-500 dark:text-stone-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               {t.login.backToHome}
             </Link>

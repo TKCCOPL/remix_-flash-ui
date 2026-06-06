@@ -8,8 +8,8 @@ type CodeCreaturesProps = {
 
 // ── Palette ──
 const C = {
-  purple: '#6C3FF5',
-  gray: '#A78BFA',         // violet-400, purple family
+  purple: '#6366F1',       // indigo-500, blog theme primary
+  gray: '#60A5FA',         // blue-400, indigo complementary
   orange: '#78716C',       // stone-500, matches page UI
   yellow: '#FCD34D',       // amber-300, warm accent
   pupil: '#1C1917',        // stone-950, deeper
