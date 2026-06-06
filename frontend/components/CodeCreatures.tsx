@@ -236,7 +236,14 @@ function Purple({
     >
       <div
         className="absolute flex"
-        style={{ left: eyeLeft, top: eyeTop, gap: 32, transition: 'all 0.7s ease-in-out' }}
+        style={{
+          left: 45,
+          top: 40,
+          gap: 32,
+          transform: `translate(${eyeLeft - 45}px, ${eyeTop - 40}px)`,
+          transition: 'transform 0.7s ease-in-out',
+          backfaceVisibility: 'hidden',
+        }}
       >
         <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
         <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
