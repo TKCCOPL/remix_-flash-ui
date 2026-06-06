@@ -4,6 +4,7 @@ import { useI18n } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
+import CodeCreatures from '../components/CodeCreatures';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -11,6 +12,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [focusedField, setFocusedField] = useState<'username' | 'password' | null>(null);
   const navigate = useNavigate();
   const t = useI18n();
   const { user, isAdmin, login: oauthLogin, refreshUser } = useAuth();
@@ -66,14 +68,24 @@ export default function Login() {
           <span className="text-indigo-400">blog</span>
         </Link>
 
-        {/* Tagline */}
-        <div className="relative z-10">
+        {/* Tagline - moved up */}
+        <div className="relative z-10 mb-auto">
           <h2 className="text-3xl font-bold leading-tight mb-4">
             记录探索<br />分享见解
           </h2>
           <p className="text-stone-400 text-sm max-w-xs">
             一个关于软件工程、界面设计和技术探索的个人博客
           </p>
+        </div>
+
+        {/* CodeCreatures animation - center */}
+        <div className="relative z-10 flex-1 flex items-center justify-center">
+          <CodeCreatures
+            isTyping={focusedField !== null}
+            focusedField={focusedField}
+            showPassword={showPassword && focusedField === 'password'}
+            submitting={submitting}
+          />
         </div>
 
         {/* Footer links */}
@@ -100,7 +112,7 @@ export default function Login() {
           </div>
 
           {/* Title */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">
               {t.login.title}
             </h1>
@@ -126,7 +138,9 @@ export default function Login() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full h-12 px-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
+                onFocus={() => setFocusedField('username')}
+                onBlur={() => setFocusedField(null)}
+                className="w-full h-11 px-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
                 required
               />
             </div>
@@ -140,7 +154,9 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 px-4 pr-10 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                  className="w-full h-11 px-4 pr-10 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-white/10 focus:border-stone-900 transition-all outline-none text-stone-900 dark:text-stone-100"
                   required
                 />
                 <button
@@ -161,7 +177,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 focus:ring-4 focus:ring-stone-500/20 transition-all disabled:opacity-50"
+              className="w-full h-11 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 focus:ring-4 focus:ring-stone-500/20 transition-all disabled:opacity-50"
             >
               {submitting ? `${t.login.submit}...` : t.login.submit}
             </button>
@@ -180,7 +196,7 @@ export default function Login() {
           <div className="space-y-3">
             <button
               onClick={() => oauthLogin('github')}
-              className="w-full h-12 flex items-center justify-center gap-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors"
+              className="w-full h-11 flex items-center justify-center gap-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium rounded-xl hover:bg-stone-800 dark:hover:bg-stone-200 hover:scale-[1.02] transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -190,7 +206,7 @@ export default function Login() {
 
             <button
               onClick={() => oauthLogin('gitee')}
-              className="w-full h-12 flex items-center justify-center gap-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors"
+              className="w-full h-11 flex items-center justify-center gap-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 hover:scale-[1.02] transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M11.984 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.016 0zm6.09 5.333c.328 0 .593.266.592.593v1.482a.594.594 0 01-.593.592H9.777c-.982 0-1.778.796-1.778 1.778v5.63c0 .327.266.592.593.592h5.63c.982 0 1.778-.796 1.778-1.778v-.296a.593.593 0 00-.592-.593h-4.15a.592.592 0 01-.592-.592v-1.482a.593.593 0 01.593-.592h6.815c.327 0 .593.265.593.592v3.408a4 4 0 01-4 4H5.926a.593.593 0 01-.593-.593V9.778a4.444 4.444 0 014.445-4.444h8.296z" />
