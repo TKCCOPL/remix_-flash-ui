@@ -2,17 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 
 type CodeCreaturesProps = {
   isTyping?: boolean;
-  focusedField?: 'username' | 'password' | null;
   showPassword?: boolean;
-  submitting?: boolean;
-  loginSuccess?: boolean;
   passwordLength?: number;
 };
 
-// CareerCompass exact palette
+// ── Palette ──
 const C = {
   purple: '#6C3FF5',
-  gray: '#2D2D2D',
+  gray: '#5A5A5A',       // lightened from #2D2D2D for dark bg visibility
   orange: '#FF9B6B',
   yellow: '#E8D754',
   pupil: '#2D2D2D',
@@ -20,43 +17,32 @@ const C = {
 
 // ── Position calculation ──
 
-type PositionResult = {
-  bodySkew: number;
-  faceX: number;
-  faceY: number;
-};
+type PosResult = { bodySkew: number; faceX: number; faceY: number };
 
-// Calculate body skew and face offset for a character based on mouse position
-function calculatePosition(
-  mouseX: number,
-  mouseY: number,
-  charCenterX: number,
-  charCenterY: number,
+function calcPos(
+  mx: number, my: number,
+  cx: number, cy: number,
   state: 'idle' | 'typing' | 'password',
-  side: 'left' | 'right' = 'left'
-): PositionResult {
+  side: 'left' | 'right' = 'left',
+): PosResult {
   if (state === 'password') {
-    // Password visible: characters look away, no body skew
-    return { bodySkew: 0, faceX: side === 'left' ? -5 : 5, faceY: -4 };
+    return { bodySkew: 0, faceX: side === 'left' ? -15 : 15, faceY: -10 };
   }
-
-  const dx = mouseX - charCenterX;
-  const dy = mouseY - charCenterY;
+  const dx = mx - cx;
+  const dy = my - cy;
   const dist = Math.sqrt(dx * dx + dy * dy);
 
   if (state === 'typing') {
-    // Typing: body leans toward keyboard area, eyes look down
-    const skew = Math.max(-12, Math.min(12, dx * 0.04));
-    return { bodySkew: skew, faceX: dx * 0.01, faceY: 4 };
+    const skew = Math.max(-6, Math.min(6, dx * 0.03));
+    return { bodySkew: skew, faceX: 0, faceY: 8 };
   }
 
-  // Idle: follow mouse with body skew and face tracking
-  const maxSkew = 10;
-  const maxFace = 5;
-  const skew = Math.max(-maxSkew, Math.min(maxSkew, dx * 0.025));
-  const faceX = dist > 0 ? (dx / dist) * Math.min(maxFace, dist * 0.015) : 0;
-  const faceY = dist > 0 ? (dy / dist) * Math.min(maxFace, dist * 0.015) : 0;
-
+  // Idle: follow mouse
+  const maxSkew = 6;
+  const maxFace = 15;
+  const skew = Math.max(-maxSkew, Math.min(maxSkew, dx * 0.015));
+  const faceX = dist > 0 ? (dx / dist) * Math.min(maxFace, dist * 0.03) : 0;
+  const faceY = dist > 0 ? (dy / dist) * Math.min(10, dist * 0.02) : 0;
   return { bodySkew: skew, faceX, faceY };
 }
 
@@ -65,12 +51,14 @@ function calculatePosition(
 function EyeBall({
   size = 18,
   pupilSize = 7,
+  maxDistance = 5,
   isBlinking = false,
   forceLookX,
   forceLookY,
 }: {
   size?: number;
   pupilSize?: number;
+  maxDistance?: number;
   isBlinking?: boolean;
   forceLookX?: number;
   forceLookY?: number;
@@ -94,7 +82,7 @@ function EyeBall({
     };
     window.addEventListener('mousemove', handle);
     return () => window.removeEventListener('mousemove', handle);
-  }, [size, pupilSize, forceLookX, forceLookY]);
+  }, [size, pupilSize, maxDistance, forceLookX, forceLookY]);
 
   const px = forceLookX ?? offset.x;
   const py = forceLookY ?? offset.y;
@@ -102,10 +90,15 @@ function EyeBall({
   return (
     <div
       ref={ref}
-      className="rounded-full bg-white flex items-center justify-center overflow-hidden shrink-0"
+      className="rounded-full shrink-0"
       style={{
         width: size,
         height: isBlinking ? 2 : size,
+        backgroundColor: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
         transition: 'height 0.1s ease, transform 0.2s ease-out',
       }}
     >
@@ -174,6 +167,7 @@ function Pupil({
 }
 
 // ── Purple: tall rectangle, back-left ──
+// CareerCompass: left:70, w:180, h:400→440, z:1
 
 function Purple({
   isTyping,
@@ -198,32 +192,28 @@ function Purple({
 }) {
   const isHidingPassword = passwordLength > 0 && !showPassword;
   const isPasswordVisible = passwordLength > 0 && showPassword;
-  const height = (isTyping || isHidingPassword) ? 190 : 170;
+  const height = (isTyping || isHidingPassword) ? 440 : 400;
 
-  // Eye position shifts based on state
-  let eyeLeft = 20;
-  let eyeTop = 30;
-  if (isPasswordVisible) { eyeLeft = 14; eyeTop = 28; }
-  else if (isLookingAtEachOther) { eyeLeft = 28; eyeTop = 40; }
+  let eyeLeft = 45;
+  let eyeTop = 40;
+  if (isPasswordVisible) { eyeLeft = 30; eyeTop = 35; }
+  else if (isLookingAtEachOther) { eyeLeft = 60; eyeTop = 60; }
 
-  // Eye look direction
   let flx: number | undefined;
   let fly: number | undefined;
   if (isPasswordVisible) {
-    flx = isPeeking ? 4 : -4;
-    fly = isPeeking ? 5 : -4;
+    flx = isPeeking ? 8 : -8;
+    fly = isPeeking ? 6 : -6;
   } else if (isLookingAtEachOther) {
-    flx = 3; fly = 4;
+    flx = 6; fly = 6;
   } else {
-    // Use calculated face offset from mouse tracking
-    flx = faceX;
-    fly = faceY;
+    flx = faceX; fly = faceY;
   }
 
   return (
     <div
       style={{
-        width: 70,
+        width: 180,
         height,
         backgroundColor: C.purple,
         borderRadius: '10px 10px 0 0',
@@ -236,16 +226,17 @@ function Purple({
     >
       <div
         className="absolute flex"
-        style={{ left: eyeLeft, top: eyeTop, gap: 16, transition: 'all 0.2s ease' }}
+        style={{ left: eyeLeft, top: eyeTop, gap: 32, transition: 'all 0.2s ease' }}
       >
-        <EyeBall size={18} pupilSize={7} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
-        <EyeBall size={18} pupilSize={7} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
+        <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
+        <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
       </div>
     </div>
   );
 }
 
 // ── Gray: medium rectangle, back-right ──
+// CareerCompass: left:240, w:120, h:310, z:2
 
 function Gray({
   isTyping,
@@ -268,24 +259,24 @@ function Gray({
 }) {
   const isPasswordVisible = passwordLength > 0 && showPassword;
 
-  let eyeLeft = 22;
-  let eyeTop = 28;
-  if (isPasswordVisible) { eyeLeft = 10; eyeTop = 22; }
-  else if (isLookingAtEachOther) { eyeLeft = 28; eyeTop = 10; }
+  let eyeLeft = 26;
+  let eyeTop = 32;
+  if (isPasswordVisible) { eyeLeft = 15; eyeTop = 25; }
+  else if (isLookingAtEachOther) { eyeLeft = 40; eyeTop = 15; }
 
   let flx: number | undefined;
   let fly: number | undefined;
-  if (isPasswordVisible) { flx = -4; fly = -4; }
-  else if (isLookingAtEachOther) { flx = 0; fly = -4; }
+  if (isPasswordVisible) { flx = -10; fly = -8; }
+  else if (isLookingAtEachOther) { flx = 0; fly = -6; }
   else { flx = faceX; fly = faceY; }
 
   return (
     <div
       style={{
-        width: 50,
-        height: 130,
+        width: 120,
+        height: 310,
         backgroundColor: C.gray,
-        borderRadius: '8px 8px 0 0',
+        borderRadius: '10px 10px 0 0',
         position: 'relative',
         zIndex: 2,
         transformOrigin: 'bottom center',
@@ -294,17 +285,18 @@ function Gray({
       }}
     >
       <div
-        className="absolute flex gap-2.5"
-        style={{ left: eyeLeft, top: eyeTop, transition: 'all 0.2s ease' }}
+        className="absolute flex"
+        style={{ left: eyeLeft, top: eyeTop, gap: 24, transition: 'all 0.2s ease' }}
       >
-        <EyeBall size={16} pupilSize={6} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
-        <EyeBall size={16} pupilSize={6} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
+        <EyeBall size={16} pupilSize={6} maxDistance={4} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
+        <EyeBall size={16} pupilSize={6} maxDistance={4} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
       </div>
     </div>
   );
 }
 
 // ── Orange: semi-circle, front-left ──
+// CareerCompass: left:0, w:240, h:200, z:3
 
 function Orange({
   showPassword,
@@ -320,19 +312,19 @@ function Orange({
   faceY: number;
 }) {
   const isPasswordVisible = passwordLength > 0 && showPassword;
-  const eyeLeft = isPasswordVisible ? 30 : 42;
-  const eyeTop = isPasswordVisible ? 55 : 58;
+  const eyeLeft = isPasswordVisible ? 60 : 82;
+  const eyeTop = isPasswordVisible ? 80 : 90;
 
-  const flx = isPasswordVisible ? -5 : faceX;
-  const fly = isPasswordVisible ? -4 : faceY;
+  const flx = isPasswordVisible ? -12 : faceX;
+  const fly = isPasswordVisible ? -8 : faceY;
 
   return (
     <div
       style={{
-        width: 100,
-        height: 85,
+        width: 240,
+        height: 200,
         backgroundColor: C.orange,
-        borderRadius: '50px 50px 0 0',
+        borderRadius: '120px 120px 0 0',
         position: 'relative',
         zIndex: 3,
         transformOrigin: 'bottom center',
@@ -342,7 +334,7 @@ function Orange({
     >
       <div
         className="absolute flex"
-        style={{ left: eyeLeft, top: eyeTop, gap: 18, transition: 'all 0.2s ease' }}
+        style={{ left: eyeLeft, top: eyeTop, gap: 32, transition: 'all 0.2s ease' }}
       >
         <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
         <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
@@ -352,6 +344,7 @@ function Orange({
 }
 
 // ── Yellow: tall rounded + mouth, front-right ──
+// CareerCompass: left:310, w:140, h:230, z:4
 
 function Yellow({
   showPassword,
@@ -367,21 +360,21 @@ function Yellow({
   faceY: number;
 }) {
   const isPasswordVisible = passwordLength > 0 && showPassword;
-  const eyeLeft = isPasswordVisible ? 15 : 25;
-  const eyeTop = isPasswordVisible ? 25 : 30;
-  const mouthLeft = isPasswordVisible ? 8 : 18;
-  const mouthTop = isPasswordVisible ? 65 : 68;
+  const eyeLeft = isPasswordVisible ? 35 : 52;
+  const eyeTop = isPasswordVisible ? 30 : 40;
+  const mouthLeft = isPasswordVisible ? 25 : 40;
+  const mouthTop = isPasswordVisible ? 75 : 88;
 
-  const flx = isPasswordVisible ? -5 : faceX;
-  const fly = isPasswordVisible ? -4 : faceY;
+  const flx = isPasswordVisible ? -12 : faceX;
+  const fly = isPasswordVisible ? -8 : faceY;
 
   return (
     <div
       style={{
-        width: 60,
-        height: 95,
+        width: 140,
+        height: 230,
         backgroundColor: C.yellow,
-        borderRadius: '30px 30px 0 0',
+        borderRadius: '70px 70px 0 0',
         position: 'relative',
         zIndex: 4,
         transformOrigin: 'bottom center',
@@ -390,8 +383,8 @@ function Yellow({
       }}
     >
       <div
-        className="absolute flex gap-2.5"
-        style={{ left: eyeLeft, top: eyeTop, transition: 'all 0.2s ease' }}
+        className="absolute flex"
+        style={{ left: eyeLeft, top: eyeTop, gap: 24, transition: 'all 0.2s ease' }}
       >
         <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
         <Pupil size={12} maxDistance={5} forceLookX={flx} forceLookY={fly} />
@@ -402,8 +395,8 @@ function Yellow({
         style={{
           left: mouthLeft,
           top: mouthTop,
-          width: 28,
-          height: 3.5,
+          width: 60,
+          height: 4,
           backgroundColor: C.pupil,
           transition: 'all 0.2s ease',
         }}
@@ -416,17 +409,14 @@ function Yellow({
 
 export default function CodeCreatures({
   isTyping = false,
-  focusedField = null,
   showPassword = false,
-  submitting = false,
-  loginSuccess = false,
   passwordLength = 0,
 }: CodeCreaturesProps) {
   const [blink1, setBlink1] = useState(false);
   const [blink2, setBlink2] = useState(false);
   const [isLookingAtEachOther, setIsLookingAtEachOther] = useState(false);
   const [isPeeking, setIsPeeking] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 130, y: 95 }); // Default center
+  const [mousePos, setMousePos] = useState({ x: 275, y: 200 }); // center of 550×400
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Track mouse position relative to container
@@ -434,10 +424,7 @@ export default function CodeCreatures({
     const handle = (e: MouseEvent) => {
       if (!containerRef.current) return;
       const r = containerRef.current.getBoundingClientRect();
-      setMousePos({
-        x: e.clientX - r.left,
-        y: e.clientY - r.top,
-      });
+      setMousePos({ x: e.clientX - r.left, y: e.clientY - r.top });
     };
     window.addEventListener('mousemove', handle);
     return () => window.removeEventListener('mousemove', handle);
@@ -495,84 +482,69 @@ export default function CodeCreatures({
     setIsPeeking(false);
   }, [showPassword]);
 
-  // Determine state for position calculation
+  // State for position calculation
   const isPasswordVisible = passwordLength > 0 && showPassword;
   const posState = isPasswordVisible ? 'password' : isTyping ? 'typing' : 'idle';
 
-  // Character centers in the 260x190 container
-  const purplePos = calculatePosition(mousePos.x, mousePos.y, 60, 95, posState, 'left');
-  const grayPos = calculatePosition(mousePos.x, mousePos.y, 120, 95, posState, 'right');
-  const orangePos = calculatePosition(mousePos.x, mousePos.y, 45, 95, posState, 'left');
-  const yellowPos = calculatePosition(mousePos.x, mousePos.y, 175, 95, posState, 'right');
+  // Character centers (550×400 container, bottom-aligned)
+  const purplePos = calcPos(mousePos.x, mousePos.y, 160, 200, posState, 'left');
+  const grayPos = calcPos(mousePos.x, mousePos.y, 300, 245, posState, 'right');
+  const orangePos = calcPos(mousePos.x, mousePos.y, 120, 300, posState, 'left');
+  const yellowPos = calcPos(mousePos.x, mousePos.y, 380, 285, posState, 'right');
 
   return (
-    <>
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-2px) rotate(-1deg); }
-          75% { transform: translateX(2px) rotate(1deg); }
-        }
-      `}</style>
-
-      {/* Container: 260x190, characters grounded at bottom */}
-      <div
-        ref={containerRef}
-        className="relative select-none"
-        style={{
-          width: 260,
-          height: 190,
-          animation: submitting ? 'shake 0.12s infinite' : undefined,
-        }}
-      >
-        {/* Purple — back-left */}
-        <div className="absolute bottom-0" style={{ left: 25 }}>
-          <Purple
-            isTyping={isTyping}
-            showPassword={showPassword}
-            passwordLength={passwordLength}
-            isBlinking={blink1}
-            isLookingAtEachOther={isLookingAtEachOther}
-            isPeeking={isPeeking}
-            bodySkew={purplePos.bodySkew}
-            faceX={purplePos.faceX}
-            faceY={purplePos.faceY}
-          />
-        </div>
-        {/* Gray — back-right */}
-        <div className="absolute bottom-0" style={{ left: 95 }}>
-          <Gray
-            isTyping={isTyping}
-            showPassword={showPassword}
-            passwordLength={passwordLength}
-            isBlinking={blink2}
-            isLookingAtEachOther={isLookingAtEachOther}
-            bodySkew={grayPos.bodySkew}
-            faceX={grayPos.faceX}
-            faceY={grayPos.faceY}
-          />
-        </div>
-        {/* Orange — front-left */}
-        <div className="absolute bottom-0" style={{ left: 0 }}>
-          <Orange
-            showPassword={showPassword}
-            passwordLength={passwordLength}
-            bodySkew={orangePos.bodySkew}
-            faceX={orangePos.faceX}
-            faceY={orangePos.faceY}
-          />
-        </div>
-        {/* Yellow — front-right */}
-        <div className="absolute bottom-0" style={{ left: 140 }}>
-          <Yellow
-            showPassword={showPassword}
-            passwordLength={passwordLength}
-            bodySkew={yellowPos.bodySkew}
-            faceX={yellowPos.faceX}
-            faceY={yellowPos.faceY}
-          />
-        </div>
+    <div
+      ref={containerRef}
+      className="relative select-none"
+      style={{ width: 550, height: 400 }}
+    >
+      {/* Purple — back-left */}
+      <div className="absolute bottom-0" style={{ left: 70 }}>
+        <Purple
+          isTyping={isTyping}
+          showPassword={showPassword}
+          passwordLength={passwordLength}
+          isBlinking={blink1}
+          isLookingAtEachOther={isLookingAtEachOther}
+          isPeeking={isPeeking}
+          bodySkew={purplePos.bodySkew}
+          faceX={purplePos.faceX}
+          faceY={purplePos.faceY}
+        />
       </div>
-    </>
+      {/* Gray — back-right */}
+      <div className="absolute bottom-0" style={{ left: 240 }}>
+        <Gray
+          isTyping={isTyping}
+          showPassword={showPassword}
+          passwordLength={passwordLength}
+          isBlinking={blink2}
+          isLookingAtEachOther={isLookingAtEachOther}
+          bodySkew={grayPos.bodySkew}
+          faceX={grayPos.faceX}
+          faceY={grayPos.faceY}
+        />
+      </div>
+      {/* Orange — front-left */}
+      <div className="absolute bottom-0" style={{ left: 0 }}>
+        <Orange
+          showPassword={showPassword}
+          passwordLength={passwordLength}
+          bodySkew={orangePos.bodySkew}
+          faceX={orangePos.faceX}
+          faceY={orangePos.faceY}
+        />
+      </div>
+      {/* Yellow — front-right */}
+      <div className="absolute bottom-0" style={{ left: 310 }}>
+        <Yellow
+          showPassword={showPassword}
+          passwordLength={passwordLength}
+          bodySkew={yellowPos.bodySkew}
+          faceX={yellowPos.faceX}
+          faceY={yellowPos.faceY}
+        />
+      </div>
+    </div>
   );
 }

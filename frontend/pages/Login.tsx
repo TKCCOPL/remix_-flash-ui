@@ -27,7 +27,6 @@ export default function Login() {
       navigate('/');
       return;
     }
-    // Fallback: check admin session
     authApi.me()
       .then(() => navigate('/admin'))
       .catch(() => {});
@@ -63,28 +62,16 @@ export default function Login() {
       {/* ── Left brand panel (always dark) ── */}
       <div className="relative hidden lg:flex flex-col p-12 bg-stone-900 text-white overflow-hidden">
         {/* Logo */}
-        <Link to="/" className="relative z-10 flex items-center gap-2 text-lg font-semibold mb-8">
-          <span className="text-white font-bold">XiaoC'</span>
+        <Link to="/" className="relative z-10 flex items-center gap-2 text-xl font-bold">
+          <span className="text-white">XiaoC'</span>
           <span className="text-indigo-400">blog</span>
         </Link>
-
-        {/* Tagline */}
-        <div className="relative z-10 mb-8">
-          <h2 className="text-2xl font-bold leading-tight mb-3">
-            记录探索<br />分享见解
-          </h2>
-          <p className="text-stone-400 text-xs max-w-xs leading-relaxed">
-            一个关于软件工程、界面设计和技术探索的个人博客
-          </p>
-        </div>
 
         {/* CodeCreatures animation — centered, main visual */}
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <CodeCreatures
             isTyping={focusedField !== null}
-            focusedField={focusedField}
             showPassword={showPassword && focusedField === 'password'}
-            submitting={submitting}
             passwordLength={password.length}
           />
         </div>
