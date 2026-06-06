@@ -66,6 +66,9 @@ function EyeBall({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
+  // maxDistance is the primary constraint — keeps pupil well inside sclera
+  const bound = Math.min(maxDistance, (size - pupilSize) / 2 - 2);
+
   useEffect(() => {
     if (forceLookX !== undefined && forceLookY !== undefined) return;
     const handle = (e: MouseEvent) => {
@@ -76,16 +79,20 @@ function EyeBall({
       const dx = e.clientX - cx;
       const dy = e.clientY - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const max = (size - pupilSize) / 2 - 1;
-      const s = Math.min(max / (dist || 1), 1);
+      const s = Math.min(bound / (dist || 1), 1);
       setOffset({ x: dx * s, y: dy * s });
     };
     window.addEventListener('mousemove', handle);
     return () => window.removeEventListener('mousemove', handle);
-  }, [size, pupilSize, maxDistance, forceLookX, forceLookY]);
+  }, [bound, forceLookX, forceLookY]);
 
-  const px = forceLookX ?? offset.x;
-  const py = forceLookY ?? offset.y;
+  // Clamp forced look values within bounds too
+  const px = forceLookX !== undefined
+    ? Math.max(-bound, Math.min(bound, forceLookX))
+    : offset.x;
+  const py = forceLookY !== undefined
+    ? Math.max(-bound, Math.min(bound, forceLookY))
+    : offset.y;
 
   return (
     <div
