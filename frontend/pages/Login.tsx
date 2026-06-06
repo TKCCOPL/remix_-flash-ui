@@ -85,6 +85,7 @@ export default function Login() {
             focusedField={focusedField}
             showPassword={showPassword && focusedField === 'password'}
             submitting={submitting}
+            passwordLength={password.length}
           />
         </div>
 
