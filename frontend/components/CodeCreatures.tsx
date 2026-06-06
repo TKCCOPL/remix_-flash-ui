@@ -228,12 +228,14 @@ function Purple({
         zIndex: 1,
         transformOrigin: 'bottom center',
         transform: `skewX(${bodySkew}deg)`,
-        transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'height 0.7s ease-in-out, transform 0.7s ease-in-out',
+        backfaceVisibility: 'hidden',
+        willChange: 'transform, height',
       }}
     >
       <div
         className="absolute flex"
-        style={{ left: eyeLeft, top: eyeTop, gap: 32, transition: 'all 0.2s ease' }}
+        style={{ left: eyeLeft, top: eyeTop, gap: 32, transition: 'all 0.7s ease-in-out' }}
       >
         <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
         <EyeBall size={18} pupilSize={7} maxDistance={5} isBlinking={isBlinking} forceLookX={flx} forceLookY={fly} />
