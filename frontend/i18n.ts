@@ -291,11 +291,14 @@ export const translations = {
       emptyFields: '标题和正文不能为空',
     },
     login: {
-      title: '管理员登录',
-      error: '账号或密码错误（提示：admin / 123456）',
+      title: '欢迎回来',
+      subtitle: '登录以继续访问',
       username: '用户名',
       password: '密码',
       submit: '登录',
+      error: '账号或密码错误',
+      divider: '或者',
+      backToHome: '← 返回首页',
     },
     categoryPage: {
       notFound: '分类不存在',
@@ -604,11 +607,14 @@ export const translations = {
       emptyFields: 'Title and content are required',
     },
     login: {
-      title: 'Admin Login',
-      error: 'Invalid credentials. Hint: admin / 123456',
+      title: 'Welcome back',
+      subtitle: 'Sign in to continue',
       username: 'Username',
       password: 'Password',
       submit: 'Sign In',
+      error: 'Invalid credentials',
+      divider: 'or',
+      backToHome: '← Back to home',
     },
     categoryPage: {
       notFound: 'Category not found',

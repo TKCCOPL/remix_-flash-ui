@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Command, Sun, Moon, Languages, Menu, X, Code2, Coffee, Sparkles, TerminalSquare, PenTool, Feather, LogIn } from 'lucide-react';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
 import { postsApi, type SearchResult } from '../api/posts';
-import OAuthMenu from './OAuthMenu';
 import UserMenu from './UserMenu';
 
 export default function Layout() {
@@ -13,7 +12,7 @@ export default function Layout() {
   const { language, theme, toggleLanguage, toggleTheme } = usePreferences();
   const t = useI18n();
   const { user, isAdmin } = useAuth();
-  const [showOAuthMenu, setShowOAuthMenu] = useState(false);
+  const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -217,7 +216,7 @@ export default function Layout() {
               <UserMenu />
             ) : (
               <button
-                onClick={() => setShowOAuthMenu(true)}
+                onClick={() => navigate('/login')}
                 className="inline-flex items-center justify-center w-8 h-8 rounded-full text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 hover:shadow-sm transition-all ml-1 hidden sm:flex"
                 aria-label="Login"
               >
@@ -279,7 +278,6 @@ export default function Layout() {
         </div>
       </footer>
 
-      <OAuthMenu open={showOAuthMenu} onClose={() => setShowOAuthMenu(false)} />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useI18n, usePreferences } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
 import { commentsApi, type Comment } from '../api/comments';
 import { dateFormats, locales } from '../i18n';
-import OAuthMenu from './OAuthMenu';
+import { useNavigate } from 'react-router-dom';
 import { normalizeDate } from '../utils/date';
 
 type CommentSectionProps = {
@@ -26,7 +26,7 @@ export default function CommentSection({ postId, onComment }: CommentSectionProp
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [submitError, setSubmitError] = useState('');
-  const [showOAuthMenu, setShowOAuthMenu] = useState(false);
+  const navigate = useNavigate();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -176,7 +176,7 @@ export default function CommentSection({ postId, onComment }: CommentSectionProp
             {t.oauth.loginPrompt}
           </p>
           <button
-            onClick={() => setShowOAuthMenu(true)}
+            onClick={() => navigate('/login')}
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors"
           >
             {t.oauth.login}
@@ -319,7 +319,6 @@ export default function CommentSection({ postId, onComment }: CommentSectionProp
         </div>
       )}
 
-      <OAuthMenu open={showOAuthMenu} onClose={() => setShowOAuthMenu(false)} />
     </section>
   );
 }
