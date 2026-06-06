@@ -61,24 +61,24 @@ export default function Login() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* ── Left brand panel (always dark) ── */}
-      <div className="relative hidden lg:flex flex-col justify-between p-12 bg-stone-900 text-white overflow-hidden">
+      <div className="relative hidden lg:flex flex-col p-12 bg-stone-900 text-white overflow-hidden">
         {/* Logo */}
-        <Link to="/" className="relative z-10 flex items-center gap-2 text-lg font-semibold">
+        <Link to="/" className="relative z-10 flex items-center gap-2 text-lg font-semibold mb-8">
           <span className="text-white font-bold">XiaoC'</span>
           <span className="text-indigo-400">blog</span>
         </Link>
 
-        {/* Tagline - moved up */}
-        <div className="relative z-10 mb-auto">
-          <h2 className="text-3xl font-bold leading-tight mb-4">
+        {/* Tagline */}
+        <div className="relative z-10 mb-8">
+          <h2 className="text-2xl font-bold leading-tight mb-3">
             记录探索<br />分享见解
           </h2>
-          <p className="text-stone-400 text-sm max-w-xs">
+          <p className="text-stone-400 text-xs max-w-xs leading-relaxed">
             一个关于软件工程、界面设计和技术探索的个人博客
           </p>
         </div>
 
-        {/* CodeCreatures animation - center */}
+        {/* CodeCreatures animation — centered, main visual */}
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <CodeCreatures
             isTyping={focusedField !== null}
@@ -89,7 +89,7 @@ export default function Login() {
         </div>
 
         {/* Footer links */}
-        <div className="relative z-10 flex items-center gap-6 text-xs text-stone-500">
+        <div className="relative z-10 flex items-center gap-6 text-xs text-stone-500 mt-auto pt-6">
           <span>&copy; {new Date().getFullYear()} XiaoC'blog</span>
           <a href="https://github.com/TKCCOPL" target="_blank" rel="noopener" className="hover:text-stone-300 transition-colors">
             GitHub
