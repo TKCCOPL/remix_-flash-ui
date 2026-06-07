@@ -1,0 +1,62 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: blog-frontend-img
+    container_name: blog-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    image: blog-backend-img
+    container_name: blog-backend
+    restart: unless-stopped
+    volumes:
+      - blog-data:/app/data
+      - blog-uploads:/app/uploads
+    env_file:
+      - .env
+    environment:
+      - TRUST_PROXY_HEADERS=true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+volumes:
+  blog-data:
+  blog-uploads:
