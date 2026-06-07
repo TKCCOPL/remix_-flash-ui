@@ -1,0 +1,29 @@
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+
+# Virtual environment
+.venv
+venv
+
+# Pytest
+.pytest_cache
+
+# Database (will be in Docker volume)
+data/*.sqlite3
+
+# Uploads (will be in Docker volume)
+uploads/*
+
+# Environment (secrets)
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+
+# Claude
+.claude

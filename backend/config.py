@@ -1,22 +1,22 @@
 import logging
 import os
 import secrets
-from pathlib import Path
-from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
-# 加载 .env 文件（从项目根目录）
-env_path = Path(__file__).parent.parent / ".env"
-load_dotenv(env_path)
+# Environment variables are loaded in main.py before any other imports
+# This module only reads from os.environ
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", "")
 GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "")
-GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI", "http://localhost:8001/api/oauth/github/callback")
+GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI", "http://localhost:8000/api/oauth/github/callback")
 
 GITEE_CLIENT_ID = os.environ.get("GITEE_CLIENT_ID", "")
 GITEE_CLIENT_SECRET = os.environ.get("GITEE_CLIENT_SECRET", "")
-GITEE_REDIRECT_URI = os.environ.get("GITEE_REDIRECT_URI", "http://localhost:8001/api/oauth/gitee/callback")
+GITEE_REDIRECT_URI = os.environ.get("GITEE_REDIRECT_URI", "http://localhost:8000/api/oauth/gitee/callback")
+
+# Frontend URL for OAuth redirect after login
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 # Warn if OAuth credentials are not configured
 for _var in ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GITEE_CLIENT_ID", "GITEE_CLIENT_SECRET"]:

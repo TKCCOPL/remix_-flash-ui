@@ -10,7 +10,7 @@ from middleware import _is_secure_request
 from oauth_providers import get_provider, generate_pkce_pair
 from services.oauth_service import create_guest_token, revoke_guest_token, verify_guest_token
 from repositories.users_repository import create_or_update_user, get_user_by_id
-from config import GUEST_COOKIE_NAME, GUEST_TOKEN_EXPIRE_HOURS
+from config import GUEST_COOKIE_NAME, GUEST_TOKEN_EXPIRE_HOURS, FRONTEND_URL
 
 router = APIRouter()
 
@@ -119,8 +119,7 @@ async def oauth_callback(
     )
 
     token = create_guest_token(user_id=user["id"], username=user["username"])
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-    redirect_response = RedirectResponse(url=frontend_url)
+    redirect_response = RedirectResponse(url=FRONTEND_URL)
     secure = _is_secure_request(request)
     redirect_response.set_cookie(
         GUEST_COOKIE_NAME,
