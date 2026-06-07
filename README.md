@@ -123,11 +123,52 @@ python seed.py
 | GET | `/api/favorites/check/:post_id` | Check if favorited |
 | GET | `/api/favorites/list` | List user favorites |
 
+## Deployment
+
+### Quick Start (Docker)
+
+```bash
+# Build and start
+docker compose up -d --build
+
+# Check status
+docker compose ps
+
+# Health check
+curl http://localhost:8080/api/health
+```
+
+### Environment Configuration
+
+| File | Purpose |
+|------|---------|
+| `.env.example` | Template for production config |
+| `.env.local.example` | Template for local development |
+| `.env` | Production config (create from `.env.example`) |
+| `.env.local` | Local dev config (create from `.env.local.example`) |
+
+### Port Allocation
+
+| Environment | Frontend | Backend |
+|-------------|----------|---------|
+| Local dev | 3000 | 8001 |
+| Production | 8080 | 8000 (internal) |
+
+### Database Backup
+
+```bash
+# Manual backup
+./scripts/backup_db.sh
+
+# Auto backup (add to crontab)
+0 3 * * * /path/to/scripts/backup_db.sh
+```
+
 ## Admin
 
-- **URL**: `/login`
-- **Username**: `admin`
-- **Password**: `123456`
+- **URL**: `/admin`
+- **Username**: Set in `.env` (`ADMIN_USER`)
+- **Password**: Set in `.env` (`ADMIN_PASS`)
 
 ---
 

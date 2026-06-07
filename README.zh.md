@@ -123,11 +123,52 @@ python seed.py
 | GET | `/api/favorites/check/:post_id` | 检查是否已收藏 |
 | GET | `/api/favorites/list` | 获取用户收藏列表 |
 
+## 部署
+
+### 快速开始 (Docker)
+
+```bash
+# 构建并启动
+docker compose up -d --build
+
+# 查看状态
+docker compose ps
+
+# 健康检查
+curl http://localhost:8080/api/health
+```
+
+### 环境配置
+
+| 文件 | 用途 |
+|------|------|
+| `.env.example` | 生产环境配置模板 |
+| `.env.local.example` | 本地开发配置模板 |
+| `.env` | 生产环境配置（从 `.env.example` 创建） |
+| `.env.local` | 本地开发配置（从 `.env.local.example` 创建） |
+
+### 端口分配
+
+| 环境 | 前端 | 后端 |
+|------|------|------|
+| 本地开发 | 3000 | 8001 |
+| 生产环境 | 8080 | 8000 (内部) |
+
+### 数据库备份
+
+```bash
+# 手动备份
+./scripts/backup_db.sh
+
+# 自动备份（添加到 crontab）
+0 3 * * * /path/to/scripts/backup_db.sh
+```
+
 ## 管理后台
 
-- **地址**: `/login`
-- **用户名**: `admin`
-- **密码**: `123456`
+- **地址**: `/admin`
+- **用户名**: 在 `.env` 中设置 (`ADMIN_USER`)
+- **密码**: 在 `.env` 中设置 (`ADMIN_PASS`)
 
 ---
 

@@ -47,14 +47,57 @@ python seed.py
 - Local database is for testing only
 - Seed script skips if data already exists
 
-## ⚠️ VPS 生产环境测试规则
+## 🚀 Deployment
+
+### Environment Files
+
+| File | Purpose | Git |
+|------|---------|-----|
+| `.env.example` | Template for `.env` | ✅ Tracked |
+| `.env.local.example` | Template for `.env.local` | ✅ Tracked |
+| `.env` | Production config | ❌ Excluded |
+| `.env.local` | Local dev config (overrides `.env`) | ❌ Excluded |
+
+### Port Allocation
+
+| Environment | Frontend | Backend | Command |
+|-------------|----------|---------|---------|
+| Local dev | 3000 | 8001 | `./scripts/dev.sh` |
+| VPS dev | 3001 | 8001 | `./scripts/dev-vps.sh` |
+| Production | 8080 | 8000 (internal) | `docker compose up -d` |
+
+### Production Deployment
+
+```bash
+# Build and start
+docker compose up -d --build
+
+# Check status
+docker compose ps
+
+# View logs
+docker compose logs -f
+
+# Health check
+curl http://localhost:8080/api/health
+```
+
+### Database Backup
+
+```bash
+# Manual backup
+./scripts/backup_db.sh
+
+# Auto backup (cron)
+0 3 * * * /path/to/scripts/backup_db.sh
+```
+
+## ⚠️ VPS 开发规则
 
 当通过 SSH 连接到 VPS 开发时：
-- **Docker 容器占用 8000 端口**，绝对不要修改或重启 Docker 容器
-- **本地开发后端使用 8001 端口**：`uvicorn main:app --reload --host 0.0.0.0 --port 8001`
-- **前端 Vite 使用 3000 端口**，通过代理将 `/api` 转发到 `localhost:8001`
-- **OAuth 回调 URL** 必须配置为 8001 端口（在 `.env` 文件中设置）
-
+- **Docker 容器占用 8080/8000 端口**，不要修改或重启 Docker 容器
+- **本地开发使用 `./scripts/dev-vps.sh`**：前端 3001，后端 8001
+- **OAuth 回调 URL** 在 `.env.local` 中配置为 8001 端口
 
 ## Architecture
 
