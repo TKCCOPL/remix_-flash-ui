@@ -1,4 +1,20 @@
+import logging
 import os
+import sqlite3
+from pathlib import Path
+
+# ── Load environment variables BEFORE any other imports ──────────────────────
+# This ensures .env.local is loaded before limiter.py and middleware.py read env vars
+from dotenv import load_dotenv
+
+_project_root = Path(__file__).parent.parent
+_env_local = _project_root / ".env.local"
+_env_file = _project_root / ".env"
+
+if _env_local.exists():
+    load_dotenv(_env_local, override=True)
+load_dotenv(_env_file)
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,7 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from database import init_db
+from database import init_db, DB_FILE
 from limiter import limiter
 from routers.auth_router import router as auth_api_router
 from routers.categories_router import router as categories_api_router
@@ -24,6 +40,13 @@ from routers.user_router import router as user_api_router
 from apscheduler.schedulers.background import BackgroundScheduler
 from middleware import SecurityHeadersMiddleware, CSRFMiddleware
 import sys
+
+# ── Logging configuration ────────────────────────────────────────────────────
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Add the scripts directory to sys.path for scrape_github_trending imports
 scripts_dir = os.path.join(os.path.dirname(__file__), "scripts")
@@ -45,10 +68,10 @@ async def lifespan(app: FastAPI):
         # Run every Monday at 00:00
         scheduler.add_job(scrape_trending_job, 'cron', day_of_week='mon', hour=0, minute=0)
         scheduler.start()
-        print("✅ APScheduler started. Scheduled GitHub Trending scrape every Monday at 00:00.")
+        logger.info("APScheduler started. Scheduled GitHub Trending scrape every Monday at 00:00.")
     yield
     scheduler.shutdown()
-    print("🛑 APScheduler stopped.")
+    logger.info("APScheduler stopped.")
 
 app = FastAPI(title="My Personal Blog API", lifespan=lifespan)
 
@@ -76,6 +99,27 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 init_db()
 os.makedirs("uploads", exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for Docker/Kubernetes probes."""
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        conn.execute("SELECT 1")
+        return {"status": "healthy", "database": "ok"}
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "database": str(e)}
+        )
+    finally:
+        if conn:
+            conn.close()
+
+
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     # Handle 404 routes with a generic message
