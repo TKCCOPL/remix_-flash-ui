@@ -20,7 +20,7 @@ fi
 # 检查后端依赖
 if [ ! -d "backend/__pycache__" ] && [ ! -d "backend/.venv" ]; then
     echo "📦 Installing backend dependencies..."
-    cd backend && pip install -r requirements.txt && cd ..
+    (cd backend && pip install -r requirements.txt)
 fi
 
 # 检查前端依赖
@@ -41,9 +41,8 @@ echo ""
 
 # 启动后端（后台，端口 8001 避免与 Docker 冲突）
 echo "🔧 Starting backend..."
-cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8001 &
+(cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8001) &
 BACKEND_PID=$!
-cd ..
 
 # 启动前端（后台）
 echo "🎨 Starting frontend..."

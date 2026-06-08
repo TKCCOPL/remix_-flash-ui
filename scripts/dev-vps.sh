@@ -43,9 +43,8 @@ fi
 
 # 启动后端（端口 8001）
 echo "🔧 Starting backend on port 8001..."
-cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8001 &
+(cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8001) &
 BACKEND_PID=$!
-cd ..
 
 # 启动前端（端口 3001，代理到 8001）
 echo "🎨 Starting frontend on port 3001..."
