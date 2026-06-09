@@ -208,6 +208,23 @@ def increment_view_count(conn, post_id: int):
     conn.commit()
 
 
+def log_view(conn, post_id: int, user_ip_hash: str):
+    """Log a view with anti-abuse (10 min cooldown per IP per post)."""
+    cursor = conn.execute(
+        """SELECT 1 FROM view_logs
+           WHERE post_id = ? AND user_ip_hash = ?
+           AND viewed_at > datetime('now', '-10 minutes')
+           LIMIT 1""",
+        (post_id, user_ip_hash)
+    )
+    if cursor.fetchone() is None:
+        conn.execute(
+            "INSERT INTO view_logs (post_id, user_ip_hash) VALUES (?, ?)",
+            (post_id, user_ip_hash)
+        )
+        conn.commit()
+
+
 def get_post_with_stats(conn, post_id: int, increment_view: bool = False):
     cursor = conn.cursor()
     if increment_view:

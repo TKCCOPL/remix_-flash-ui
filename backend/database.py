@@ -189,6 +189,19 @@ def init_db(conn_param=None):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id)")
 
+    # ── View logs table ───────────────────────────────────────────────────────
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS view_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL,
+            user_ip_hash TEXT,
+            viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_view_logs_post_date ON view_logs(post_id, viewed_at)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_view_logs_date ON view_logs(viewed_at)")
+
     conn.commit()
 
     if conn_param is None:

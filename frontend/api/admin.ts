@@ -115,7 +115,20 @@ export type CommentsTrend = {
 export type PopularPost = {
   id: number;
   title: string;
+  view_count: number;
   comment_count: number;
+  like_count: number;
+};
+
+export type ViewsTrend = {
+  date: string;
+  views: number;
+};
+
+export type ViewsTrendResponse = {
+  trend: ViewsTrend[];
+  total_views: number;
+  avg_daily: number;
 };
 
 export type CategoryDistribution = {
@@ -129,6 +142,7 @@ export const adminStatsApi = {
   commentsTrend: () => apiFetch<{ trend: CommentsTrend[] }>('/api/admin/stats/comments-trend'),
   popularPosts: () => apiFetch<{ posts: PopularPost[] }>('/api/admin/stats/popular-posts'),
   categoryDistribution: () => apiFetch<{ categories: CategoryDistribution[] }>('/api/admin/stats/category-distribution'),
+  viewsTrend: (days: number = 30) => apiFetch<ViewsTrendResponse>(`/api/admin/stats/views-trend?days=${days}`),
 };
 
 // User Management API

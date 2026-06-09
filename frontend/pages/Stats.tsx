@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Users, MessageCircle, Folder, Eye, Heart } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
-import { adminStatsApi, type StatsOverview, type CommentsTrend, type PopularPost, type CategoryDistribution } from '../api/admin';
+import { adminStatsApi, type StatsOverview, type CommentsTrend, type PopularPost, type CategoryDistribution, type ViewsTrendResponse } from '../api/admin';
 
 export default function Stats() {
   const t = useI18n();
@@ -13,6 +14,7 @@ export default function Stats() {
   const [trend, setTrend] = useState<CommentsTrend[]>([]);
   const [popularPosts, setPopularPosts] = useState<PopularPost[]>([]);
   const [categories, setCategories] = useState<CategoryDistribution[]>([]);
+  const [viewsTrend, setViewsTrend] = useState<ViewsTrendResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -21,17 +23,19 @@ export default function Stats() {
     const loadData = async () => {
       try {
         await authApi.me();
-        const [overviewData, trendData, postsData, catData] = await Promise.all([
+        const [overviewData, trendData, postsData, catData, viewsTrendData] = await Promise.all([
           adminStatsApi.overview(),
           adminStatsApi.commentsTrend(),
           adminStatsApi.popularPosts(),
           adminStatsApi.categoryDistribution(),
+          adminStatsApi.viewsTrend(30),
         ]);
         if (!cancelled) {
           setOverview(overviewData);
           setTrend(trendData.trend);
           setPopularPosts(postsData.posts);
           setCategories(catData.categories);
+          setViewsTrend(viewsTrendData);
         }
       } catch (err) {
         if (!cancelled) {
@@ -118,6 +122,43 @@ export default function Stats() {
         )}
       </div>
 
+      {/* Views Trend */}
+      {viewsTrend && (
+        <div className="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200/50 dark:border-stone-800/50 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mb-4">{t.admin.stats.viewsTrend}</h2>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="text-sm text-stone-500 dark:text-stone-400">{t.admin.stats.totalViews}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{viewsTrend.total_views}</p>
+            </div>
+            <div>
+              <p className="text-sm text-stone-500 dark:text-stone-400">{t.admin.stats.avgDaily}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{viewsTrend.avg_daily}</p>
+            </div>
+          </div>
+          {viewsTrend.trend.length === 0 ? (
+            <div className="text-center py-8 text-stone-400">{t.admin.stats.noData}</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={viewsTrend.trend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#a8a29e" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#a8a29e" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#292524',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fafaf9',
+                  }}
+                />
+                <Line type="monotone" dataKey="views" stroke="#6366f1" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      )}
+
       {/* Popular Posts & Category Distribution */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Popular Posts */}
@@ -133,7 +174,11 @@ export default function Stats() {
                     {i + 1}
                   </span>
                   <span className="flex-1 truncate text-sm text-stone-800 dark:text-stone-200">{post.title}</span>
-                  <span className="text-xs text-stone-400">{post.comment_count} {t.admin.stats.overview.comments}</span>
+                  <div className="flex items-center gap-3 text-xs text-stone-400">
+                    <span>{post.view_count} {t.admin.stats.overview.views}</span>
+                    <span>{post.comment_count} {t.admin.stats.overview.comments}</span>
+                    <span>{post.like_count} {t.admin.stats.likes}</span>
+                  </div>
                 </div>
               ))}
             </div>

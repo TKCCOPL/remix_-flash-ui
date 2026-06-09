@@ -8,6 +8,7 @@ from services.stats_service import (
     get_comments_trend,
     get_popular_posts,
     get_category_distribution,
+    get_views_trend,
 )
 
 router = APIRouter()
@@ -47,3 +48,13 @@ def get_category_distribution_route(
     _=Depends(require_admin),
 ):
     return {"categories": get_category_distribution(conn)}
+
+
+@router.get("/views-trend")
+def get_views_trend_route(
+    request: Request,
+    days: int = 30,
+    conn: sqlite3.Connection = Depends(get_db),
+    _=Depends(require_admin),
+):
+    return get_views_trend(conn, days)

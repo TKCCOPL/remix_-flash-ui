@@ -31,18 +31,42 @@ def get_comments_trend(conn: sqlite3.Connection) -> list[dict]:
 
 
 def get_popular_posts(conn: sqlite3.Connection) -> list[dict]:
-    """Get top 10 posts by comment count."""
+    """Get top 10 posts by view count with comment and like counts."""
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT p.id, p.title, COUNT(c.id) as comment_count
+        SELECT
+            p.id,
+            p.title,
+            p.view_count,
+            (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
+            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count
         FROM posts p
-        LEFT JOIN comments c ON c.post_id = p.id
         WHERE p.status = 'published'
-        GROUP BY p.id
-        ORDER BY comment_count DESC
+        ORDER BY p.view_count DESC
         LIMIT 10
     """)
     return [dict(row) for row in cursor.fetchall()]
+
+
+def get_views_trend(conn: sqlite3.Connection, days: int = 30) -> dict:
+    """Get views trend for the last N days."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT date(viewed_at) as date, COUNT(*) as views
+           FROM view_logs
+           WHERE viewed_at > datetime('now', ?)
+           GROUP BY date(viewed_at)
+           ORDER BY date""",
+        (f"-{days} days",)
+    )
+    trend = [{"date": row["date"], "views": row["views"]} for row in cursor.fetchall()]
+    total_views = sum(item["views"] for item in trend)
+    avg_daily = total_views / days if days > 0 else 0
+    return {
+        "trend": trend,
+        "total_views": total_views,
+        "avg_daily": round(avg_daily, 1)
+    }
 
 
 def get_category_distribution(conn: sqlite3.Connection) -> list[dict]:
