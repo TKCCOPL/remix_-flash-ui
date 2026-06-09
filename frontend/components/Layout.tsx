@@ -6,6 +6,7 @@ import { useI18n, usePreferences } from '../context/Preferences';
 import { useAuth } from '../context/AuthContext';
 import { postsApi, type SearchResult } from '../api/posts';
 import UserMenu from './UserMenu';
+import NotificationBell from './NotificationBell';
 
 export default function Layout() {
   const location = useLocation();
@@ -211,6 +212,8 @@ export default function Layout() {
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
             </div>
+
+            {(user || isAdmin) && <NotificationBell />}
 
             {user || isAdmin ? (
               <UserMenu />

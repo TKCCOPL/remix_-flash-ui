@@ -202,6 +202,20 @@ def init_db(conn_param=None):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_view_logs_post_date ON view_logs(post_id, viewed_at)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_view_logs_date ON view_logs(viewed_at)")
 
+    # ── Notifications table ─────────────────────────────────────────────────────
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            reference_id INTEGER,
+            is_read INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at)")
+
     conn.commit()
 
     if conn_param is None:

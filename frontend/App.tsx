@@ -19,6 +19,7 @@ const AdminEdit = lazy(() => import('./pages/AdminEdit'));
 const Comments = lazy(() => import('./pages/Comments'));
 const Stats = lazy(() => import('./pages/Stats'));
 const Users = lazy(() => import('./pages/Users'));
+const Notifications = lazy(() => import('./pages/Notifications'));
 
 function PageLoader() {
   return (
@@ -58,6 +59,7 @@ function AnimatedRoutes() {
           <Route path="archive" element={<Suspense fallback={<PageLoader />}><ArchivePage /></Suspense>} />
           <Route path="categories" element={<Suspense fallback={<PageLoader />}><CategoriesPage /></Suspense>} />
           <Route path="categories/:slug" element={<Suspense fallback={<PageLoader />}><CategoryPage /></Suspense>} />
+          <Route path="notifications" element={<Suspense fallback={<PageLoader />}><Notifications /></Suspense>} />
         </Route>
 
         <Route path="/login" element={

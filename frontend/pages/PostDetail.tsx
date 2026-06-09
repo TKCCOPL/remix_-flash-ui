@@ -19,6 +19,7 @@ import CommentSection from '../components/CommentSection';
 import FavoriteButton from '../components/FavoriteButton';
 import LikeButton from '../components/LikeButton';
 import SEO from '../components/SEO';
+import TOCDrawer from '../components/TOCDrawer';
 import { normalizeDate } from '../utils/date';
 
 interface TocItem {
@@ -390,6 +391,13 @@ export default function PostDetail() {
             </div>
           </div>
         </aside>
+      )}
+
+      {/* 移动端 TOC 抽屉 */}
+      {!loading && toc.length > 0 && (
+        <div className="xl:hidden">
+          <TOCDrawer headings={toc} activeId={activeTocId} />
+        </div>
       )}
     </div>
   );
