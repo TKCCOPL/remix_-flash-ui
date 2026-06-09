@@ -26,7 +26,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const t = useI18n();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('admin_sidebar_collapsed') === 'true';
   });
@@ -82,11 +82,14 @@ export default function AdminLayout() {
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
 
   const sidebarItems = [
-    { icon: LayoutDashboard, path: '/admin', label: t.admin.sidebar.overview },
-    { icon: MessageSquare, path: '/admin/comments', label: t.admin.sidebar.comments },
-    { icon: BarChart3, path: '/admin/stats', label: t.admin.sidebar.stats },
-    { icon: Users, path: '/admin/users', label: t.admin.sidebar.users },
+    { icon: LayoutDashboard, path: '/admin', label: t.admin.sidebar.overview, roles: ['admin', 'editor', 'author'] },
+    { icon: MessageSquare, path: '/admin/comments', label: t.admin.sidebar.comments, roles: ['admin', 'editor'] },
+    { icon: BarChart3, path: '/admin/stats', label: t.admin.sidebar.stats, roles: ['admin', 'editor'] },
+    { icon: Users, path: '/admin/users', label: t.admin.sidebar.users, roles: ['admin'] },
   ];
+
+  const userRole = user?.role || 'guest';
+  const visibleItems = sidebarItems.filter((item) => item.roles.includes(userRole));
 
   const sidebarContent = (
     <div className="flex flex-col h-full min-h-0">
@@ -116,7 +119,7 @@ export default function AdminLayout() {
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
-        {sidebarItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link

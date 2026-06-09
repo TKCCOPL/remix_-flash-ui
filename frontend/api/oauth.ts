@@ -7,6 +7,7 @@ export type GuestUser = {
   email: string | null;
   oauth_provider: string;
   is_admin: boolean;
+  role: 'admin' | 'editor' | 'author' | 'guest';
 };
 
 export const oauthApi = {

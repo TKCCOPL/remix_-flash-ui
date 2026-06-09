@@ -25,7 +25,7 @@ def create_or_update_user(
     )
     conn.commit()
     cursor.execute(
-        "SELECT id, oauth_provider, oauth_id, username, avatar_url, email, created_at FROM users WHERE oauth_provider = ? AND oauth_id = ?",
+        "SELECT id, oauth_provider, oauth_id, username, avatar_url, email, role, created_at FROM users WHERE oauth_provider = ? AND oauth_id = ?",
         (oauth_provider, oauth_id),
     )
     return dict(cursor.fetchone())
@@ -38,7 +38,7 @@ def get_user_by_oauth(
 ) -> dict | None:
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT id, oauth_provider, oauth_id, username, avatar_url, email, created_at FROM users WHERE oauth_provider = ? AND oauth_id = ?",
+        "SELECT id, oauth_provider, oauth_id, username, avatar_url, email, role, created_at FROM users WHERE oauth_provider = ? AND oauth_id = ?",
         (oauth_provider, oauth_id),
     )
     row = cursor.fetchone()
@@ -48,7 +48,7 @@ def get_user_by_oauth(
 def get_user_by_id(conn: sqlite3.Connection, user_id: int) -> dict | None:
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT id, oauth_provider, oauth_id, username, avatar_url, email, created_at FROM users WHERE id = ?",
+        "SELECT id, oauth_provider, oauth_id, username, avatar_url, email, role, created_at FROM users WHERE id = ?",
         (user_id,),
     )
     row = cursor.fetchone()
@@ -71,6 +71,7 @@ def get_users_with_stats(
             u.username,
             u.avatar_url,
             u.email,
+            u.role,
             u.created_at,
             COUNT(DISTINCT c.id) as comment_count,
             COUNT(DISTINCT f.id) as favorite_count

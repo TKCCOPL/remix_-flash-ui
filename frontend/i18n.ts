@@ -237,6 +237,7 @@ export const translations = {
         },
         table: {
           user: '用户',
+          role: '角色',
           email: '邮箱',
           provider: '提供者',
           registeredAt: '注册时间',
@@ -609,6 +610,7 @@ export const translations = {
         },
         table: {
           user: 'User',
+          role: 'Role',
           email: 'Email',
           provider: 'Provider',
           registeredAt: 'Registered',

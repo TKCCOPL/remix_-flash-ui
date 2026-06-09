@@ -29,6 +29,7 @@ export type AdminUser = {
   username: string;
   avatar_url: string | null;
   email: string | null;
+  role: string;
   created_at: string;
   comment_count: number;
   favorite_count: number;
@@ -149,6 +150,14 @@ export const adminApi = {
 
   getUserDetail: (userId: number) =>
     apiFetch<AdminUserDetail>(`/api/admin/users/${userId}`),
+
+  updateUserRole: (userId: number, role: string) =>
+    apiFetch<{ user: { id: number; username: string; role: string }; message: string }>(
+      `/api/admin/users/${userId}/role?role=${encodeURIComponent(role)}`,
+      {
+        method: 'PATCH',
+      }
+    ),
 
   deleteUser: (userId: number) =>
     apiFetch<AdminDeleteUserResponse>(`/api/admin/users/${userId}`, {

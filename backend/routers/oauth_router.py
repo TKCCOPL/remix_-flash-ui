@@ -34,6 +34,7 @@ async def oauth_me(request: Request, conn: sqlite3.Connection = Depends(get_db))
         "avatar_url": user["avatar_url"],
         "email": user["email"],
         "oauth_provider": user["oauth_provider"],
+        "role": user.get("role", "guest"),
     }
 
 

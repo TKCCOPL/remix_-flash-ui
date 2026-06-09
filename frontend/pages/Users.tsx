@@ -1,12 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users as UsersIcon, Trash2, Eye } from 'lucide-react';
+import { Search, Users as UsersIcon, Trash2, Eye, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '../context/Preferences';
 import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { adminApi, AdminUser } from '../api/admin';
 import UserDetailModal from '../components/UserDetailModal';
+
+const roleColors: Record<string, string> = {
+  admin: 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400',
+  editor: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400',
+  author: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400',
+  guest: 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400',
+};
+
+const assignableRoles = ['guest', 'author', 'editor'] as const;
 
 export default function Users() {
   const t = useI18n();
@@ -75,6 +84,15 @@ export default function Users() {
       setDeleteConfirm(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '删除失败');
+    }
+  };
+
+  const handleRoleChange = async (userId: number, newRole: string) => {
+    try {
+      await adminApi.updateUserRole(userId, newRole);
+      void loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update role');
     }
   };
 
@@ -175,6 +193,7 @@ export default function Users() {
               <thead>
                 <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50">
                   <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">{t.admin.users.table.user}</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">{t.admin.users.table.role}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">{t.admin.users.table.email}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">{t.admin.users.table.provider}</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-stone-500 dark:text-stone-400">{t.admin.users.table.registeredAt}</th>
@@ -196,6 +215,24 @@ export default function Users() {
                           </div>
                         )}
                         <span className="font-medium text-stone-900 dark:text-stone-100">{user.username}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${roleColors[user.role] || roleColors.guest}`}>
+                          {user.role}
+                        </span>
+                        {user.role !== 'admin' && (
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            className="text-xs bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-2 py-1 text-stone-700 dark:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          >
+                            {assignableRoles.map((r) => (
+                              <option key={r} value={r}>{r}</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-4 text-sm text-stone-500 dark:text-stone-400">{user.email || '-'}</td>
