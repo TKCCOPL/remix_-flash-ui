@@ -394,6 +394,21 @@ export const translations = {
       replySubmitting: '发送中...',
       cancel: '取消',
     },
+    notifications: {
+      title: '通知',
+      loading: '加载中...',
+      markAllRead: '全部已读',
+      filterAll: '全部',
+      filterUnread: '未读',
+      empty: '暂无通知',
+      replyTitle: '有人回复了你的评论',
+      replyType: '评论回复',
+      newNotification: '新通知',
+    },
+    toc: {
+      openToc: '打开目录',
+      title: '目录',
+    },
     userMenu: {
       logout: '退出登录',
     },
@@ -770,6 +785,21 @@ export const translations = {
       replySubmit: 'Reply',
       replySubmitting: 'Sending...',
       cancel: 'Cancel',
+    },
+    notifications: {
+      title: 'Notifications',
+      loading: 'Loading...',
+      markAllRead: 'Mark all read',
+      filterAll: 'All',
+      filterUnread: 'Unread',
+      empty: 'No notifications',
+      replyTitle: 'Someone replied to your comment',
+      replyType: 'Comment reply',
+      newNotification: 'New notification',
+    },
+    toc: {
+      openToc: 'Open table of contents',
+      title: 'Contents',
     },
     userMenu: {
       logout: 'Logout',

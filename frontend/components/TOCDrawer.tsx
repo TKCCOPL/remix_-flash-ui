@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { List, X } from "lucide-react";
+import { useI18n } from "@/context/Preferences";
 
 export interface TocItem {
     id: string;
@@ -14,6 +15,7 @@ interface TOCDrawerProps {
 }
 
 export default function TOCDrawer({ headings, activeId }: TOCDrawerProps) {
+    const { t } = useI18n();
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClick = (id: string) => {
@@ -31,7 +33,7 @@ export default function TOCDrawer({ headings, activeId }: TOCDrawerProps) {
                            bg-indigo-500 hover:bg-indigo-600 text-white
                            rounded-full p-3 shadow-lg transition-colors"
                 onClick={() => setIsOpen(true)}
-                aria-label="打开目录"
+                aria-label={t.toc.openToc}
             >
                 <List className="w-5 h-5" />
             </button>
@@ -57,7 +59,7 @@ export default function TOCDrawer({ headings, activeId }: TOCDrawerProps) {
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         >
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-bold text-lg">目录</h3>
+                                <h3 className="font-bold text-lg">{t.toc.title}</h3>
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="p-1 hover:bg-stone-100 dark:hover:bg-stone-700 rounded"

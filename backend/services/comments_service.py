@@ -28,10 +28,11 @@ def create_comment(conn, post_id: int, user_id: int, content: str, parent_id: in
     comment_id = create_comment_record(conn, post_id, user_id, content, parent_id=parent_id)
 
     # Send notification to parent comment author on reply
+    # reference_id stores post_id (not comment_id) because the frontend navigates to /post/${n.reference_id}
     if parent_id is not None:
         parent_comment = get_comment_by_id(conn, parent_id)
         if parent_comment and parent_comment["user_id"] != user_id:
-            create_reply_notification(conn, parent_comment["user_id"], comment_id)
+            create_reply_notification(conn, parent_comment["user_id"], post_id)
 
     return get_comment_by_id(conn, comment_id)
 

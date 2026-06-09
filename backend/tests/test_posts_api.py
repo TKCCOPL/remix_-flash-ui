@@ -5,6 +5,27 @@ from main import app
 from database import get_db
 
 
+def _create_likes_table(cursor):
+    """Create the likes and view_logs tables in test in-memory databases."""
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS likes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        post_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, post_id)
+    )
+    ''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS view_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_ip_hash TEXT NOT NULL,
+        viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+
 def test_list_posts_endpoint():
     """Test that the list posts endpoint returns correctly formatted posts"""
     conn = sqlite3.connect(':memory:', check_same_thread=False)
@@ -22,6 +43,7 @@ def test_list_posts_endpoint():
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+    _create_likes_table(cursor)
     cursor.execute('''
     INSERT INTO posts (title, content, category)
     VALUES ('Typography Test', '# Hello World', 'Design')
@@ -86,6 +108,7 @@ def test_get_single_post_endpoint():
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+    _create_likes_table(cursor)
     cursor.execute('''
     INSERT INTO posts (title, content, category)
     VALUES ('Typography Test', '# Hello World', 'Design')
@@ -116,7 +139,7 @@ def test_get_single_post_endpoint():
 
 
 def test_post_out_has_stats_fields():
-    """Test PostOut schema has view_count, comment_count, favorite_count."""
+    """Test PostOut schema has view_count, comment_count, favorite_count, like_count."""
     from schemas import PostOut
 
     post = PostOut(
@@ -129,15 +152,17 @@ def test_post_out_has_stats_fields():
         updated_at="2024-01-01",
         view_count=10,
         comment_count=5,
-        favorite_count=3
+        favorite_count=3,
+        like_count=7,
     )
     assert post.view_count == 10
     assert post.comment_count == 5
     assert post.favorite_count == 3
+    assert post.like_count == 7
 
 
 def test_get_post_increments_view_count():
-    """Test that getting a post increments view count."""
+    """Test that getting a post increments view count, with anti-abuse cooldown."""
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -172,6 +197,7 @@ def test_get_post_increments_view_count():
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+    _create_likes_table(cursor)
     cursor.execute('''
     INSERT INTO posts (title, content, category)
     VALUES ('Typography Test', '# Hello World', 'Design')
@@ -187,10 +213,12 @@ def test_get_post_increments_view_count():
     app.dependency_overrides[get_db] = override_get_db
 
     client = TestClient(app)
+    # First request increments view_count
     client.get("/api/posts/1")
+    # Second request from same IP within 10 min is blocked by anti-abuse cooldown
     response = client.get("/api/posts/1")
     data = response.json()
-    assert data["view_count"] == 2
+    assert data["view_count"] == 1
 
     app.dependency_overrides.clear()
     conn.close()
@@ -232,6 +260,7 @@ def test_get_post_returns_stats():
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+    _create_likes_table(cursor)
     cursor.execute('''
     INSERT INTO posts (title, content, category)
     VALUES ('Typography Test', '# Hello World', 'Design')

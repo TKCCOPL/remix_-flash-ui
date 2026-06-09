@@ -141,4 +141,5 @@ app.include_router(admin_stats_router, prefix="/api/admin/stats", tags=["admin-s
 app.include_router(admin_api_router, prefix="/api/admin", tags=["admin"])
 app.include_router(user_api_router, prefix="/api/user", tags=["user"])
 app.include_router(likes_router.router, prefix="/api/posts", tags=["likes"])
+app.include_router(likes_router.batch_router, prefix="/api/likes", tags=["likes-batch"])
 app.include_router(notifications_router.router, prefix="/api/notifications", tags=["notifications"])

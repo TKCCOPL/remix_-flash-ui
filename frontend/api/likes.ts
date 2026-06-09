@@ -24,6 +24,6 @@ export const likesApi = {
     },
 
     async getBatchStatus(postIds: number[]): Promise<BatchLikeStatus> {
-        return apiFetch<BatchLikeStatus>(`/api/posts/like-status?ids=${postIds.join(",")}`);
+        return apiFetch<BatchLikeStatus>(`/api/likes/batch?ids=${postIds.join(",")}`);
     },
 };

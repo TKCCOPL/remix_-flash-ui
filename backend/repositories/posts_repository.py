@@ -1,13 +1,14 @@
 def get_posts(conn, skip: int = 0, limit: int = 10, include_drafts: bool = False):
     cursor = conn.cursor()
     query = """
-        SELECT id, title, content, category, image_url, status, created_at, updated_at
-        FROM posts
+        SELECT p.id, p.title, p.content, p.category, p.image_url, p.status, p.created_at, p.updated_at,
+               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count
+        FROM posts p
     """
     if not include_drafts:
-        query += " WHERE status = 'published'"
-    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
-    
+        query += " WHERE p.status = 'published'"
+    query += " ORDER BY p.created_at DESC LIMIT ? OFFSET ?"
+
     cursor.execute(query, (limit, skip))
     return [dict(row) for row in cursor.fetchall()]
 
@@ -209,7 +210,10 @@ def increment_view_count(conn, post_id: int):
 
 
 def log_view(conn, post_id: int, user_ip_hash: str):
-    """Log a view with anti-abuse (10 min cooldown per IP per post)."""
+    """Log a view with anti-abuse (10 min cooldown per IP per post).
+
+    Returns True if the view was actually counted (no cooldown hit).
+    """
     cursor = conn.execute(
         """SELECT 1 FROM view_logs
            WHERE post_id = ? AND user_ip_hash = ?
@@ -222,23 +226,35 @@ def log_view(conn, post_id: int, user_ip_hash: str):
             "INSERT INTO view_logs (post_id, user_ip_hash) VALUES (?, ?)",
             (post_id, user_ip_hash)
         )
-        conn.commit()
-
-
-def get_post_with_stats(conn, post_id: int, increment_view: bool = False):
-    cursor = conn.cursor()
-    if increment_view:
-        cursor.execute(
+        conn.execute(
             "UPDATE posts SET view_count = view_count + 1 WHERE id = ?",
             (post_id,),
         )
         conn.commit()
+        return True
+    return False
+
+
+def get_post_with_stats(conn, post_id: int, increment_view: bool = False, user_ip_hash: str = None):
+    cursor = conn.cursor()
+    if increment_view:
+        if user_ip_hash:
+            # Use log_view for anti-abuse cooldown (10 min per IP per post)
+            log_view(conn, post_id, user_ip_hash)
+        else:
+            # Fallback: unconditional increment (no IP available)
+            cursor.execute(
+                "UPDATE posts SET view_count = view_count + 1 WHERE id = ?",
+                (post_id,),
+            )
+            conn.commit()
     cursor.execute(
         """
         SELECT p.id, p.title, p.content, p.category, p.image_url, p.status,
                p.created_at, p.updated_at, p.view_count,
                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.status = 'approved') as comment_count,
-               (SELECT COUNT(*) FROM favorites f WHERE f.post_id = p.id) as favorite_count
+               (SELECT COUNT(*) FROM favorites f WHERE f.post_id = p.id) as favorite_count,
+               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count
         FROM posts p
         WHERE p.id = ?
         """,

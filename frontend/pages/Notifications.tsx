@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { notificationsApi, Notification } from "@/api/notifications";
+import { useI18n } from "@/context/Preferences";
 
 export default function Notifications() {
+    const { t } = useI18n();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -37,21 +39,21 @@ export default function Notifications() {
     };
 
     if (loading) {
-        return <div className="text-center py-8">加载中...</div>;
+        return <div className="text-center py-8">{t.notifications.loading}</div>;
     }
 
     return (
         <div className="max-w-2xl mx-auto p-4">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <Bell className="w-6 h-6" /> 通知
+                    <Bell className="w-6 h-6" /> {t.notifications.title}
                 </h1>
                 {unreadCount > 0 && (
                     <button
                         onClick={handleMarkAllRead}
                         className="flex items-center gap-1 text-indigo-500 hover:text-indigo-600"
                     >
-                        <CheckCheck className="w-4 h-4" /> 全部已读
+                        <CheckCheck className="w-4 h-4" /> {t.notifications.markAllRead}
                     </button>
                 )}
             </div>
@@ -61,18 +63,18 @@ export default function Notifications() {
                     onClick={() => setFilter("all")}
                     className={`px-3 py-1 rounded ${filter === "all" ? "bg-indigo-500 text-white" : "bg-stone-200 dark:bg-stone-700"}`}
                 >
-                    全部
+                    {t.notifications.filterAll}
                 </button>
                 <button
                     onClick={() => setFilter("unread")}
                     className={`px-3 py-1 rounded ${filter === "unread" ? "bg-indigo-500 text-white" : "bg-stone-200 dark:bg-stone-700"}`}
                 >
-                    未读 ({unreadCount})
+                    {t.notifications.filterUnread} ({unreadCount})
                 </button>
             </div>
 
             {notifications.length === 0 ? (
-                <div className="text-center py-8 text-stone-500">暂无通知</div>
+                <div className="text-center py-8 text-stone-500">{t.notifications.empty}</div>
             ) : (
                 <div className="space-y-2">
                     {notifications.map((n) => (
@@ -87,9 +89,9 @@ export default function Notifications() {
                         >
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <p className="font-medium">有人回复了你的评论</p>
+                                    <p className="font-medium">{t.notifications.replyTitle}</p>
                                     <p className="text-sm text-stone-500">
-                                        {n.type === "comment_reply" ? "评论回复" : "新通知"}
+                                        {n.type === "comment_reply" ? t.notifications.replyType : t.notifications.newNotification}
                                     </p>
                                 </div>
                                 {!n.is_read && (

@@ -1,6 +1,6 @@
 import hashlib
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Request
 
 from database import get_db
 from schemas import PostCreate, PostOut, PostStatus, PostUpdate
@@ -69,7 +69,9 @@ def get_post_route(post_id: int, request: Request, conn=Depends(get_db)):
         raise HTTPException(status_code=404, detail="文章不存在")
     if post.get("status") == "draft" and not is_logged_in(request):
         raise HTTPException(status_code=404, detail="文章不存在")
-    result = get_post_with_stats(conn, post_id, increment_view=True)
+    raw_ip = request.client.host if request and request.client else ""
+    hashed_ip = hashlib.sha256(raw_ip.encode()).hexdigest()[:16] if raw_ip else None
+    result = get_post_with_stats(conn, post_id, increment_view=True, user_ip_hash=hashed_ip)
     if not result:
         raise HTTPException(status_code=404, detail="文章不存在")
     return result
@@ -85,7 +87,7 @@ def update_post_route(post_id: int, post: PostUpdate, request: Request, conn=Dep
 
 
 @router.patch("/{post_id}/status")
-def update_post_status_route(post_id: int, status: PostStatus, request: Request, conn=Depends(get_db)):
+def update_post_status_route(post_id: int, status: PostStatus = Body(..., embed=True), request: Request = None, conn=Depends(get_db)):
     """Update post status (draft/published/archived)."""
     _require_login(request)
     result = update_post_status(conn, post_id, status.value)

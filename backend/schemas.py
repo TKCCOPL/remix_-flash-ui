@@ -48,6 +48,7 @@ class PostOut(BaseModel):
     view_count: int = 0
     comment_count: int = 0
     favorite_count: int = 0
+    like_count: int = 0
 
 
 class ArchivePost(BaseModel):

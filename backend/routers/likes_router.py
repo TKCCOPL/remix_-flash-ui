@@ -5,7 +5,11 @@ from database import get_db
 from dependencies.auth import get_current_user, require_login, resolve_user_id
 from services.likes_service import toggle_like, get_like_status, get_batch_like_status
 
+# Per-post like routes (mounted at /api/posts)
 router = APIRouter()
+
+# Batch like routes (mounted at /api/likes)
+batch_router = APIRouter()
 
 
 @router.post("/{post_id}/like")
@@ -26,7 +30,7 @@ def check_liked_endpoint(post_id: int, request: Request, conn=Depends(get_db)):
     return get_like_status(conn, post_id, user_id)
 
 
-@router.get("/like-status")
+@batch_router.get("/batch")
 def get_like_status_endpoint(ids: str, request: Request, conn=Depends(get_db)):
     """Get like status for multiple posts."""
     try:
