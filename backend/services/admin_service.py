@@ -5,6 +5,7 @@ from repositories.users_repository import (
     get_user_stats,
     get_user_active_days,
     get_user_recent_comments,
+    update_user_role,
     delete_user_cascade,
 )
 
@@ -38,6 +39,18 @@ def get_user_detail(conn, user_id: int) -> dict:
         },
         "recent_comments": recent_comments,
     }
+
+
+def change_user_role(conn, user_id: int, role: str) -> dict:
+    user = get_user_by_id(conn, user_id)
+    if not user:
+        raise ValueError("用户不存在")
+
+    updated = update_user_role(conn, user_id, role)
+    if not updated:
+        raise ValueError("用户不存在")
+
+    return {"user": updated, "message": f"用户角色已更新为 {role}"}
 
 
 def delete_user(conn, user_id: int) -> dict:

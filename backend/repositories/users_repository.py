@@ -154,6 +154,18 @@ def get_user_recent_comments(
     return [dict(row) for row in cursor.fetchall()]
 
 
+def update_user_role(conn: sqlite3.Connection, user_id: int, role: str) -> dict | None:
+    """Update a user's role. Returns updated user dict or None if not found."""
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET role = ? WHERE id = ? RETURNING id, username, role",
+        (role, user_id),
+    )
+    conn.commit()
+    row = cursor.fetchone()
+    return dict(row) if row else None
+
+
 def delete_user_cascade(conn: sqlite3.Connection, user_id: int) -> bool:
     """Delete a user and their associated comments and favorites.
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from database import get_db
-from dependencies.auth import require_admin
-from services.admin_service import get_users_list, get_user_detail, delete_user
+from dependencies.auth import require_admin, VALID_ROLES
+from services.admin_service import get_users_list, get_user_detail, change_user_role, delete_user
 
 router = APIRouter()
 
@@ -29,6 +29,28 @@ def get_user_route(
 ):
     try:
         return get_user_detail(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.patch("/users/{user_id}/role")
+def update_user_role_route(
+    user_id: int,
+    role: str,
+    request: Request,
+    admin=Depends(require_admin),
+    conn=Depends(get_db),
+):
+    if role not in VALID_ROLES:
+        raise HTTPException(status_code=400, detail=f"无效的角色: {role}")
+    # Prevent admin from changing their own role via OAuth user_id lookup
+    # Admin session users have user_id=None, so we resolve it
+    from dependencies.auth import resolve_user_id
+    admin_id = resolve_user_id(admin, conn)
+    if admin_id == user_id:
+        raise HTTPException(status_code=400, detail="不能修改自己的角色")
+    try:
+        return change_user_role(conn, user_id, role)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
