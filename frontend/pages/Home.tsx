@@ -9,6 +9,7 @@ import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import HeroCanvas from '../components/HeroCanvas';
 import SEO from '../components/SEO';
+import LikeButton from '../components/LikeButton';
 import { normalizeDate } from '../utils/date';
 
 function formatPostDate(value: string, pattern: string, locale: Locale): string {
@@ -195,11 +196,17 @@ export default function Home() {
                     <p className="line-clamp-3 text-sm text-stone-500 dark:text-stone-400 leading-relaxed mb-8 flex-1">
                       {post.content.replace(/[#*`>]/g, '')}
                     </p>
-                    
-                    <div className="mt-auto flex items-center text-sm font-bold text-stone-900 dark:text-stone-100 group-hover:gap-2 transition-all">
-                      <Link to={`/post/${post.id}`} className="flex items-center">
+
+                    <div className="flex items-center justify-between mt-auto">
+                      <Link to={`/post/${post.id}`} className="flex items-center text-sm font-bold text-stone-900 dark:text-stone-100 group-hover:gap-2 transition-all">
                         {t.home.readArticle} <ArrowRight className="ml-1.5 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                       </Link>
+                      <LikeButton
+                        postId={post.id}
+                        initialLiked={post.is_liked || false}
+                        initialCount={post.like_count || 0}
+                        size="sm"
+                      />
                     </div>
                   </div>
                   <Link to={`/post/${post.id}`} className="absolute inset-0 z-0" />

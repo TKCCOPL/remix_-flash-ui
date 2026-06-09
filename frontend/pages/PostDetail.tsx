@@ -17,6 +17,7 @@ import { ApiPost, postsApi } from '../api/posts';
 import { getCached, setCache } from '../api/cache';
 import CommentSection from '../components/CommentSection';
 import FavoriteButton from '../components/FavoriteButton';
+import LikeButton from '../components/LikeButton';
 import SEO from '../components/SEO';
 import { normalizeDate } from '../utils/date';
 
@@ -241,10 +242,17 @@ export default function PostDetail() {
               <div className="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-400">
                 <span>👁 {post!.view_count}</span>
                 <span>💬 {post!.comment_count}</span>
+                <span>❤️ {post!.like_count || 0}</span>
                 <span>🔖 {post!.favorite_count}</span>
                 <span>⏱ {calculateReadingTime(post!.content)} min</span>
               </div>
               <div className="flex items-center gap-4 mt-4">
+                <LikeButton
+                  postId={post!.id}
+                  initialLiked={post!.is_liked || false}
+                  initialCount={post!.like_count || 0}
+                  size="lg"
+                />
                 <FavoriteButton postId={post!.id} onToggle={refreshPost} />
               </div>
             </div>

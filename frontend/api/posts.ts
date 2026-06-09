@@ -12,6 +12,8 @@ export type ApiPost = {
   view_count: number;
   comment_count: number;
   favorite_count: number;
+  like_count?: number;
+  is_liked?: boolean;
 };
 
 type PostCreatePayload = {
