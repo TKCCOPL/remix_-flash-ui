@@ -28,6 +28,7 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
   const isExternalUpdate = useRef(false);
   const t = useI18n();
   const [showSlashCommand, setShowSlashCommand] = useState(false);
+  const [slashCommandPosition, setSlashCommandPosition] = useState<{ top: number; left: number } | null>(null);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const commands = getSlashCommands(t);
 
@@ -80,6 +81,9 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
           const { from } = state.selection;
           const textBefore = state.doc.textBetween(Math.max(0, from - 1), from, '');
           if (textBefore === '' || textBefore === '\n') {
+            // Get cursor position for placing the slash command menu
+            const coords = view.coordsAtPos(from);
+            setSlashCommandPosition({ top: coords.bottom + 8, left: coords.left });
             setShowSlashCommand(true);
           }
         }
@@ -122,8 +126,14 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
       <BubbleToolbar editor={editor} onLinkClick={handleLinkClick} />
       <EditorContent editor={editor} />
 
-      {showSlashCommand && (
-        <div className="absolute left-0 top-full z-50 mt-1">
+      {showSlashCommand && slashCommandPosition && (
+        <div
+          className="fixed z-50"
+          style={{
+            top: `${slashCommandPosition.top}px`,
+            left: `${slashCommandPosition.left}px`,
+          }}
+        >
           <SlashCommand
             editor={editor}
             commands={commands}

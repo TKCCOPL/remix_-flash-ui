@@ -1,4 +1,4 @@
-import { BubbleMenu } from '@tiptap/react/menus';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Editor } from '@tiptap/core';
 import { Bold, Italic, Strikethrough, Code, Heading1, Heading2, Heading3, Link as LinkIcon } from 'lucide-react';
 
@@ -8,10 +8,51 @@ interface BubbleToolbarProps {
 }
 
 export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProps) {
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  const updatePosition = useCallback(() => {
+    const { from, to, empty } = editor.state.selection;
+
+    if (empty || from === to) {
+      setIsVisible(false);
+      return;
+    }
+
+    // Get the selection coordinates
+    const { view } = editor;
+    const start = view.coordsAtPos(from);
+    const end = view.coordsAtPos(to);
+
+    // Position the toolbar above the selection
+    const top = start.top - 50;
+    const left = (start.left + end.left) / 2;
+
+    setPosition({ top, left });
+    setIsVisible(true);
+  }, [editor]);
+
+  useEffect(() => {
+    editor.on('selectionUpdate', updatePosition);
+    editor.on('blur', () => setIsVisible(false));
+
+    return () => {
+      editor.off('selectionUpdate', updatePosition);
+    };
+  }, [editor, updatePosition]);
+
+  if (!isVisible || !position) return null;
+
   return (
-    <BubbleMenu
-      editor={editor}
-      className="flex items-center gap-0.5 p-1 bg-white/90 dark:bg-stone-900/90 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-xl shadow-lg"
+    <div
+      ref={toolbarRef}
+      className="fixed z-50 flex items-center gap-0.5 p-1 bg-white/90 dark:bg-stone-900/90 backdrop-blur-xl border border-stone-200/50 dark:border-stone-800/50 rounded-xl shadow-lg"
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        transform: 'translateX(-50%)',
+      }}
     >
       <ToolbarButton
         active={editor.isActive('bold')}
@@ -80,7 +121,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
       >
         <LinkIcon className="w-4 h-4" />
       </ToolbarButton>
-    </BubbleMenu>
+    </div>
   );
 }
 
