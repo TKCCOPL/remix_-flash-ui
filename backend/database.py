@@ -99,6 +99,14 @@ def init_db(conn_param=None):
     )
     ''')
 
+    # ── Role column migration ───────────────────────────────────────────────
+    cursor.execute("PRAGMA table_info(users)")
+    users_columns = {row[1] for row in cursor.fetchall()}
+    if "role" not in users_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'guest'")
+        cursor.execute("UPDATE users SET role = 'admin' WHERE oauth_provider = 'admin'")
+        conn.commit()
+
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS comments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
