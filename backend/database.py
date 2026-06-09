@@ -21,9 +21,12 @@ def get_db():
     finally:
         conn.close()
 
-def init_db():
-    os.makedirs('data', exist_ok=True)
-    conn = sqlite3.connect(DB_FILE)
+def init_db(conn_param=None):
+    if conn_param is not None:
+        conn = conn_param
+    else:
+        os.makedirs('data', exist_ok=True)
+        conn = sqlite3.connect(DB_FILE)
     # Enable foreign keys for this connection (must be per-connection)
     # Best practice: https://www.sqlite.org/foreignkeys.html
     conn.execute("PRAGMA foreign_keys = ON")
@@ -162,8 +165,25 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_favorites_post ON favorites(post_id)')
-    conn.commit()
-    conn.close()
 
-    # Seed database with test data if empty
-    seed_database()
+    # ── Likes table ──────────────────────────────────────────────────────────
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS likes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+            UNIQUE(user_id, post_id)
+        )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id)")
+
+    conn.commit()
+
+    if conn_param is None:
+        conn.close()
+        # Seed database with test data if empty
+        seed_database()
