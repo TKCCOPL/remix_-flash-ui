@@ -164,6 +164,41 @@ def log_search(conn, query: str, user_ip: str = None):
     conn.commit()
 
 
+def update_post_status(conn, post_id: int, status: str):
+    """Update post status and return the updated post info."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE posts
+        SET status = ?, updated_at = datetime('now', 'localtime')
+        WHERE id = ?
+        RETURNING id, title, status
+        """,
+        (status, post_id),
+    )
+    conn.commit()
+    row = cursor.fetchone()
+    if not row:
+        return None
+    return {"id": row["id"], "title": row["title"], "status": row["status"]}
+
+
+def get_posts_by_status(conn, status: str, skip: int = 0, limit: int = 10):
+    """Get posts filtered by status."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, title, content, category, image_url, status, created_at, updated_at
+        FROM posts
+        WHERE status = ?
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
+        """,
+        (status, limit, skip),
+    )
+    return [dict(row) for row in cursor.fetchall()]
+
+
 def increment_view_count(conn, post_id: int):
     cursor = conn.cursor()
     cursor.execute(

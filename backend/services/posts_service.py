@@ -3,10 +3,12 @@ from repositories.posts_repository import (
     delete_post as delete_post_repository,
     get_post as get_post_repository,
     get_posts as get_posts_repository,
+    get_posts_by_status as get_posts_by_status_repository,
     get_posts_for_archive as get_posts_for_archive_repository,
     log_search as log_search_repository,
     search_posts as search_posts_repository,
     update_post as update_post_repository,
+    update_post_status as update_post_status_repository,
 )
 from schemas import PostCreate, PostUpdate
 
@@ -43,3 +45,11 @@ def search_posts_by_query(conn, query: str, user_ip: str = None, include_drafts:
     results = search_posts_repository(conn, query, include_drafts=include_drafts)
     log_search_repository(conn, query, user_ip)
     return results
+
+
+def update_post_status(conn, post_id: int, status: str):
+    return update_post_status_repository(conn, post_id, status)
+
+
+def get_posts_by_status(conn, status: str, skip: int = 0, limit: int = 10):
+    return get_posts_by_status_repository(conn, status, skip=skip, limit=limit)

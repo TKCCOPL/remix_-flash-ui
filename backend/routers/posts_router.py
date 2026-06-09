@@ -3,7 +3,7 @@ import hashlib
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from database import get_db
-from schemas import PostCreate, PostOut, PostUpdate
+from schemas import PostCreate, PostOut, PostStatus, PostUpdate
 from services.auth_service import is_logged_in
 from repositories.posts_repository import get_post_with_stats
 from services.posts_service import (
@@ -11,9 +11,11 @@ from services.posts_service import (
     delete_post,
     get_archive_data,
     get_post,
+    get_posts_by_status,
     list_posts,
     search_posts_by_query,
     update_post,
+    update_post_status,
 )
 
 router = APIRouter()
@@ -31,7 +33,12 @@ def create_post_route(post: PostCreate, request: Request, conn=Depends(get_db)):
 
 
 @router.get("", response_model=list[PostOut])
-def list_posts_route(skip: int = 0, limit: int = 10, include_drafts: bool = False, request: Request = None, conn=Depends(get_db)):
+def list_posts_route(skip: int = 0, limit: int = 10, include_drafts: bool = False, status: PostStatus = None, request: Request = None, conn=Depends(get_db)):
+    # Status filter takes priority; requires admin login for non-published statuses
+    if status:
+        if status != PostStatus.published and not is_logged_in(request):
+            raise HTTPException(status_code=401, detail="unauthorized")
+        return get_posts_by_status(conn, status.value, skip=skip, limit=limit)
     # Only allow drafts if explicitly requested AND user is logged in
     actual_include = include_drafts and (request and is_logged_in(request))
     return list_posts(conn, skip=skip, limit=limit, include_drafts=actual_include)
@@ -75,6 +82,20 @@ def update_post_route(post_id: int, post: PostUpdate, request: Request, conn=Dep
     if not updated:
         raise HTTPException(status_code=404, detail="文章不存在")
     return updated
+
+
+@router.patch("/{post_id}/status")
+def update_post_status_route(post_id: int, status: PostStatus, request: Request, conn=Depends(get_db)):
+    """Update post status (draft/published/archived)."""
+    _require_login(request)
+    result = update_post_status(conn, post_id, status.value)
+    if not result:
+        raise HTTPException(status_code=404, detail="文章不存在")
+    return {
+        "id": result["id"],
+        "status": result["status"],
+        "message": f"文章已{status.value}",
+    }
 
 
 @router.delete("/{post_id}")
