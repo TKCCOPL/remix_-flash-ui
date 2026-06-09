@@ -140,7 +140,7 @@ def test_users_columns(test_db):
     cursor = test_db.cursor()
     cursor.execute("PRAGMA table_info(users)")
     columns = {row[1] for row in cursor.fetchall()}
-    expected_columns = {'id', 'oauth_provider', 'oauth_id', 'username', 'avatar_url', 'email', 'created_at'}
+    expected_columns = {'id', 'oauth_provider', 'oauth_id', 'username', 'avatar_url', 'email', 'created_at', 'role'}
     assert columns == expected_columns
 
 

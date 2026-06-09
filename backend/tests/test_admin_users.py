@@ -34,6 +34,7 @@ def db():
             avatar_url TEXT,
             email TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            role TEXT DEFAULT 'guest',
             UNIQUE(oauth_provider, oauth_id)
         )
     """)
@@ -289,6 +290,7 @@ _api_cursor.execute("""
         avatar_url TEXT,
         email TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        role TEXT DEFAULT 'guest',
         UNIQUE(oauth_provider, oauth_id)
     )
 """)
