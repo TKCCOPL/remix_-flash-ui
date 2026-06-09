@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Eye, PenLine, Settings, X, UploadCloud, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Settings, X, UploadCloud, Loader2, Code2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { format } from 'date-fns';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { authApi } from '../api/auth';
@@ -12,6 +10,8 @@ import { postsApi, type ApiPost } from '../api/posts';
 import { uploadApi } from '../api/upload';
 import { categoriesApi, type Category } from '../api/categories';
 import { locales, dateFormats } from '../i18n';
+import TiptapEditor from '../components/editor/TiptapEditor';
+import SourceMode from '../components/editor/SourceMode';
 
 function getWordCount(text: string): number {
   const chinese = text.match(/[一-鿿]/g)?.length ?? 0;
@@ -32,13 +32,11 @@ export default function AdminEdit() {
   const [saving, setSaving] = useState(false);
   const [createdAt, setCreatedAt] = useState('');
   const [updatedAt, setUpdatedAt] = useState('');
-  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [sourceMode, setSourceMode] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
   const [isUploading, setIsUploading] = useState(false);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
   const settingsSidebarRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!isSettingsOpen) return;
@@ -163,7 +161,7 @@ export default function AdminEdit() {
           {t.editor.back}
         </Link>
         <div className="text-sm font-medium text-stone-400 uppercase tracking-widest">
-          {viewMode === 'edit' ? t.editor.edit : t.editor.preview}
+          {sourceMode ? t.editor.sourceMode : t.editor.richMode}
         </div>
       </header>
 
@@ -175,12 +173,14 @@ export default function AdminEdit() {
 
       <div className="flex-1 flex flex-col min-h-0 relative">
         {/* Main Content Area */}
-        {viewMode === 'edit' ? (
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="space-y-6 flex-1 flex flex-col min-h-0"
+        <AnimatePresence mode="wait">
+        {sourceMode ? (
+          <motion.div
+            key="source"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 overflow-hidden"
           >
             <input
               type="text"
@@ -190,28 +190,36 @@ export default function AdminEdit() {
               className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-black leading-tight text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors py-4 shrink-0"
               required
             />
-            
-            <textarea
-              ref={textareaRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+            <SourceMode
+              content={content}
+              onChange={setContent}
               placeholder={t.editor.placeholderContent}
-              className="w-full bg-transparent border-none outline-none text-xl leading-loose text-stone-800 dark:text-stone-200 resize-none overflow-y-auto placeholder:text-stone-300 dark:placeholder:text-stone-700 flex-1 transition-colors font-serif pb-32 scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800"
-              required
             />
           </motion.div>
         ) : (
-          <div className="prose prose-lg dark:prose-invert max-w-none flex-1 overflow-y-auto pb-32 scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
-            {title && <h1 className="text-4xl md:text-5xl font-black mb-8 leading-tight">{title}</h1>}
-            {content ? (
-              <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
-            ) : (
-              <p className="text-stone-400 dark:text-stone-600 italic">
-                {t.editor.placeholderContent}
-              </p>
-            )}
-          </div>
+          <motion.div
+            key="editor"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 overflow-hidden flex flex-col"
+          >
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t.editor.placeholderTitle}
+              className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-black leading-tight text-stone-900 dark:text-stone-100 placeholder:text-stone-300 dark:placeholder:text-stone-700 transition-colors py-4 shrink-0"
+              required
+            />
+            <TiptapEditor
+              content={content}
+              onChange={setContent}
+              placeholder={t.editor.placeholderContent}
+            />
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* Settings Sidebar */}
         <AnimatePresence>
@@ -372,15 +380,15 @@ export default function AdminEdit() {
               <div className="flex items-center gap-1.5 mr-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setViewMode(prev => prev === 'edit' ? 'preview' : 'edit')}
+                  onClick={() => setSourceMode(prev => !prev)}
                   className={`p-2.5 rounded-xl transition-all ${
-                    viewMode === 'preview' 
-                      ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner' 
+                    sourceMode
+                      ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 shadow-inner'
                       : 'bg-stone-100/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
                   }`}
-                  title={viewMode === 'edit' ? t.admin.switchToPreview : t.admin.continueEditing}
+                  title={sourceMode ? t.editor.richMode : t.editor.sourceMode}
                 >
-                  {viewMode === 'preview' ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <Code2 className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
