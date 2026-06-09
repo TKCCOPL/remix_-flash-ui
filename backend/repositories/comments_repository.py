@@ -18,9 +18,11 @@ def get_comment_by_id(conn, comment_id: int):
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, post_id, user_id, content, status, parent_id, created_at
-        FROM comments
-        WHERE id = ?
+        SELECT c.id, c.post_id, c.user_id, c.content, c.status, c.parent_id, c.created_at,
+               u.username, u.avatar_url, u.oauth_provider
+        FROM comments c
+        JOIN users u ON c.user_id = u.id
+        WHERE c.id = ?
         """,
         (comment_id,),
     )

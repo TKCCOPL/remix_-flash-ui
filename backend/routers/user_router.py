@@ -26,6 +26,7 @@ def get_current_user_info(request: Request, conn: sqlite3.Connection = Depends(g
                     "email": user["email"],
                     "oauth_provider": user["oauth_provider"],
                     "is_admin": False,
+                    "role": user["role"] if "role" in user.keys() else "guest",
                 }
 
     session_token = request.cookies.get("session")
@@ -40,7 +41,7 @@ def get_current_user_info(request: Request, conn: sqlite3.Connection = Depends(g
             user = cursor.fetchone()
             if not user:
                 cursor.execute(
-                    "INSERT INTO users (oauth_provider, oauth_id, username) VALUES ('admin', 'admin', ?)",
+                    "INSERT INTO users (oauth_provider, oauth_id, username, role) VALUES ('admin', 'admin', ?, 'admin')",
                     (username,)
                 )
                 conn.commit()
@@ -49,6 +50,15 @@ def get_current_user_info(request: Request, conn: sqlite3.Connection = Depends(g
                     (username,)
                 )
                 user = cursor.fetchone()
+            # Ensure admin users always have admin role
+            if user["role"] != "admin":
+                cursor.execute(
+                    "UPDATE users SET role = 'admin' WHERE id = ?",
+                    (user["id"],)
+                )
+                conn.commit()
+                user = dict(user)
+                user["role"] = "admin"
             return {
                 "id": user["id"],
                 "username": user["username"],
@@ -56,6 +66,7 @@ def get_current_user_info(request: Request, conn: sqlite3.Connection = Depends(g
                 "email": user["email"],
                 "oauth_provider": "admin",
                 "is_admin": True,
+                "role": user["role"] if "role" in user.keys() else "admin",
             }
 
     raise HTTPException(status_code=401, detail="Not logged in")

@@ -15,7 +15,7 @@ interface TOCDrawerProps {
 }
 
 export default function TOCDrawer({ headings, activeId }: TOCDrawerProps) {
-    const { t } = useI18n();
+    const t = useI18n();
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClick = (id: string) => {

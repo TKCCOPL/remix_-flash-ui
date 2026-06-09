@@ -5,7 +5,7 @@ import { notificationsApi, Notification } from "@/api/notifications";
 import { useI18n } from "@/context/Preferences";
 
 export default function Notifications() {
-    const { t } = useI18n();
+    const t = useI18n();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [filter, setFilter] = useState<"all" | "unread">("all");

@@ -2,15 +2,12 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
-  Home,
   ArrowLeft,
+  FileText,
   MessageSquare,
   BarChart3,
   Users,
@@ -82,7 +79,7 @@ export default function AdminLayout() {
   const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
 
   const sidebarItems = [
-    { icon: LayoutDashboard, path: '/admin', label: t.admin.sidebar.overview, roles: ['admin', 'editor', 'author'] },
+    { icon: FileText, path: '/admin', label: t.admin.sidebar.posts, roles: ['admin', 'editor', 'author'] },
     { icon: MessageSquare, path: '/admin/comments', label: t.admin.sidebar.comments, roles: ['admin', 'editor'] },
     { icon: BarChart3, path: '/admin/stats', label: t.admin.sidebar.stats, roles: ['admin', 'editor'] },
     { icon: Users, path: '/admin/users', label: t.admin.sidebar.users, roles: ['admin'] },

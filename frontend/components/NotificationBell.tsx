@@ -2,17 +2,29 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { notificationsApi } from "@/api/notifications";
+import { useAuth } from "@/context/AuthContext";
 
 export default function NotificationBell() {
+    const { user, isAdmin } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
-        notificationsApi.getUnreadCount().then(setUnreadCount).catch(console.error);
-        const interval = setInterval(() => {
-            notificationsApi.getUnreadCount().then(setUnreadCount).catch(console.error);
-        }, 30000);
+        if (!user && !isAdmin) return;
+
+        const fetchUnread = async () => {
+            try {
+                const count = await notificationsApi.getUnreadCount();
+                setUnreadCount(count);
+            } catch {
+                // Stop polling on auth errors
+                setUnreadCount(0);
+            }
+        };
+
+        fetchUnread();
+        const interval = setInterval(fetchUnread, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user, isAdmin]);
 
     return (
         <Link

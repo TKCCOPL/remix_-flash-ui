@@ -54,10 +54,10 @@ def get_views_trend(conn: sqlite3.Connection, days: int = 30) -> dict:
     cursor.execute(
         """SELECT date(viewed_at) as date, COUNT(*) as views
            FROM view_logs
-           WHERE viewed_at > datetime('now', ?)
+           WHERE viewed_at > datetime('now', '-' || ? || ' days')
            GROUP BY date(viewed_at)
            ORDER BY date""",
-        (f"-{days} days",)
+        (days,)
     )
     trend = [{"date": row["date"], "views": row["views"]} for row in cursor.fetchall()]
     total_views = sum(item["views"] for item in trend)

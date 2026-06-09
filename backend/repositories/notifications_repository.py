@@ -20,7 +20,8 @@ def get_notifications(conn: sqlite3.Connection, user_id: int, unread_only: bool 
         query += " AND is_read = 0"
     query += " ORDER BY created_at DESC"
     cursor = conn.execute(query, (user_id,))
-    return [dict(row) for row in cursor.fetchall()]
+    # Convert is_read from int to bool for frontend consistency
+    return [{**dict(row), "is_read": bool(row["is_read"])} for row in cursor.fetchall()]
 
 
 def get_unread_count(conn: sqlite3.Connection, user_id: int) -> int:

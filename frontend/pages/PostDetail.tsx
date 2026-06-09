@@ -94,13 +94,7 @@ export default function PostDetail() {
           setPost(response);
           setCache(`post_${id}`, response);
           setNotFound(false);
-
-          // Increment view count only once per session
-          const viewKey = `viewed_${id}`;
-          if (!sessionStorage.getItem(viewKey)) {
-            sessionStorage.setItem(viewKey, '1');
-            postsApi.incrementView(id).catch(() => {});
-          }
+          // Note: view count is incremented server-side in GET /api/posts/{id}
         }
       } catch (requestError) {
         if (!cancelled) {

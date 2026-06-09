@@ -63,7 +63,6 @@ export const postsApi = {
   list: (skip = 0, limit = 100, includeDrafts = false) => apiFetch<ApiPost[]>(`/api/posts?skip=${skip}&limit=${limit}${includeDrafts ? '&include_drafts=true' : ''}`),
   listByStatus: (status: string, skip = 0, limit = 100) => apiFetch<ApiPost[]>(`/api/posts?skip=${skip}&limit=${limit}&status=${status}`),
   get: (id: string | number) => apiFetch<ApiPost>(`/api/posts/${id}`),
-  incrementView: (id: string | number) => apiFetch<{ ok: boolean }>(`/api/posts/${id}/view`, { method: 'POST' }),
   getArchive: (includeDrafts = false) => apiFetch<ArchiveData>(`/api/posts/archive${includeDrafts ? '?include_drafts=true' : ''}`),
   create: (payload: PostCreatePayload) =>
     apiFetch<ApiPost>('/api/posts', { method: 'POST', body: JSON.stringify(payload) }),
