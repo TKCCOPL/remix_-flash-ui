@@ -1,11 +1,9 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Highlight from '@tiptap/extension-highlight';
-import Underline from '@tiptap/extension-underline';
 import Typography from '@tiptap/extension-typography';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
@@ -28,7 +26,7 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // replaced by CodeBlockLowlight
+        codeBlock: false,
       }),
       CodeBlockLowlight.configure({
         lowlight,
@@ -38,14 +36,10 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
         allowBase64: true,
         inline: false,
       }),
-      Link.configure({
-        openOnClick: false,
-      }),
       Placeholder.configure({
         placeholder: placeholder || 'Start writing...',
       }),
       Highlight,
-      Underline,
       Typography,
       TaskList,
       TaskItem.configure({
@@ -59,22 +53,28 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
     ],
     content: content,
     onUpdate: ({ editor }) => {
-      isExternalUpdate.current = true;
-      const md = editor.storage.markdown.getMarkdown();
-      onChange(md);
-      // Reset flag after React processes the update
-      requestAnimationFrame(() => {
-        isExternalUpdate.current = false;
-      });
+      try {
+        isExternalUpdate.current = true;
+        const md = editor.storage.markdown?.getMarkdown?.() ?? '';
+        onChange(md);
+        requestAnimationFrame(() => {
+          isExternalUpdate.current = false;
+        });
+      } catch (e) {
+        console.error('TiptapEditor onUpdate error:', e);
+      }
     },
   });
 
-  // Sync content from parent only when loading a new post (not on every onChange)
   useEffect(() => {
     if (editor && !isExternalUpdate.current) {
-      const currentMd = editor.storage.markdown.getMarkdown();
-      if (content !== currentMd) {
-        editor.commands.setContent(content);
+      try {
+        const currentMd = editor.storage.markdown?.getMarkdown?.() ?? '';
+        if (content !== currentMd) {
+          editor.commands.setContent(content);
+        }
+      } catch (e) {
+        console.error('TiptapEditor content sync error:', e);
       }
     }
   }, [content, editor]);
