@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import rehypeHighlight from 'rehype-highlight';
 import throttle from 'lodash.throttle';
 import GithubSlugger from 'github-slugger';
 import { ArrowLeft, List, MessageSquare } from 'lucide-react';
@@ -266,7 +267,7 @@ export default function PostDetail() {
           <div className="prose prose-stone dark:prose-invert w-full max-w-none animate-fade-in break-words overflow-hidden" style={{ animationDelay: '0.15s' }}>
             <Markdown 
               remarkPlugins={[remarkGfm]} 
-              rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeSlug]}
+              rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeSlug, rehypeHighlight]}
               components={{
                 img: ({ node, ...props }) => {
                   let src = props.src || '';
