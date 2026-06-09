@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Settings, X, UploadCloud, Loader2, Code2 } from 'lucide-react';
+import { ArrowLeft, Save, Settings, X, UploadCloud, Loader2, Code2, Archive } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { useI18n, usePreferences } from '../context/Preferences';
@@ -34,7 +34,7 @@ export default function AdminEdit() {
   const [updatedAt, setUpdatedAt] = useState('');
   const [sourceMode, setSourceMode] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
+  const [postStatus, setPostStatus] = useState<'published' | 'draft' | 'archived'>('published');
   const [isUploading, setIsUploading] = useState(false);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
   const settingsSidebarRef = useRef<HTMLDivElement>(null);
@@ -136,6 +136,25 @@ export default function AdminEdit() {
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!id) return;
+    try {
+      await postsApi.updateStatus(id, 'archived');
+      setPostStatus('archived');
+      setError('');
+    } catch (requestError) {
+      if (requestError instanceof ApiError && requestError.status === 401) {
+        navigate('/login');
+        return;
+      }
+      if (requestError instanceof Error) {
+        setError(requestError.message);
+      } else {
+        setError(t.login.error);
+      }
     }
   };
 
@@ -410,6 +429,16 @@ export default function AdminEdit() {
               >
                 {t.editor.cancel}
               </Link>
+              {id && postStatus === 'published' && (
+                <button
+                  type="button"
+                  onClick={() => void handleArchive()}
+                  className="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-5 py-2.5 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-all shadow-sm active:scale-[0.98] text-sm"
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  {t.admin.archive}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => void handleAction('draft')}
@@ -424,10 +453,10 @@ export default function AdminEdit() {
                 disabled={saving}
                 className="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm"
               >
-                <Save className="w-4 h-4 mr-2" /> 
-                {saving 
-                  ? `${t.editor.save}...` 
-                  : (postStatus === 'draft' ? '发布' : (id ? '更新' : '发布'))
+                <Save className="w-4 h-4 mr-2" />
+                {saving
+                  ? `${t.editor.save}...`
+                  : (postStatus === 'draft' ? t.admin.publish : (id ? t.editor.save : t.admin.publish))
                 }
               </button>
             </div>

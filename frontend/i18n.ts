@@ -151,6 +151,10 @@ export const translations = {
       allStatus: '全部状态',
       statusPublished: '已发布',
       statusDraft: '草稿',
+      statusArchived: '已归档',
+      publish: '发布',
+      archive: '归档',
+      republish: '重新发布',
       table: {
         title: '标题',
         image: '封面',
@@ -519,6 +523,10 @@ export const translations = {
       allStatus: 'All Status',
       statusPublished: 'Published',
       statusDraft: 'Drafts',
+      statusArchived: 'Archived',
+      publish: 'Publish',
+      archive: 'Archive',
+      republish: 'Republish',
       table: {
         title: 'Title',
         image: 'Cover',

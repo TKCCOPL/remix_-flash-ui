@@ -13,6 +13,9 @@ import {
   TrendingUp,
   ChevronDown,
   Check,
+  Archive,
+  RotateCcw,
+  Send,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n, usePreferences } from '../context/Preferences';
@@ -28,7 +31,7 @@ type AdminPost = {
   content: string;
   imageUrl: string;
   category: string;
-  status: 'published' | 'draft';
+  status: 'published' | 'draft' | 'archived';
   createdAt: string;
   updatedAt: string;
 };
@@ -50,6 +53,7 @@ export default function Admin() {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -118,7 +122,8 @@ export default function Admin() {
     let result = posts.filter((post) => {
       const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = categoryFilter === 'all' || post.category === categoryFilter;
-      return matchesSearch && matchesCategory;
+      const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
+      return matchesSearch && matchesCategory && matchesStatus;
     });
 
     result.sort((a, b) => {
@@ -136,7 +141,7 @@ export default function Admin() {
     });
 
     return result;
-  }, [posts, searchQuery, categoryFilter, sortBy]);
+  }, [posts, searchQuery, categoryFilter, statusFilter, sortBy]);
 
   const sortOptions = useMemo(() => [
     { value: 'newest', label: t.admin.sort.newest },
@@ -262,6 +267,26 @@ export default function Admin() {
     }
   };
 
+  const handleStatusChange = async (id: string, newStatus: 'published' | 'draft' | 'archived') => {
+    try {
+      await postsApi.updateStatus(id, newStatus);
+      setPosts((prev) =>
+        prev.map((post) => (post.id === id ? { ...post, status: newStatus } : post))
+      );
+      setError('');
+    } catch (requestError) {
+      if (requestError instanceof ApiError && requestError.status === 401) {
+        navigate('/login');
+        return;
+      }
+      if (requestError instanceof Error) {
+        setError(requestError.message);
+      } else {
+        setError(t.login.error);
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-[1200px] mx-auto">
       <div
@@ -336,10 +361,42 @@ export default function Admin() {
         ))}
       </div>
 
+      {/* Status Filter Tabs */}
+      <div
+        className="flex items-center gap-2 mb-4 animate-fade-in-up stagger-item"
+        style={{ '--stagger-index': 2 } as React.CSSProperties}
+      >
+        {[
+          { key: 'all', label: t.admin.allStatus },
+          { key: 'published', label: t.admin.statusPublished },
+          { key: 'draft', label: t.admin.statusDraft },
+          { key: 'archived', label: t.admin.statusArchived },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => { setStatusFilter(tab.key); setCurrentPage(1); }}
+            className={`relative px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              statusFilter === tab.key
+                ? 'text-white dark:text-stone-900'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
+            }`}
+          >
+            {statusFilter === tab.key && (
+              <motion.div
+                layoutId="activeStatus"
+                className="absolute inset-0 bg-indigo-500 dark:bg-indigo-400 rounded-full shadow-sm"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <span className="relative z-10">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Filter bar (Search & Sort) */}
       <div
         className={`flex flex-col sm:flex-row gap-3 items-center justify-between mb-6 animate-fade-in-up stagger-item ${isSortDropdownOpen ? 'z-[100] relative' : ''}`}
-        style={{ '--stagger-index': 2 } as React.CSSProperties}
+        style={{ '--stagger-index': 3 } as React.CSSProperties}
       >
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -409,7 +466,7 @@ export default function Admin() {
       {/* Table */}
       <div
         className="animate-fade-in-up stagger-item pb-20"
-        style={{ '--stagger-index': 3 } as React.CSSProperties}
+        style={{ '--stagger-index': 4 } as React.CSSProperties}
       >
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[640px]" aria-label="Posts management table">
@@ -485,6 +542,11 @@ export default function Admin() {
                           {t.admin.statusDraft}
                         </span>
                       )}
+                      {post.status === 'archived' && (
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 rounded">
+                          {t.admin.statusArchived}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {post.imageUrl ? (
@@ -504,6 +566,36 @@ export default function Admin() {
                       {formatPostDate(post.createdAt)}
                     </td>
                     <td className="px-4 py-3 text-right space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {post.status === 'draft' && (
+                        <button
+                          onClick={() => void handleStatusChange(post.id, 'published')}
+                          className="inline-flex p-1.5 text-stone-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-all"
+                          aria-label="Publish post"
+                          title={t.admin.publish}
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      )}
+                      {post.status === 'published' && (
+                        <button
+                          onClick={() => void handleStatusChange(post.id, 'archived')}
+                          className="inline-flex p-1.5 text-stone-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded transition-all"
+                          aria-label="Archive post"
+                          title={t.admin.archive}
+                        >
+                          <Archive className="w-4 h-4" />
+                        </button>
+                      )}
+                      {post.status === 'archived' && (
+                        <button
+                          onClick={() => void handleStatusChange(post.id, 'published')}
+                          className="inline-flex p-1.5 text-stone-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-all"
+                          aria-label="Republish post"
+                          title={t.admin.republish}
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </button>
+                      )}
                       <Link
                         to={`/admin/edit/${post.id}`}
                         className="inline-flex p-1.5 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded transition-all"
@@ -511,13 +603,15 @@ export default function Admin() {
                       >
                         <Edit2 className="w-4 h-4" />
                       </Link>
-                      <button
-                        onClick={() => void handleDelete(post.id)}
-                        className="inline-flex p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
-                        aria-label="Delete post"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {(post.status === 'draft' || post.status === 'archived') && (
+                        <button
+                          onClick={() => void handleDelete(post.id)}
+                          className="inline-flex p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
+                          aria-label="Delete post"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </motion.tr>
                 ))}
