@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+// Make this file a module so that `declare module` becomes augmentation
+export {};
+
 declare module 'tiptap-markdown' {
   import { Extension } from '@tiptap/core';
 
