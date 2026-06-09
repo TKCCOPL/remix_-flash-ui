@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Editor } from '@tiptap/core';
 import {
   Image, Code2, Quote, Minus, ListChecks, List, ListOrdered,
@@ -104,43 +104,43 @@ export function getSlashCommands(t: any): CommandItem[] {
 }
 
 export default function SlashCommand({ editor, commands, onClose }: SlashCommandProps) {
-  const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const selectedRef = useRef<HTMLButtonElement>(null);
+
+  // Get the current query from the editor content after "/"
+  const getQuery = useCallback(() => {
+    const { state } = editor;
+    const { from } = state.selection;
+    const textBefore = state.doc.textBetween(Math.max(0, from - 50), from, '');
+    const slashIndex = textBefore.lastIndexOf('/');
+    if (slashIndex >= 0) {
+      return textBefore.substring(slashIndex + 1).toLowerCase();
+    }
+    return '';
+  }, [editor]);
+
+  const query = getQuery();
 
   const filtered = commands.filter(
     (cmd) =>
-      cmd.title.toLowerCase().includes(query.toLowerCase()) ||
-      cmd.description.toLowerCase().includes(query.toLowerCase())
+      cmd.title.toLowerCase().includes(query) ||
+      cmd.description.toLowerCase().includes(query)
   );
 
+  // Reset selected index when query changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [query]);
 
+  // Scroll selected item into view
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev + 1) % filtered.length);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (filtered[selectedIndex]) {
-          selectCommand(filtered[selectedIndex]);
-        }
-      } else if (e.key === 'Escape') {
-        onClose();
-      }
-    };
+    if (selectedRef.current) {
+      selectedRef.current.scrollIntoView({ block: 'nearest' });
+    }
+  }, [selectedIndex]);
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [filtered, selectedIndex, onClose]);
-
-  const selectCommand = (cmd: CommandItem) => {
+  const selectCommand = useCallback((cmd: CommandItem) => {
     // Delete the / and any filter text
     const { state } = editor;
     const { from } = state.selection;
@@ -152,7 +152,50 @@ export default function SlashCommand({ editor, commands, onClose }: SlashCommand
     }
     cmd.action(editor);
     onClose();
-  };
+  }, [editor, onClose]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedIndex((prev) => (prev + 1) % filtered.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (filtered[selectedIndex]) {
+          selectCommand(filtered[selectedIndex]);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        e.stopPropagation();
+        // Tab also selects the command
+        if (filtered[selectedIndex]) {
+          selectCommand(filtered[selectedIndex]);
+        }
+      }
+    };
+
+    // Use capture phase to intercept before editor
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, [filtered, selectedIndex, selectCommand, onClose]);
+
+  // Close if no filtered results and query is long enough
+  useEffect(() => {
+    if (filtered.length === 0 && query.length > 3) {
+      onClose();
+    }
+  }, [filtered.length, query.length, onClose]);
 
   return (
     <div
@@ -165,20 +208,32 @@ export default function SlashCommand({ editor, commands, onClose }: SlashCommand
         filtered.map((cmd, index) => (
           <button
             key={cmd.title}
+            ref={index === selectedIndex ? selectedRef : null}
             type="button"
             className={`flex items-center gap-3 px-3 py-2 w-full text-left cursor-pointer transition-colors ${
               index === selectedIndex
-                ? 'bg-stone-50 dark:bg-stone-800'
+                ? 'bg-indigo-50 dark:bg-indigo-900/30'
                 : 'hover:bg-stone-50 dark:hover:bg-stone-800'
             }`}
-            onClick={() => selectCommand(cmd)}
+            onClick={(e) => {
+              e.preventDefault();
+              selectCommand(cmd);
+            }}
             onMouseEnter={() => setSelectedIndex(index)}
           >
-            <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              index === selectedIndex
+                ? 'bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300'
+                : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300'
+            }`}>
               {cmd.icon}
             </div>
             <div>
-              <div className="text-sm font-medium text-stone-800 dark:text-stone-200">{cmd.title}</div>
+              <div className={`text-sm font-medium ${
+                index === selectedIndex
+                  ? 'text-indigo-700 dark:text-indigo-200'
+                  : 'text-stone-800 dark:text-stone-200'
+              }`}>{cmd.title}</div>
               <div className="text-xs text-stone-500">{cmd.description}</div>
             </div>
           </button>

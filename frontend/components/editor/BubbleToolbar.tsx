@@ -35,12 +35,21 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
   useEffect(() => {
     editor.on('selectionUpdate', updatePosition);
-    editor.on('blur', () => setIsVisible(false));
+    editor.on('blur', () => {
+      // Delay hiding to allow button clicks to register
+      setTimeout(() => setIsVisible(false), 200);
+    });
 
     return () => {
       editor.off('selectionUpdate', updatePosition);
     };
   }, [editor, updatePosition]);
+
+  // Use onMouseDown with preventDefault to keep editor focus
+  const handleMouseDown = useCallback((e: React.MouseEvent, action: () => void) => {
+    e.preventDefault();
+    action();
+  }, []);
 
   if (!isVisible || !position) return null;
 
@@ -56,7 +65,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
     >
       <ToolbarButton
         active={editor.isActive('bold')}
-        onClick={() => editor.chain().focus().toggleBold().run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleBold().run())}
         title="Bold"
       >
         <Bold className="w-4 h-4" />
@@ -64,7 +73,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('italic')}
-        onClick={() => editor.chain().focus().toggleItalic().run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleItalic().run())}
         title="Italic"
       >
         <Italic className="w-4 h-4" />
@@ -72,7 +81,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('strike')}
-        onClick={() => editor.chain().focus().toggleStrike().run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleStrike().run())}
         title="Strikethrough"
       >
         <Strikethrough className="w-4 h-4" />
@@ -82,7 +91,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('heading', { level: 1 })}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())}
         title="Heading 1"
       >
         <Heading1 className="w-4 h-4" />
@@ -90,7 +99,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('heading', { level: 2 })}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleHeading({ level: 2 }).run())}
         title="Heading 2"
       >
         <Heading2 className="w-4 h-4" />
@@ -98,7 +107,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('heading', { level: 3 })}
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleHeading({ level: 3 }).run())}
         title="Heading 3"
       >
         <Heading3 className="w-4 h-4" />
@@ -108,7 +117,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('code')}
-        onClick={() => editor.chain().focus().toggleCode().run()}
+        onMouseDown={(e) => handleMouseDown(e, () => editor.chain().focus().toggleCode().run())}
         title="Inline Code"
       >
         <Code className="w-4 h-4" />
@@ -116,7 +125,7 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 
       <ToolbarButton
         active={editor.isActive('link')}
-        onClick={onLinkClick}
+        onMouseDown={(e) => handleMouseDown(e, onLinkClick)}
         title="Link"
       >
         <LinkIcon className="w-4 h-4" />
@@ -128,18 +137,18 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
 function ToolbarButton({
   children,
   active,
-  onClick,
+  onMouseDown,
   title,
 }: {
   children: React.ReactNode;
   active: boolean;
-  onClick: () => void;
+  onMouseDown: (e: React.MouseEvent) => void;
   title: string;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onMouseDown={onMouseDown}
       title={title}
       className={`p-1.5 rounded-lg transition-colors ${
         active
