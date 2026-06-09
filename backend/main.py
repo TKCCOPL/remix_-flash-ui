@@ -36,6 +36,7 @@ from routers.admin_comments_router import router as admin_comments_router
 from routers.admin_stats_router import router as admin_stats_router
 from routers.admin_router import router as admin_api_router
 from routers.user_router import router as user_api_router
+from routers import likes_router
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from middleware import SecurityHeadersMiddleware, CSRFMiddleware
@@ -138,3 +139,4 @@ app.include_router(admin_comments_router, prefix="/api/admin/comments", tags=["a
 app.include_router(admin_stats_router, prefix="/api/admin/stats", tags=["admin-stats"])
 app.include_router(admin_api_router, prefix="/api/admin", tags=["admin"])
 app.include_router(user_api_router, prefix="/api/user", tags=["user"])
+app.include_router(likes_router.router, prefix="/api/posts", tags=["likes"])
