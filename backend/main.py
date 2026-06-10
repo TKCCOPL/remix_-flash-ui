@@ -115,7 +115,7 @@ async def health_check():
         logger.error(f"Health check failed: {e}")
         return JSONResponse(
             status_code=503,
-            content={"status": "unhealthy", "database": str(e)}
+            content={"status": "unhealthy", "database": "error"}
         )
     finally:
         if conn:

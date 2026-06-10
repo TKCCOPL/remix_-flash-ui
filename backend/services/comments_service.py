@@ -45,7 +45,7 @@ def create_comment(
             create_reply_notification(
                 conn,
                 parent_comment["user_id"],
-                post_id,
+                comment_id,
                 post_id=post_id,
                 replier_name=replier_name,
                 background_tasks=background_tasks,

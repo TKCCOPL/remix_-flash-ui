@@ -1,3 +1,4 @@
+import html
 import logging
 import os
 import smtplib
@@ -81,10 +82,10 @@ def send_reply_notification_email(
     post_title: str,
     post_url: str,
 ) -> bool:
-    subject = f"有人回复了你的评论 - {post_title}"
+    subject = f"有人回复了你的评论 - {html.escape(post_title)}"
     html_body = REPLY_EMAIL_TEMPLATE.format(
-        replier_name=replier_name,
-        post_title=post_title,
-        post_url=post_url,
+        replier_name=html.escape(replier_name),
+        post_title=html.escape(post_title),
+        post_url=html.escape(post_url, quote=True),
     )
     return send_email(recipient_email, subject, html_body)
