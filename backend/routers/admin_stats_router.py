@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 import sqlite3
 
 from database import get_db
@@ -53,7 +53,7 @@ def get_category_distribution_route(
 @router.get("/views-trend")
 def get_views_trend_route(
     request: Request,
-    days: int = 30,
+    days: int = Query(default=30, le=365),
     conn: sqlite3.Connection = Depends(get_db),
     _=Depends(require_admin),
 ):

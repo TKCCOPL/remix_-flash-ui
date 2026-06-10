@@ -34,14 +34,17 @@ export default function BubbleToolbar({ editor, onLinkClick }: BubbleToolbarProp
   }, [editor]);
 
   useEffect(() => {
-    editor.on('selectionUpdate', updatePosition);
-    editor.on('blur', () => {
+    const handleBlur = () => {
       // Delay hiding to allow button clicks to register
       setTimeout(() => setIsVisible(false), 200);
-    });
+    };
+
+    editor.on('selectionUpdate', updatePosition);
+    editor.on('blur', handleBlur);
 
     return () => {
       editor.off('selectionUpdate', updatePosition);
+      editor.off('blur', handleBlur);
     };
   }, [editor, updatePosition]);
 

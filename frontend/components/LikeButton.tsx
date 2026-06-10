@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { likesApi } from "@/api/likes";
+import { ApiError } from "@/api/client";
 
 interface LikeButtonProps {
     postId: number;
@@ -48,7 +49,7 @@ export default function LikeButton({
                 setLiked(prevLiked);
                 setCount(prevCount);
             }
-            if (error instanceof Error && error.message.includes("401")) {
+            if (error instanceof ApiError && error.status === 401) {
                 navigate("/login");
             }
         } finally {

@@ -120,8 +120,9 @@ export default function CommentSection({ postId, onComment }: CommentSectionProp
 
   const canDelete = (comment: Comment) => {
     if (!user) return false;
+    if (isAdmin) return true;
     if (user.id != null) return user.id === comment.user_id;
-    return true;
+    return false;
   };
 
   const formatCommentDate = (dateStr: string) => {

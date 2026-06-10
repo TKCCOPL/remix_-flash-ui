@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Users as UsersIcon, Trash2, Eye, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '../context/Preferences';
-import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { adminApi, AdminUser } from '../api/admin';
 import UserDetailModal from '../components/UserDetailModal';
@@ -56,22 +55,8 @@ export default function Users() {
   }, [currentPage, searchQuery, providerFilter, navigate, t.login.error]);
 
   useEffect(() => {
-    let cancelled = false;
-    const check = async () => {
-      try {
-        await authApi.me();
-        if (!cancelled) {
-          void loadUsers();
-        }
-      } catch {
-        if (!cancelled) {
-          navigate('/login');
-        }
-      }
-    };
-    void check();
-    return () => { cancelled = true; };
-  }, [navigate, loadUsers]);
+    void loadUsers();
+  }, [loadUsers]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -275,14 +260,19 @@ export default function Users() {
             <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors">
               上一页
             </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const page = i + 1;
-              return (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page ? 'bg-indigo-500 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'}`}>
-                  {page}
-                </button>
-              );
-            })}
+            {(() => {
+              const startPage = Math.max(1, currentPage - 2);
+              const endPage = Math.min(totalPages, startPage + 4);
+              const adjustedStart = Math.max(1, endPage - 4);
+              return Array.from({ length: endPage - adjustedStart + 1 }, (_, i) => {
+                const page = adjustedStart + i;
+                return (
+                  <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page ? 'bg-indigo-500 text-white' : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'}`}>
+                    {page}
+                  </button>
+                );
+              });
+            })()}
             <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors">
               下一页
             </button>

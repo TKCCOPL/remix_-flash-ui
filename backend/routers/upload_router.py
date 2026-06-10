@@ -3,6 +3,7 @@ import uuid
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
+from limiter import limiter
 from services.auth_service import is_logged_in
 
 router = APIRouter()
@@ -44,6 +45,7 @@ def _validate_image(contents: bytes, ext: str) -> bool:
 
 
 @router.post("")
+@limiter.limit("10/minute")
 async def upload_image(request: Request, file: UploadFile = File(...)):
     _require_login(request)
 

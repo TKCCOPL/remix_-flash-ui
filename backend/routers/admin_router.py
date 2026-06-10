@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from database import get_db
-from dependencies.auth import require_admin, VALID_ROLES
+from dependencies.auth import require_admin, ASSIGNABLE_ROLES
 from services.admin_service import get_users_list, get_user_detail, change_user_role, delete_user
 
 router = APIRouter()
@@ -11,7 +11,7 @@ router = APIRouter()
 def list_users_route(
     request: Request,
     skip: int = 0,
-    limit: int = 20,
+    limit: int = Query(default=20, le=100),
     search: str = None,
     provider: str = None,
     conn=Depends(get_db),
@@ -41,8 +41,8 @@ def update_user_role_route(
     admin=Depends(require_admin),
     conn=Depends(get_db),
 ):
-    if role not in VALID_ROLES:
-        raise HTTPException(status_code=400, detail=f"无效的角色: {role}")
+    if role not in ASSIGNABLE_ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid assignable role: {role}")
     # Prevent admin from changing their own role via OAuth user_id lookup
     # Admin session users have user_id=None, so we resolve it
     from dependencies.auth import resolve_user_id

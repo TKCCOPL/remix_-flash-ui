@@ -1,11 +1,16 @@
 import os
 
-os.environ.setdefault("ADMIN_USER", "admin")
-os.environ.setdefault("ADMIN_PASS", "123456")
-
 import pytest
 from limiter import limiter
 from main import app
+
+os.environ["ADMIN_USER"] = "admin"
+os.environ["ADMIN_PASS"] = "123456"
+
+import services.auth_service as _auth_svc
+
+_auth_svc.ADMIN_USER = "admin"
+_auth_svc.ADMIN_PASS = "123456"
 
 
 @pytest.fixture(autouse=True)

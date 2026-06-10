@@ -10,6 +10,7 @@ from services.auth_service import verify_session_token
 from services.oauth_service import verify_guest_token
 
 VALID_ROLES = {"admin", "editor", "author", "guest"}
+ASSIGNABLE_ROLES = {"editor", "author", "guest"}  # Cannot assign admin via API
 
 
 def get_current_user(request: Request) -> dict | None:
@@ -113,8 +114,8 @@ def resolve_user_id(user: dict, conn: sqlite3.Connection) -> int:
             return admin_user["id"]
         cursor.execute(
             """
-            INSERT INTO users (oauth_provider, oauth_id, username)
-            VALUES ('admin', 'admin', ?)
+            INSERT INTO users (oauth_provider, oauth_id, username, role)
+            VALUES ('admin', 'admin', ?, 'admin')
             """,
             (user["username"],),
         )

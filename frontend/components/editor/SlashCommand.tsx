@@ -4,6 +4,7 @@ import {
   Image, Code2, Quote, Minus, ListChecks, List, ListOrdered,
   Heading1, Heading2, Heading3,
 } from 'lucide-react';
+import type { Translations } from '@/i18n';
 
 interface CommandItem {
   title: string;
@@ -18,7 +19,7 @@ interface SlashCommandProps {
   onClose: () => void;
 }
 
-export function getSlashCommands(t: any): CommandItem[] {
+export function getSlashCommands(t: Translations): CommandItem[] {
   return [
     {
       title: t.editor.slashCommands.image,
@@ -157,6 +158,8 @@ export default function SlashCommand({ editor, commands, onClose }: SlashCommand
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (filtered.length === 0) return;
+
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         e.stopPropagation();

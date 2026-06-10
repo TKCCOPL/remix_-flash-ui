@@ -20,7 +20,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n, usePreferences } from '../context/Preferences';
 import { dateFormats, locales } from '../i18n';
-import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { ApiPost, postsApi } from '../api/posts';
 import { normalizeDate } from '../utils/date';
@@ -71,7 +70,6 @@ export default function Admin() {
 
     const loadPosts = async () => {
       try {
-        await authApi.me();
         const result = await postsApi.list(0, 100, true);
         if (!cancelled) {
           setPosts(result.map(mapApiPost));

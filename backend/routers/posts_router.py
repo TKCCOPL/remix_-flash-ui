@@ -1,8 +1,9 @@
 import hashlib
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 
 from database import get_db
+from limiter import limiter
 from schemas import PostCreate, PostOut, PostStatus, PostUpdate
 from services.auth_service import is_logged_in
 from repositories.posts_repository import get_post_with_stats
@@ -27,13 +28,14 @@ def _require_login(request: Request):
 
 
 @router.post("", response_model=PostOut)
+@limiter.limit("10/minute")
 def create_post_route(post: PostCreate, request: Request, conn=Depends(get_db)):
     _require_login(request)
     return create_post(conn, post)
 
 
 @router.get("", response_model=list[PostOut])
-def list_posts_route(skip: int = 0, limit: int = 10, include_drafts: bool = False, status: PostStatus = None, request: Request = None, conn=Depends(get_db)):
+def list_posts_route(skip: int = 0, limit: int = Query(default=10, le=100), include_drafts: bool = False, status: PostStatus = None, request: Request = None, conn=Depends(get_db)):
     # Status filter takes priority; requires admin login for non-published statuses
     if status:
         if status != PostStatus.published and not is_logged_in(request):

@@ -81,8 +81,10 @@ def verify_session_token(token: str) -> str | None:
                     return None
             finally:
                 conn.close()
-        except Exception:
-            pass
+        except Exception as e:
+            # Fail closed: if blacklist check fails, reject the token
+            logger.error(f"Token blacklist check failed: {e}")
+            return None
         return username
     except JWTError:
         return None

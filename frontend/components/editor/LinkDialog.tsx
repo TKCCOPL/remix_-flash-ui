@@ -31,14 +31,21 @@ export default function LinkDialog({ editor, onClose }: LinkDialogProps) {
     e.preventDefault();
     if (!url) return;
 
+    const chain = editor.chain().focus();
+
     if (text && !editor.state.selection.empty) {
       // Replace selected text with link
-      editor.chain().focus().setLink({ href: url }).run();
+      chain.setLink({ href: url }).run();
     } else if (text) {
-      // Insert new text with link
-      editor.chain().focus().insertContent(`<a href="${url}">${text}</a>`).run();
+      // Insert new text node, then apply link mark to it
+      const { from } = editor.state.selection;
+      chain
+        .insertContent(text)
+        .setTextSelection({ from, to: from + text.length })
+        .setLink({ href: url })
+        .run();
     } else {
-      editor.chain().focus().setLink({ href: url }).run();
+      chain.setLink({ href: url }).run();
     }
     onClose();
   };

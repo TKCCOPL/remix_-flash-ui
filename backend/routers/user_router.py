@@ -50,15 +50,6 @@ def get_current_user_info(request: Request, conn: sqlite3.Connection = Depends(g
                     (username,)
                 )
                 user = cursor.fetchone()
-            # Ensure admin users always have admin role
-            if user["role"] != "admin":
-                cursor.execute(
-                    "UPDATE users SET role = 'admin' WHERE id = ?",
-                    (user["id"],)
-                )
-                conn.commit()
-                user = dict(user)
-                user["role"] = "admin"
             return {
                 "id": user["id"],
                 "username": user["username"],

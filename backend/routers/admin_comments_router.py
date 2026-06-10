@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 import sqlite3
 
@@ -37,7 +37,7 @@ router = APIRouter()
 def list_comments_route(
     request: Request,
     skip: int = 0,
-    limit: int = 20,
+    limit: int = Query(default=20, le=100),
     status: str = None,
     search: str = None,
     conn=Depends(get_db),

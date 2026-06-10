@@ -1,41 +1,64 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { notificationsApi, Notification } from "@/api/notifications";
 import { useI18n } from "@/context/Preferences";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Notifications() {
     const t = useI18n();
+    const navigate = useNavigate();
+    const { user, isAdmin, loading: authLoading } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [filter, setFilter] = useState<"all" | "unread">("all");
     const [loading, setLoading] = useState(true);
+    const cancelledRef = useRef(false);
 
     useEffect(() => {
+        if (authLoading) return;
+        if (!user && !isAdmin) {
+            navigate("/login");
+            return;
+        }
+        cancelledRef.current = false;
         fetchNotifications();
-    }, [filter]);
+        return () => {
+            cancelledRef.current = true;
+        };
+    }, [filter, user, isAdmin, authLoading, navigate]);
 
     const fetchNotifications = async () => {
         setLoading(true);
         try {
             const data = await notificationsApi.getNotifications(filter === "unread");
+            if (cancelledRef.current) return;
             setNotifications(data.notifications);
             setUnreadCount(data.unread_count);
         } catch (error) {
+            if (cancelledRef.current) return;
             console.error(error);
         } finally {
-            setLoading(false);
+            if (!cancelledRef.current) setLoading(false);
         }
     };
 
     const handleMarkRead = async (id: number) => {
-        await notificationsApi.markAsRead(id);
-        fetchNotifications();
+        try {
+            await notificationsApi.markAsRead(id);
+            fetchNotifications();
+        } catch (error) {
+            console.error("Failed to mark as read:", error);
+        }
     };
 
     const handleMarkAllRead = async () => {
-        await notificationsApi.markAllAsRead();
-        fetchNotifications();
+        try {
+            await notificationsApi.markAllAsRead();
+            fetchNotifications();
+        } catch (error) {
+            console.error("Failed to mark all as read:", error);
+        }
     };
 
     if (loading) {

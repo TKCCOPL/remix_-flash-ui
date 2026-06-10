@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { FileText, Users, MessageCircle, Folder, Eye, Heart } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useI18n } from '../context/Preferences';
-import { authApi } from '../api/auth';
 import { ApiError } from '../api/client';
 import { adminStatsApi, type StatsOverview, type CommentsTrend, type PopularPost, type CategoryDistribution, type ViewsTrendResponse } from '../api/admin';
 
@@ -22,7 +21,6 @@ export default function Stats() {
     let cancelled = false;
     const loadData = async () => {
       try {
-        await authApi.me();
         const [overviewData, trendData, postsData, catData, viewsTrendData] = await Promise.all([
           adminStatsApi.overview(),
           adminStatsApi.commentsTrend(),

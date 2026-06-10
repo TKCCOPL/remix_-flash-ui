@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface SEOProps {
   title: string;
@@ -19,6 +19,8 @@ export default function SEO({
   publishedTime,
   modifiedTime
 }: SEOProps) {
+  const scriptRef = useRef<HTMLScriptElement | null>(null);
+
   useEffect(() => {
     // 页面标题
     document.title = `${title} | XiaoC'blog`;
@@ -64,13 +66,21 @@ export default function SEO({
       }),
     };
 
+    if (scriptRef.current) {
+      document.head.removeChild(scriptRef.current);
+    }
+
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify(jsonLd);
     document.head.appendChild(script);
+    scriptRef.current = script;
 
     return () => {
-      document.head.removeChild(script);
+      if (scriptRef.current) {
+        document.head.removeChild(scriptRef.current);
+        scriptRef.current = null;
+      }
     };
   }, [title, description, image, url, type, publishedTime, modifiedTime]);
 
