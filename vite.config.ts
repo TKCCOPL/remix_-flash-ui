@@ -22,19 +22,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('react-dom')) return 'vendor-react';
-              if (id.includes('react-router')) return 'vendor-router';
-              if (id.includes('framer-motion')) return 'vendor-motion';
-              return 'vendor-misc';
-            }
-          },
-        },
-      },
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 2000,
     },
     publicDir: path.resolve(__dirname, 'frontend/public'),
     plugins: [
