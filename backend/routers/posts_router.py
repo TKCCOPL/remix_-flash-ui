@@ -3,6 +3,7 @@ import hashlib
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 
 from database import get_db
+from dependencies.auth import require_role
 from limiter import limiter
 from schemas import PostCreate, PostOut, PostStatus, PostUpdate
 from services.auth_service import is_logged_in
@@ -27,10 +28,9 @@ def _require_login(request: Request):
         raise HTTPException(status_code=401, detail="unauthorized")
 
 
-@router.post("", response_model=PostOut)
+@router.post("", response_model=PostOut, dependencies=[require_role('admin', 'editor', 'author')])
 @limiter.limit("10/minute")
 def create_post_route(post: PostCreate, request: Request, conn=Depends(get_db)):
-    _require_login(request)
     return create_post(conn, post)
 
 
@@ -79,19 +79,17 @@ def get_post_route(post_id: int, request: Request, conn=Depends(get_db)):
     return result
 
 
-@router.put("/{post_id}", response_model=PostOut)
+@router.put("/{post_id}", response_model=PostOut, dependencies=[require_role('admin', 'editor')])
 def update_post_route(post_id: int, post: PostUpdate, request: Request, conn=Depends(get_db)):
-    _require_login(request)
     updated = update_post(conn, post_id, post)
     if not updated:
         raise HTTPException(status_code=404, detail="文章不存在")
     return updated
 
 
-@router.patch("/{post_id}/status")
+@router.patch("/{post_id}/status", dependencies=[require_role('admin', 'editor')])
 def update_post_status_route(post_id: int, status: PostStatus = Body(..., embed=True), request: Request = None, conn=Depends(get_db)):
     """Update post status (draft/published/archived)."""
-    _require_login(request)
     result = update_post_status(conn, post_id, status.value)
     if not result:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -102,9 +100,8 @@ def update_post_status_route(post_id: int, status: PostStatus = Body(..., embed=
     }
 
 
-@router.delete("/{post_id}")
+@router.delete("/{post_id}", dependencies=[require_role('admin')])
 def delete_post_route(post_id: int, request: Request, conn=Depends(get_db)):
-    _require_login(request)
     if not delete_post(conn, post_id):
         raise HTTPException(status_code=404, detail="文章不存在")
     return {"detail": "文章删除成功"}

@@ -34,9 +34,15 @@ export default function UserCard({ user, favoritesCount, commentsCount, onLogout
             <h1 className="text-xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight truncate">
               {user.username}
             </h1>
-            {user.is_admin && (
-              <span className="px-2 py-1 text-sm font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full">
-                {t.admin.badge}
+            {user.role !== 'guest' && (
+              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                user.role === 'admin'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                  : user.role === 'editor'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+              }`}>
+                {user.role === 'admin' ? t.admin.roleAdmin : user.role === 'editor' ? t.admin.roleEditor : t.admin.roleAuthor}
               </span>
             )}
           </div>

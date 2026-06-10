@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 
 from database import get_db
 from limiter import limiter
@@ -25,12 +25,25 @@ def list_comments_route(post_id: int, conn=Depends(get_db)):
 
 @router.post("/{post_id}/comments")
 @limiter.limit("20/minute")
-def create_comment_route(post_id: int, comment: CommentCreate, request: Request, conn=Depends(get_db)):
+def create_comment_route(
+    post_id: int,
+    comment: CommentCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    conn=Depends(get_db),
+):
     user = require_login(request)
     user_id = resolve_user_id(user, conn)
 
     try:
-        created = create_comment(conn, post_id, user_id, comment.content, parent_id=comment.parent_id)
+        created = create_comment(
+            conn,
+            post_id,
+            user_id,
+            comment.content,
+            parent_id=comment.parent_id,
+            background_tasks=background_tasks,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return created

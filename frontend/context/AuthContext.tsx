@@ -6,6 +6,7 @@ import { authApi } from '../api/auth';
 type AuthContextValue = {
   user: GuestUser | null;
   isAdmin: boolean;
+  role: 'admin' | 'editor' | 'author' | 'guest';
   loading: boolean;
   login: (provider: 'github' | 'gitee') => void;
   logout: () => Promise<void>;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<GuestUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<'admin' | 'editor' | 'author' | 'guest'>('guest');
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
@@ -25,9 +27,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await oauthApi.me();
       setUser(userData);
       setIsAdmin(userData.is_admin ?? false);
+      setRole(userData.role ?? 'guest');
     } catch {
       setUser(null);
       setIsAdmin(false);
+      setRole('guest');
     } finally {
       setLoading(false);
     }
@@ -51,11 +55,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       setIsAdmin(false);
+      setRole('guest');
     }
   }, [isAdmin]);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isAdmin, role, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
